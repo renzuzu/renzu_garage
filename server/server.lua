@@ -128,7 +128,7 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
     if id == nil then
         xPlayer.showNotification("Invalid User ID! (Must be Digits only)", 1, 0)
     else
-        if tonumber(plate) and to then
+        if tonumber(plate) and transfer then
             MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE plate = @plate and owner = @owner LIMIT 1', {
                 ['@plate'] = plate,
                 ['@owner'] = xPlayer.identifier
@@ -137,7 +137,7 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
                         MySQL.Sync.execute('UPDATE owned_vehicles SET owner = @owner WHERE plate = @plate',
                         {
                             ['plate'] = plate,
-                            ['owner'] = to.identifier
+                            ['owner'] = transfer.identifier
                         })
                         print("transfer success")
                         xPlayer.showNotification("You Transfer the car with plate #"..plate.." to "..transfer.name.."", 1, 0)
