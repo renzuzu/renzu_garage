@@ -117,6 +117,7 @@ AddEventHandler('opengarage', function()
         if v.job ~= nil then
             jobgarage = true
         end
+        print(PlayerData.job ~= nil and PlayerData.job.name == v.job)
         if DoesEntityExist(vehiclenow) then
             if dist <= 3.0 and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
                 id = v.garage
@@ -448,22 +449,24 @@ function OpenHeli(id)
         }
     )
     SetNuiFocus(true, true)
-    for k,v in pairs(helispawn[id]) do
-        local v = v.coords
-        local dist = #(vector3(v.x,v.y,v.z) - GetEntityCoords(ped))
-        if dist <= 10.0 then
-            cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.x-8.0, v.y, v.z+0.6, 360.00, 0.00, 0.00, 60.00, false, 0)
-            PointCamAtCoord(cam, v.x, v.y, v.z+2.0)
-            SetCamActive(cam, true)
-            RenderScriptCams(true, true, 1, true, true)
-            SetFocusPosAndVel(v.x, v.y, v.z+4.0, 0.0, 0.0, 0.0)
-            DisplayHud(false)
-            DisplayRadar(false)
-            print("INSHOP")
+    if not Config.Quickpick then
+        for k,v in pairs(helispawn[id]) do
+            local v = v.coords
+            local dist = #(vector3(v.x,v.y,v.z) - GetEntityCoords(ped))
+            if dist <= 10.0 then
+                cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.x-8.0, v.y, v.z+0.6, 360.00, 0.00, 0.00, 60.00, false, 0)
+                PointCamAtCoord(cam, v.x, v.y, v.z+2.0)
+                SetCamActive(cam, true)
+                RenderScriptCams(true, true, 1, true, true)
+                SetFocusPosAndVel(v.x, v.y, v.z+4.0, 0.0, 0.0, 0.0)
+                DisplayHud(false)
+                DisplayRadar(false)
+                print("INSHOP")
+            end
         end
-    end
-    while inGarage do
-        Citizen.Wait(111)
+        while inGarage do
+            Citizen.Wait(111)
+        end
     end
     if LastVehicleFromGarage ~= nil then
         DeleteEntity(LastVehicleFromGarage)
@@ -474,7 +477,9 @@ end
 function OpenImpound(id)
     inGarage = true
     local ped = PlayerPedId()
-    CreateGarageShell()
+    if not Config.Quickpick then
+        CreateGarageShell()
+    end
     while not fetchdone do
     Citizen.Wait(333)
     end
@@ -523,23 +528,24 @@ function OpenImpound(id)
     )
 
     SetNuiFocus(true, true)
-
-    RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
-    for k,v in pairs(garagecoord) do
-        local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-        if dist <= 40.0 and id == v.garage then
-        cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z-28.0, 360.00, 0.00, 0.00, 60.00, false, 0)
-        PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z-30.0)
-        SetCamActive(cam, true)
-        RenderScriptCams(true, true, 1, true, true)
-        SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
-        DisplayHud(false)
-        DisplayRadar(false)
-        print("INSHOP")
+    if not Config.Quickpick then
+        RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
+        for k,v in pairs(garagecoord) do
+            local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
+            if dist <= 40.0 and id == v.garage then
+            cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z-28.0, 360.00, 0.00, 0.00, 60.00, false, 0)
+            PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z-30.0)
+            SetCamActive(cam, true)
+            RenderScriptCams(true, true, 1, true, true)
+            SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
+            DisplayHud(false)
+            DisplayRadar(false)
+            print("INSHOP")
+            end
         end
-    end
-    while inGarage do
-        Citizen.Wait(111)
+        while inGarage do
+            Citizen.Wait(111)
+        end
     end
 
     if LastVehicleFromGarage ~= nil then

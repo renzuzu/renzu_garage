@@ -163,19 +163,19 @@ impoundcoord = {
 
 heli = { -- chopper models for each jobs
     ['police'] = { -- job
-        [1] = {plate = 'PD', model = 'maverick'},
-        [2] = {plate = 'PD', model = 'frogger'},
-		[3] = {plate = 'PD', model = 'havoc'},
-		[4] = {plate = 'PD', model = 'polmav'},
-		[5] = {plate = 'PD', model = 'valkyrie'},
-		[6] = {plate = 'PD', model = 'akula'},
-		[7] = {plate = 'PD', model = 'buzzard'},
-		[8] = {plate = 'PD', model = 'cargobob2'},
+        {plate = 'PD', model = 'maverick'},
+        {plate = 'PD', model = 'frogger'},
+		{plate = 'PD', model = 'havoc'},
+		{plate = 'PD', model = 'polmav'},
+		{plate = 'PD', model = 'valkyrie'},
+		{plate = 'PD', model = 'akula'},
+		{plate = 'PD', model = 'buzzard'},
+		{plate = 'PD', model = 'cargobob2'},
     },
 }
 
 helispawn = { -- coordinates for jobs helicopters
     ['police'] = {
-        [1] = {coords = vector3(454.27, -986.05, 43.69), distance = 15, }, --MRPD
+        [1] = {garage = 'Police Chopper A',coords = vector3(449.27, -981.05, 43.69), distance = 15, }, --MRPD
     },
 }
