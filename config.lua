@@ -1,7 +1,7 @@
 Config = {}
 Config.Locale = 'en'
 
-
+Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
 garagecoord = {
     {
         garage = 'A', --LEGION

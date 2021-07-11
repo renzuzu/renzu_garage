@@ -54,12 +54,6 @@ window.addEventListener('message', function(event) {
         }
         VehicleArr = undefined
         currentcar = undefined;
-        console.log(VehicleArr)
-        console.log(VehicleArr)
-        console.log(VehicleArr)
-        console.log(VehicleArr)
-        console.log(VehicleArr)
-        console.log(VehicleArr)
         VehicleArr = [];
         CurrentVehicle = [];
         $("body").fadeIn();
@@ -115,14 +109,12 @@ $(document).ready(function() {
       </div>\
       <div class="column" id="nameBrand">\
       </div>\
+      <div class="column menu-modifications" style="right:50px; position:absolute;">\
+          <div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE;color:#fff !important; border-radius: 10px;" onclick="garage()"> Go to Garage </button> </div>\
+      </div>\
   </div>\
   <div class="middle-left2-container">\
       <div class="column" id="contentVehicle" style="width:300px !important;">\
-      </div>\
-  </div>\
-  <div class="middle-right-container">\
-      <div class="column menu-modifications" style="top:-250px; right:50px; position:absolute;">\
-          <div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE;color:#fff !important; border-radius: 10px;" onclick="garage()"> Go to Garage </button> </div>\
       </div>\
   </div>\
   <div id="messagePopup">\

@@ -94,7 +94,9 @@ AddEventHandler('opengarage', function()
                     id = v.garage
                     ESX.ShowNotification("Opening Garage...Please wait..")
                     TriggerServerEvent("renzu_garage:GetVehiclesTable")
-                    Citizen.Wait(3000)
+                    while not fetchdone do
+                        Wait(0)
+                    end
                     OpenGarage(v.garage)
                     break
                 end
@@ -126,9 +128,9 @@ AddEventHandler('opengarage', function()
                 id = v.garage
                 ESX.ShowNotification("Opening Impound...Please wait..")
                 TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
-                Citizen.Wait(2000)
-                TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
-                Citizen.Wait(3000)
+                while not fetchdone do
+                    Wait(0)
+                end
                 OpenImpound(v.garage)
                 break
             end
@@ -205,6 +207,7 @@ end
 local owned_veh = {}
 RegisterNetEvent('renzu_garage:receive_vehicles')
 AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
+    fetchdone = false
     OwnedVehicles = {}
     Wait(100)
     tableVehicles = {}
@@ -221,7 +224,6 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
 
     for _,value in pairs(tableVehicles) do
         local props = json.decode(value.vehicle)
-        print(props.plate)
         local vehicleModel = tonumber(props.model)  
         local label = nil
         if label == nil then
@@ -247,7 +249,6 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*800),
             price = 1,
             model = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model))),
-            qtd = 999,
             model2 = tonumber(props.model),
             plate = value.plate,
             props = value.vehicle,
@@ -322,7 +323,9 @@ end)
 function OpenGarage(id)
     inGarage = true
     local ped = PlayerPedId()
-    CreateGarageShell()
+    if not Config.Quickpick then
+        CreateGarageShell()
+    end
     while not fetchdone do
     Citizen.Wait(333)
     end
@@ -373,23 +376,24 @@ function OpenGarage(id)
     )
 
     SetNuiFocus(true, true)
-
-    RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
-    for k,v in pairs(garagecoord) do
-        local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-        if dist <= 40.0 and id == v.garage then
-        cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z-28.0, 360.00, 0.00, 0.00, 60.00, false, 0)
-        PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z-30.0)
-        SetCamActive(cam, true)
-        RenderScriptCams(true, true, 1, true, true)
-        SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
-        DisplayHud(false)
-        DisplayRadar(false)
-        print("INSHOP")
+    if not Config.Quickpick then
+        RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
+        for k,v in pairs(garagecoord) do
+            local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
+            if dist <= 40.0 and id == v.garage then
+            cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z-28.0, 360.00, 0.00, 0.00, 60.00, false, 0)
+            PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z-30.0)
+            SetCamActive(cam, true)
+            RenderScriptCams(true, true, 1, true, true)
+            SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
+            DisplayHud(false)
+            DisplayRadar(false)
+            print("INSHOP")
+            end
         end
-    end
-    while inGarage do
-        Citizen.Wait(111)
+        while inGarage do
+            Citizen.Wait(111)
+        end
     end
 
     if LastVehicleFromGarage ~= nil then
@@ -1526,7 +1530,9 @@ AddEventHandler('renzu_garage:property', function(id, propertycoord)
     CloseNui()
     myoldcoords = propertycoord
     TriggerServerEvent("renzu_garage:GetVehiclesTable")
-    Wait(2500)
+    while not fetchdone do
+        Wait(0)
+    end
     GotoGarage(id, true, propertycoord)
 end)
 
@@ -1559,11 +1565,15 @@ RegisterNUICallback("ownerinfo",function(data, cb)
 end)
 
 RegisterNUICallback("SpawnVehicle",function(data, cb)
-    SpawnVehicleLocal(data.modelcar, json.decode(data.props))
+    if not Config.Quickpick then
+        SpawnVehicleLocal(data.modelcar, json.decode(data.props))
+    end
 end)
 
 RegisterNUICallback("SpawnChopper",function(data, cb)
-    SpawnChopperLocal(data.modelcar, json.decode(data.props))
+    if not Config.Quickpick then
+        SpawnChopperLocal(data.modelcar, json.decode(data.props))
+    end
 end)
 
 
@@ -1580,6 +1590,7 @@ RegisterNUICallback(
             for k,v in pairs(garagecoord) do
                 local actualShop = v
                 local dist = #(vector3(v.spawn_x,v.spawn_y,v.spawn_z) - GetEntityCoords(GetPlayerPed(-1)))
+                print(dist)
                 if dist <= 70.0 and id == v.garage then
                     DoScreenFadeOut(333)
                     Citizen.Wait(333)
@@ -1799,9 +1810,11 @@ RegisterNUICallback("Close",function(data, cb)
     CloseNui()
     for k,v in pairs(garagecoord) do
         local actualShop = v
-        local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-        if dist <= 40.0 and id == v.garage then
-            SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
+        if v.garage_x ~= nil then
+            local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
+            if dist <= 40.0 and id == v.garage then
+                SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
+            end
         end
     end
     DoScreenFadeIn(1000)
