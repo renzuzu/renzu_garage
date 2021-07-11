@@ -9,7 +9,7 @@ FIVEM - Garage HUD
 
 # Sample Image:
 - Quick Pick
-![alt text](https://i.imgur.com/qGNLItD.png)
+![alt text](https://i.imgur.com/Koqccq1.png)
 ![alt text](https://i.imgur.com/myoHX7F.png)
 # Inside garage
 - Scaleform Type UI - Showing Performance of Vehicles
