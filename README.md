@@ -10,8 +10,6 @@ FIVEM - Garage HUD (WIP)
 - Helicopter Garage per job
 - Property Garage
 - IMPOUND GARAGE (support multiple location)
-
- - TODOS: Fix some bug,change fonts, ui cleanup, add new things, code clean up as this is my old written garage.
 # Sample Image:
 - Quick Pick
 ![alt text](https://i.imgur.com/1hIA5Qr.png)
@@ -127,6 +125,15 @@ any nearest vehicle will be impound (distance 2-3 radius)
     eg. /transfer 5
     userid = 5
 ```
-    
-    
+
+# TODO
+ - Fix some bug
+ - change fonts
+ - ui cleanup
+ - add new things
+ - code clean up as this is my old written garage
+ - Add Exports from functions
+ - Add Fake Plate System
+ - Garage Inventory (upgrades)
+ - Support Other Vehicle Class Garage like Boat.
 
