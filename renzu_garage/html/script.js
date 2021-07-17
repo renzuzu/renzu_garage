@@ -410,7 +410,9 @@ $(document).on('keydown', function(event) {
     Renzu_Garage = {};
     inGarageVehicle = {}
     Renzu_Garage.Open = function(data) {
-        document.getElementById("vehlist").innerHTML = '';
+        if (document.getElementById("vehlist")) {
+            document.getElementById("vehlist").innerHTML = '';
+        }
         for(i = 0; i < (data.length); i++) {
             var modelUper = data[i].model;
             inGarageVehicle[i] = data[i]
