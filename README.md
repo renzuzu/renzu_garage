@@ -137,3 +137,10 @@ any nearest vehicle will be impound (distance 2-3 radius)
  - Garage Inventory (upgrades)
  - Support Other Vehicle Class Garage like Boat.
 
+# Dependency for now
+- POPUI
+- What is this?
+- This is a replacement for Drawtext or controlpressed native in loop.
+- UI will POP once the player is on the target coords
+https://github.com/renzuzu/renzu_popui
+
