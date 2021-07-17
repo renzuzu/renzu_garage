@@ -76,7 +76,7 @@ local indist = false
 
 function tostringplate(plate)
     if plate ~= nil then
-        return string.match(plate, '%f[%d]%d[,.%d]*%f[%D]')
+        return string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
     else
         return 123454
     end
