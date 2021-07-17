@@ -11,7 +11,7 @@ FIVEM - Garage HUD (WIP)
 - Property Garage
 - IMPOUND GARAGE (support multiple location)
 
- - TODOS: Fix some bug,change fonts, ui cleanup, add new things
+ - TODOS: Fix some bug,change fonts, ui cleanup, add new things, code clean up as this is my old written garage.
 # Sample Image:
 - Quick Pick
 ![alt text](https://i.imgur.com/1hIA5Qr.png)
@@ -23,6 +23,9 @@ FIVEM - Garage HUD (WIP)
 - https://forum.cfx.re/t/release-utility-scaleforms-utilities-for-fxserver/2166362
 # IMPOUND
 ![alt text](https://i.imgur.com/mPulV6G.png)
+
+# VIDEO DEMO
+https://streamable.com/rfdv82
 
 - Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 - Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
