@@ -11,8 +11,8 @@ server_scripts {
 client_scripts {
 	'config.lua',
 	'client/client.lua',
-	'threads.lua',
-	'scaleform.lua',
+	'client/threads.lua',
+	'client/scaleform.lua',
 }
 
 files {
@@ -20,10 +20,8 @@ files {
 	'html/index.html',
 	'html/script.js',
 	'html/fonts/*',	
-	'html/images/text-color.png',
 	'imgs/*.png',
 	'imgs/uploads/*.jpg',
-	'imgs/brands/*.png'
 }
 
 data_file 'DLC_ITYP_REQUEST' 'stream/garage.ytyp'
