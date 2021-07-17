@@ -1514,7 +1514,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                             end
                                         end
                                     end
-                                    v = CreateVehicle(model, actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
+                                    v = CreateVehicle(model, actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
                                     CheckWanderingVehicle(vp.plate)
                                     vp.health = GetVehicleEngineHealth(GetVehiclePedIsIn(PlayerPedId()))
                                     SetVehicleProp(v, vp)
@@ -1592,7 +1592,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                                     end
                                                 end
                                             end
-                                            v = CreateVehicle(model, actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
+                                            v = CreateVehicle(model, actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
                                             CheckWanderingVehicle(vp.plate)
                                             vp.health = GetVehicleEngineHealth(GetVehiclePedIsIn(PlayerPedId()))
                                             SetVehicleProp(v, vp)
@@ -1922,7 +1922,7 @@ RegisterNUICallback(
                             end
                         end
                     end
-                    v = CreateVehicle(tonumber(props.model), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
+                    v = CreateVehicle(tonumber(props.model), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
                     SetVehicleProp(v, props)
                     Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
                     veh = v
@@ -2072,7 +2072,7 @@ RegisterNUICallback(
                             end
                         end
                     end
-                    v = CreateVehicle(tonumber(data.modelcar), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
+                    v = CreateVehicle(tonumber(data.modelcar), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
                     SetVehicleProp(v, props)
                     Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
                     TaskWarpPedIntoVehicle(GetPlayerPed(-1), v, -1)

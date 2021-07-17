@@ -180,7 +180,7 @@
           line-height: 1.8em;
       }
       
-      .container .middle-left-container .column #vehicle_brand {
+      .container .middle-left-container .column #vehicle_class {
           font-family: "azonixregular";
           font-size: 1.3em;
           line-height: 1.5;
@@ -592,7 +592,7 @@
   transform: scale(1.0);
 }
 
-#vehiclebrand{
+#vehicleclass{
   width:10vh;    
   height:10vh;
   display:flex;
@@ -600,7 +600,7 @@
   justify-content: center;
 }
 
-#vehiclebrand img{
+#vehicleclass img{
   width:7vh;
 
   max-height: 65px;

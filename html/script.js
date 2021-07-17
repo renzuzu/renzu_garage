@@ -105,7 +105,7 @@ $(document).ready(function() {
   <div id="closemenu" class="modal" style="background-color:#050505c5 !important; color:#fff;">\
   </div>\
   <div class="middle-left-container">\
-      <div class="column" id="vehiclebrand"> \
+      <div class="column" id="vehicleclass"> \
       </div>\
       <div class="column" id="nameBrand">\
       </div>\
@@ -142,13 +142,13 @@ function ShowVehicle(currentTarget) {
                 $('.modal').css("display","none");
 
                 document.getElementById("nameBrand").innerHTML = '';
-                document.getElementById("vehiclebrand").innerHTML = '';
+                document.getElementById("vehicleclass").innerHTML = '';
                 document.getElementById("contentVehicle").innerHTML = '';
                           
-                document.getElementById("vehiclebrand").innerHTML = ' <img id="vehicle_brand_image" src="https://cdn.discordapp.com/attachments/696445330480300032/790173823202099240/newnewnewlogo.png">';
+                document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/optimized/3X/0/3/0301f645963889531fb4870e8d47f2f7da7f1c45_2_1024x1024.gif">';
 
                 $('#nameBrand').append(`
-                    <span id="vehicle_brand">`+data.brand+`</span> 
+                    <span id="vehicle_class">`+data.brand+`</span> 
                     <span id="vehicle_name">`+data.name+`</span> 
                 `);
 
@@ -218,13 +218,13 @@ function ShowVehicle(currentTarget) {
                 $('.modal').css("display","none");
 
                 document.getElementById("nameBrand").innerHTML = '';
-                document.getElementById("vehiclebrand").innerHTML = '';
+                document.getElementById("vehicleclass").innerHTML = '';
                 document.getElementById("contentVehicle").innerHTML = '';
                           
-                document.getElementById("vehiclebrand").innerHTML = ' <img id="vehicle_brand_image" src="https://cdn.discordapp.com/attachments/696445330480300032/790173823202099240/newnewnewlogo.png">';
+                document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/optimized/3X/0/3/0301f645963889531fb4870e8d47f2f7da7f1c45_2_1024x1024.gif">';
 
                 $('#nameBrand').append(`
-                    <span id="vehicle_brand">`+data.brand+`</span> 
+                    <span id="vehicle_class">`+data.brand+`</span> 
                     <span id="vehicle_name">`+data.name+`</span> 
                 `);
 
