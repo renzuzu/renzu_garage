@@ -96,7 +96,7 @@ function PopUI(name,v)
     }
     TriggerEvent('renzu_popui:showui',table)
     local dist = #(v - GetEntityCoords(PlayerPedId()))
-    while dist < 10 do
+    while dist < 5 do
         dist = #(v - GetEntityCoords(PlayerPedId()))
         Wait(100)
     end
@@ -566,7 +566,6 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
             topspeed = math.ceil(GetVehicleModelEstimatedMaxSpeed(vehicleModel)*4.605936),
             power = math.ceil(GetVehicleModelAcceleration(vehicleModel)*1000),
             torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*800),
-            price = 1,
             model = value.model,
             model2 = value.model,
             plate = value.plate,
@@ -615,7 +614,6 @@ function OpenGarage(id)
                 topspeed = v.topspeed,
                 power = v.power,
                 torque = v.torque,
-                price = 1,
                 model = v.model,
                 model2 = v.model2,
                 plate = v.plate,
@@ -691,7 +689,6 @@ function OpenHeli(id)
             topspeed = v.topspeed,
             power = v.power,
             torque = v.torque,
-            price = 1,
             model = v.model,
             model2 = v.model2,
             plate = v.plate,
@@ -764,7 +761,6 @@ function OpenImpound(id)
                 topspeed = v.topspeed,
                 power = v.power,
                 torque = v.torque,
-                price = 1,
                 model = v.model,
                 model2 = v.model2,
                 plate = v.plate,
@@ -1086,7 +1082,6 @@ function GotoGarage(id, property, propertycoord, data)
                 topspeed = v.topspeed,
                 power = v.power,
                 torque = v.torque,
-                price = 1,
                 model = v.model,
                 model2 = v.model2,
                 plate = v.plate,
@@ -1246,7 +1241,6 @@ Citizen.CreateThread(
                             topspeed = v.topspeed,
                             power = v.power,
                             torque = v.torque,
-                            price = 1,
                             model = v.model,
                             model2 = v.model2,
                             plate = v.plate,
