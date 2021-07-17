@@ -1,9 +1,10 @@
 # renzu_garage
-FIVEM - Garage HUD
+FIVEM - Garage HUD (WIP)
 - Vehicle Management
 - Multiple Garage Location
 - Job Garages
 - Helicopter Garage per job
+- Property Garage
 -- UNIQUE UI
 - IMPOUND GARAGE (support multiple location)
 
@@ -14,6 +15,10 @@ FIVEM - Garage HUD
 # Inside garage
 - Scaleform Type UI - Showing Performance of Vehicles
 ![alt text](https://i.imgur.com/e1IHVDB.png)
+# scaleform from negbook is being used
+- https://forum.cfx.re/t/release-utility-scaleforms-utilities-for-fxserver/2166362
+# IMPOUND
+![alt text](https://i.imgur.com/mPulV6G.png)
 
 - Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 - Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
@@ -91,6 +96,30 @@ helispawn = {
         spawn_z = 28.840564727783,
         heading = 85.93824005127
     },
+ ```
+ 
+ # Events
+ 
+ - Open Garage
+ ```
+    open the garage/impound/jobgarage/helicopter garage from targets or controlpressed etc...
+    TriggerEvent('opengarage')
+ ```
+ - Open Garage From Property (any coords - the vehicle spawn coords is Random using vehicleroadnode native)
+    ```
+    TriggerEvent('renzu_garage:property',"ANY PROPERTY NAME", vector3(coords)) -- coords = property location or current ped coords
+    ```
+- Impound 
+```
+usage: /impound
+any nearest vehicle will be impound (distance 2-3 radius)
+```
+- Transfer Vehicle to Another player
+```
+    /transfer [USERID]
+    eg. /transfer 5
+    userid = 5
+```
     
     
 
