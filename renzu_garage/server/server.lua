@@ -97,7 +97,7 @@ AddEventHandler('renzu_garage:GetVehiclesTable', function()
     local src = source 
     local xPlayer = ESX.GetPlayerFromId(src)
     local identifier = xPlayer.identifier
-    local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner ORDER BY id ASC', {['@owner'] = xPlayer.identifier})
+    local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
     TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle,vehicles)
 end)
 
@@ -106,7 +106,7 @@ AddEventHandler('renzu_garage:GetVehiclesTableImpound', function()
     local src = source  
     local xPlayer = ESX.GetPlayerFromId(src)
     local identifier = xPlayer.identifier
-    local Impounds = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE impound = 1 ORDER BY id ASC', {})
+    local Impounds = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE impound = 1', {})
     TriggerClientEvent("renzu_garage:receive_vehicles", src , Impounds,vehicles)
 end)
 
