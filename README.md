@@ -138,6 +138,7 @@ any nearest vehicle will be impound (distance 2-3 radius)
  - Support Other Vehicle Class Garage like Boat.
 
 # Dependency for now
+- ESX
 - POPUI
 - What is this?
 - This is a replacement for Drawtext or controlpressed native in loop.
