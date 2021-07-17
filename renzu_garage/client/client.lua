@@ -109,14 +109,14 @@ CreateThread(function()
             for k,v in pairs(garagecoord) do
                 local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
                 local dist = #(vec - GetEntityCoords(PlayerPedId()))
-                if dist < 10 then
+                if dist < v.Dist then
                     PopUI(v.garage,vec)
                 end
             end
             for k,v in pairs(impoundcoord) do
                 local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
                 local dist = #(vec - GetEntityCoords(PlayerPedId()))
-                if dist < 10 then
+                if dist < v.Dist then
                     PopUI(v.garage,vec)
                 end
             end
@@ -124,7 +124,7 @@ CreateThread(function()
                 for k,v in pairs(helispawn[PlayerData.job.name]) do
                     local vec = vector3(v.coords.x,v.coords.y,v.coords.z)
                     local dist = #(vec - GetEntityCoords(PlayerPedId()))
-                    if dist < 10 then
+                    if dist < v.Dist then
                         PopUI(v.garage,vec)
                     end
                 end
@@ -600,7 +600,7 @@ function OpenGarage(id)
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             --if id == v.garage_id or v.garage_id == 'impound' then
-            if id == v.garage_id or v.garage_id == 'impound' then
+            if Config.UniqueCarperGarage and id == v.garage_id or not Config.UniqueCarperGarage and id ~= nil or v.garage_id == 'impound' then
                 cars = cars + 1
                 if v.garage_id == 'impound' then
                     v.garage_id = 'A'

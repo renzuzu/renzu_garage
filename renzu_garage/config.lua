@@ -3,10 +3,11 @@ Config.Locale = "en"
 Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
 Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
+Config.UniqueCarperGarage = false -- if false show all cars to all garage location! else if true, Vehicles Saved in Garage A cannot be take out from Garage B for example.
 garagecoord = {
     {
         garage = "A", --LEGION
-        Dist = 10, -- distance (DEPRECATED)
+        Dist = 7, -- distance (DEPRECATED)
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 241.1,
         garage_y = -757.1,
@@ -19,7 +20,7 @@ garagecoord = {
     {
         garage = "B", --PINK MOTEL
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 273.0,
         garage_y = -343.85,
@@ -32,7 +33,7 @@ garagecoord = {
     {
         garage = "C", --GROVE
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -71.46,
         garage_y = -1821.83,
@@ -45,7 +46,7 @@ garagecoord = {
     {
         garage = "D", --MIRROR
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 1032.84,
         garage_y = -765.1,
@@ -58,7 +59,7 @@ garagecoord = {
     {
         garage = "E", --BEACH
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -1248.69,
         garage_y = -1425.71,
@@ -72,7 +73,7 @@ garagecoord = {
     {
         garage = "F", --GO HIGHWAY
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -2961.58,
         garage_y = 375.93,
@@ -98,7 +99,7 @@ garagecoord = {
     {
         garage = "H", --SANDY MAIN
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 1878.44,
         garage_y = 3760.1,
@@ -111,7 +112,7 @@ garagecoord = {
     {
         garage = "I", --VINEWOOD
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 365.21,
         garage_y = 295.65,
@@ -137,7 +138,7 @@ garagecoord = {
     {
         garage = "K", --PALETO
         Type = "car",
-        Dist = 10,
+        Dist = 7,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 107.32,
         garage_y = 6611.77,
