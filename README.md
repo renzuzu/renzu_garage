@@ -1,8 +1,8 @@
 # renzu_garage
 FIVEM - Garage HUD (WIP)
- This is currently in development mode.
- PR is welcome
- Supporting multiple Framework is a goal
+ - This is currently in development mode.
+ - PR is welcome
+ - Supporting multiple Framework is a goal
 - Vehicle Management
 - Multiple Garage Location
 - Job Garages
@@ -11,7 +11,7 @@ FIVEM - Garage HUD (WIP)
 -- UNIQUE UI
 - IMPOUND GARAGE (support multiple location)
 
- TODOS: Fix some bug,change fonts, ui cleanup, add new things
+ - TODOS: Fix some bug,change fonts, ui cleanup, add new things
 # Sample Image:
 - Quick Pick
 ![alt text](https://i.imgur.com/1hIA5Qr.png)
