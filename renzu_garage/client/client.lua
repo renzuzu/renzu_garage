@@ -152,13 +152,13 @@ AddEventHandler('opengarage', function()
                 end
             end
             if DoesEntityExist(vehiclenow) then
-                if dist <= 7.0 and not jobgarage and v.garage ~= 'impound' or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and v.garage ~= 'impound' then
+                if dist <= v.Dist and not jobgarage and v.garage ~= 'impound' or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and v.garage ~= 'impound' then
                     id = v.garage
                     Storevehicle(vehiclenow)
                     break
                 end
             elseif not DoesEntityExist(vehiclenow) then
-                if dist <= 7.0 and not jobgarage and v.garage ~= 'impound' or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and v.garage ~= 'impound' then
+                if dist <= v.Dist and not jobgarage and v.garage ~= 'impound' or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and v.garage ~= 'impound' then
                     id = v.garage
                     ESX.ShowNotification("Opening Garage...Please wait..")
                     TriggerServerEvent("renzu_garage:GetVehiclesTable")
@@ -187,13 +187,13 @@ AddEventHandler('opengarage', function()
             jobgarage = true
         end
         if DoesEntityExist(vehiclenow) then
-            if dist <= 3.0 and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
+            if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
                 id = v.garage
                 Storevehicle(vehiclenow)
                 break
             end
         elseif not DoesEntityExist(vehiclenow) then
-            if dist <= 3.0 and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
+            if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
                 id = v.garage
                 ESX.ShowNotification("Opening Impound...Please wait..")
                 TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
