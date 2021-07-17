@@ -124,7 +124,7 @@ CreateThread(function()
                 for k,v in pairs(helispawn[PlayerData.job.name]) do
                     local vec = vector3(v.coords.x,v.coords.y,v.coords.z)
                     local dist = #(vec - GetEntityCoords(PlayerPedId()))
-                    if dist < v.Dist then
+                    if dist < 10 then
                         PopUI(v.garage,vec)
                     end
                 end
