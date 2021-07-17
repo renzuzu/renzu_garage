@@ -512,7 +512,6 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             topspeed = math.ceil(GetVehicleModelEstimatedMaxSpeed(vehicleModel)*4.605936),
             power = math.ceil(GetVehicleModelAcceleration(vehicleModel)*1000),
             torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*800),
-            price = 1,
             model = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model))),
             model2 = tonumber(props.model),
             plate = value.plate,
@@ -523,8 +522,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             garage_id = value.garage_id,
             impound = value.impound,
             stored = value.stored,
-            identifier = value.owner,
-            chopstatus = value.chopstatus
+            identifier = value.owner
         }
         table.insert(OwnedVehicles[value.type], VTable)
     end
@@ -779,8 +777,7 @@ function OpenImpound(id)
                 ingarage = v.ingarage,
                 impound = v.impound,
                 stored = v.stored,
-                identifier = v.identifier,
-                chopstatus = v.chopstatus
+                identifier = v.identifier
                 }
                 table.insert(vehtable[v.impound], veh)
             end
@@ -1829,8 +1826,7 @@ RegisterNUICallback("ownerinfo",function(data, cb)
         SendNUIMessage(
             {
                 type = "ownerinfo",
-                info = a,
-                chopstats = data.chopstatus
+                info = a
             }
         )
         end
