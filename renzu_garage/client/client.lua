@@ -82,6 +82,7 @@ function tostringplate(plate)
     end
 end
 
+local neargarage = false
 function PopUI(name,v)
     local table = {
         ['event'] = 'opengarage',
@@ -96,7 +97,7 @@ function PopUI(name,v)
     }
     TriggerEvent('renzu_popui:showui',table)
     local dist = #(v - GetEntityCoords(PlayerPedId()))
-    while dist < 5 do
+    while dist < 5 and neargarage do
         dist = #(v - GetEntityCoords(PlayerPedId()))
         Wait(100)
     end
@@ -110,6 +111,7 @@ CreateThread(function()
                 local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
                 local dist = #(vec - GetEntityCoords(PlayerPedId()))
                 if dist < v.Dist then
+                    neargarage = true
                     PopUI(v.garage,vec)
                 end
             end
@@ -117,6 +119,7 @@ CreateThread(function()
                 local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
                 local dist = #(vec - GetEntityCoords(PlayerPedId()))
                 if dist < v.Dist then
+                    neargarage = true
                     PopUI(v.garage,vec)
                 end
             end
@@ -125,6 +128,7 @@ CreateThread(function()
                     local vec = vector3(v.coords.x,v.coords.y,v.coords.z)
                     local dist = #(vec - GetEntityCoords(PlayerPedId()))
                     if dist < 10 then
+                        neargarage = true
                         PopUI(v.garage,vec)
                     end
                 end
@@ -1681,6 +1685,7 @@ function Storevehicle(vehicle,impound)
     Wait(2000)
     TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, id, vehicleProps.model, vehicleProps)
     DeleteEntity(vehicle)
+    neargarage = false
 end
 
 function helidel(vehicle)
@@ -2117,6 +2122,7 @@ function CloseNui()
             type = "hide"
         }
     )
+    neargarage = false
     SetNuiFocus(false, false)
     InGarageShell('exit')
     if inGarage then
