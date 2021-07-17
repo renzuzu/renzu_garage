@@ -73,7 +73,7 @@ window.addEventListener('message', function(event) {
     if (event.data.type == "notify") {       
         var data = event.data;
 
-        $("#messagePopup").css("background-color","rgb(252, 18, 89)");      
+        $("#messagePopup").css("background-color","rgb(252, 0, 0)");      
 
         $("#messagePopup").fadeIn(500);      
         
@@ -156,19 +156,14 @@ function ShowVehicle(currentTarget) {
 
                 CurrentVehicle = {brand: data.brand, modelcar: data.model2, sale: 1, name: data.name, props: data.props }
                 $('#contentVehicle').append(`
-                    <div class="handling-container">
-                        <span>SPECIFICATIONS</span>
-                        <div class="handling-bar-container">
-                        <div class="handling-line"></div>
-                        <div class="handling-circle" style="left: 100%;"></div>
-                    </div>
- 
-
-                    </div>
-
                     <div class="row spacebetween">
                         <span class="title">HANDLING</span>
                         <span>`+data.handling.toFixed(1)+`</span>
+                    </div>
+
+                    <div class="row">
+                    <div class="w3-border" style="width: 100%;
+                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.handling.toFixed(1)/10*100+`%"></div> </div>
                     </div>
 
                     <div class="row spacebetween">
@@ -176,9 +171,19 @@ function ShowVehicle(currentTarget) {
                         <span>`+data.topspeed.toFixed(0)+` KM/H</span>
                     </div>
 
+                    <div class="row">
+                    <div class="w3-border" style="width: 100%;
+                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.topspeed.toFixed(1)/520*100+`%"></div> </div>
+                    </div>
+
                     <div class="row spacebetween">
                         <span class="title">HORSE POWER</span>
                         <span>`+data.power.toFixed(0)+` HP</span>
+                    </div>
+
+                    <div class="row">
+                    <div class="w3-border" style="width: 100%;
+                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.topspeed.toFixed(1)/500*100+`%"></div> </div>
                     </div>
 
                     <div class="row spacebetween">
@@ -186,9 +191,19 @@ function ShowVehicle(currentTarget) {
                         <span>`+data.torque.toFixed(0)+` TQ</span>
                     </div>
 
+                    <div class="row">
+                    <div class="w3-border" style="width: 100%;
+                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.torque.toFixed(1)/500*100+`%"></div> </div>
+                    </div>
+
                     <div class="row spacebetween">
                         <span class="title">BRAKE</span>
                         <span>`+data.brake.toFixed(1)+`</span>
+                    </div>
+
+                    <div class="row">
+                    <div class="w3-border" style="width: 100%;
+                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.brake.toFixed(1)/2*100+`%"></div> </div>
                     </div>
                 `);
                 if (chopper) {
@@ -265,11 +280,8 @@ function ShowConfirm(){
     $('#closemenu').append(`
         <div class="background-circle"></div>
         <div class="modal-content">
-            <p class="title">Confirmation:</p>
-            <p class="vehicle">Vehicle</p>         
-
-            <p>Brand: <span class="brand">`+CurrentVehicle.brand+`</span></p>
-            <p>Model: <span class="model">`+CurrentVehicle.modelcar+`</span></p>
+            <p class="title">Confirm:</p>
+            <p class="vehicle">Take Out Vehicle</p>
         </div>
 
         <div class="modal-footer">
@@ -295,11 +307,7 @@ function returnveh(){
     $('#closemenu').append(`
         <div class="background-circle"></div>
         <div class="modal-content">
-            <p class="title">Confirmation:</p>
-            <p class="vehicle">Vehicle is outside of garage! - you must pay 20000 php</p>         
-
-            <p>Brand: <span class="brand">`+CurrentVehicle_.brand+`</span></p>
-            <p>Model: <span class="model">`+CurrentVehicle_.modelcar+`</span></p>
+            <p class="vehicle">Vehicle is outside of garage! - Do you Want to Deliver Here?</p>
         </div>
 
         <div class="modal-footer">
@@ -406,7 +414,7 @@ $(document).on('keydown', function(event) {
         for(i = 0; i < (data.length); i++) {
             var modelUper = data[i].model;
             inGarageVehicle[i] = data[i]
-            $(".app_inner").append('<label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:9px;color:#919191;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:9px;color:#919191;">Garage: A</span><h2 style="font-size:14px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="height:80px;" onerror="this.src=`https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png`;" src="../imgs/uploads/' + modelUper +'.jpg"></i>   </div> <div class="tab_right"> <p>Fuel: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE" onclick="ShowConfirm()"> Take Out </button> </div> </div> </div> </label></input></label>');    
+            $(".app_inner").append('<label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:7px;color:#919191;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:8px;color:#919191;">Garage: '+ data[i].garage_id +'</span><h2 style="font-size:11px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="height:80px;" onerror="this.src=`https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png`;" src="../imgs/uploads/' + modelUper +'.jpg"></i>   </div> <div class="tab_right"> <p>Fuel: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE" onclick="ShowConfirm()"> Take Out </button> </div> </div> </div> </label></input></label>');    
         }     
     }
     Renzu_Garage.Open(VehicleArr)

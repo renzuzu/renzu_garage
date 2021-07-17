@@ -16,16 +16,17 @@ client_scripts {
 }
 
 files {
-	'html/carousel.css',
-	'html/carousel.js',
 	'html/design.css',
 	'html/index.html',
 	'html/script.js',
 	'html/fonts/*',	
-	'html/colorpicker/*',
 	'html/images/text-color.png',
 	'imgs/*.png',
 	'imgs/uploads/*.jpg',
 	'imgs/brands/*.png'
 }
 
+data_file 'DLC_ITYP_REQUEST' 'stream/garage.ytyp'
+files {
+    'stream/garage.ytyp'
+}

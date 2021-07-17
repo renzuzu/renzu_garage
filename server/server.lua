@@ -4,43 +4,12 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     vehicles = MySQL.Sync.fetchAll('SELECT * FROM vehicles', {})
     Wait(100)
-    local garages = {} -- garage table
-    garages['multi_zone'] = {} -- rayzone multizone
-    for k,v in pairs(garagecoord) do -- repack the coordinates to new table
-        garages['multi_zone'][tostring(v.garage)] = {
-            coord = vector3(v.garage_x,v.garage_y,v.garage_z),
-            custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
-            custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
-            custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
-            arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
-            custom_ped = `g_m_importexport_01`, -- custom ped for this zone
-            custom_heading = 100.0,
-            server_event = false,
-            min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
-            max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
-        }
-    end
-
-    for k,v in pairs(impoundcoord) do -- repack the coordinates to new table
-        garages['multi_zone'][tostring(v.garage)] = {
-            coord = vector3(v.garage_x,v.garage_y,v.garage_z),
-            custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
-            custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
-            custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
-            arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
-            custom_ped = `g_m_importexport_01`, -- custom ped for this zone
-            custom_heading = 100.0,
-            server_event = false,
-            min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
-            max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
-        }
-    end
-
-    for k,t in pairs(helispawn) do -- repack the coordinates to new table
-        for k,v in pairs(t) do
-            print(v.garage,'ASO',v.coords.x,v.coords.y,v.coords.z)
+    if Config.UseRayZone then
+        local garages = {} -- garage table
+        garages['multi_zone'] = {} -- rayzone multizone
+        for k,v in pairs(garagecoord) do -- repack the coordinates to new table
             garages['multi_zone'][tostring(v.garage)] = {
-                coord = vector3(v.coords.x,v.coords.y,v.coords.z),
+                coord = vector3(v.garage_x,v.garage_y,v.garage_z),
                 custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
                 custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
                 custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
@@ -52,43 +21,75 @@ Citizen.CreateThread(function()
                 max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
             }
         end
-    end
 
-    garage = {
-        ['zone_cooldown'] = 1, -- event cooldown
-        ['popui'] = true, -- show pop ui by default, manual trigger event.
-        ['multi_zone'] = garages['multi_zone'], -- insert table to the array
-        -- global setting for each multi zone
-        ['title'] = '🚗 My Garage', -- ignored if multizone
-        ['confirm'] = '[ENTER]',
-        ['reject'] = '[BACK]',
-        ['thread_dist'] = 10,
-        ['event_dist'] = 5,
-        ['drawmarker'] = true,
-        ['marker_type'] = 36,
-        ['event'] = 'opengarage',
-        ['invehicle_title'] = 'Store Vehicle', -- title to show instead of the ['title']
-        ['spawnped'] = `g_m_importexport_01`, -- set to false if no spawnpeds else `g_m_importexport_01` (model)
-    }
-    zoneadd = exports['renzu_rayzone']:AddZone('Garage Zone Multi', garage) -- export!
-    Wait(100)
-    parking_prop = { -- Example using parking prop for parking garage
-        ['type'] = 'object',
-        ['job'] = 'all',
-        ['model'] = {"prop_parking_hut_2","prop_parking_hut_2b","ch_prop_parking_hut_2","prop_parkingpay","dt1_21_parkinghut","prop_parking_sign_07"},
-        ['dist'] = 7,
-        --['target'] = 'bone',
-        uidata = {
-            ['garagepublic'] = {
-                ['title'] = 'Public Garage',
-                ['type'] = 'event', -- event / export
-                ['content'] = 'renzu_garage:property',
-                ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {`street`,`coord`}, arg_unpack = true}, -- `street` = send current street name, `coord` = send current coordinates ( this is a shorcut function for custom args )
+        for k,v in pairs(impoundcoord) do -- repack the coordinates to new table
+            garages['multi_zone'][tostring(v.garage)] = {
+                coord = vector3(v.garage_x,v.garage_y,v.garage_z),
+                custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
+                custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
+                custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
+                arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
+                custom_ped = `g_m_importexport_01`, -- custom ped for this zone
+                custom_heading = 100.0,
+                server_event = false,
+                min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
+                max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
+            }
+        end
+
+        for k,t in pairs(helispawn) do -- repack the coordinates to new table
+            for k,v in pairs(t) do
+                garages['multi_zone'][tostring(v.garage)] = {
+                    coord = vector3(v.coords.x,v.coords.y,v.coords.z),
+                    custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
+                    custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
+                    custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
+                    arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
+                    custom_ped = `g_m_importexport_01`, -- custom ped for this zone
+                    custom_heading = 100.0,
+                    server_event = false,
+                    min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
+                    max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
+                }
+            end
+        end
+
+        garage = {
+            ['zone_cooldown'] = 1, -- event cooldown
+            ['popui'] = true, -- show pop ui by default, manual trigger event.
+            ['multi_zone'] = garages['multi_zone'], -- insert table to the array
+            -- global setting for each multi zone
+            ['title'] = '🚗 My Garage', -- ignored if multizone
+            ['confirm'] = '[ENTER]',
+            ['reject'] = '[BACK]',
+            ['thread_dist'] = 10,
+            ['event_dist'] = 5,
+            ['drawmarker'] = true,
+            ['marker_type'] = 36,
+            ['event'] = 'opengarage',
+            ['invehicle_title'] = 'Store Vehicle', -- title to show instead of the ['title']
+            ['spawnped'] = `g_m_importexport_01`, -- set to false if no spawnpeds else `g_m_importexport_01` (model)
+        }
+        zoneadd = exports['renzu_rayzone']:AddZone('Garage Zone Multi', garage) -- export!
+        Wait(100)
+        parking_prop = { -- Example using parking prop for parking garage
+            ['type'] = 'object',
+            ['job'] = 'all',
+            ['model'] = {"prop_parking_hut_2","prop_parking_hut_2b","ch_prop_parking_hut_2","prop_parkingpay","dt1_21_parkinghut","prop_parking_sign_07"},
+            ['dist'] = 7,
+            --['target'] = 'bone',
+            uidata = {
+                ['garagepublic'] = {
+                    ['title'] = 'Public Garage',
+                    ['type'] = 'event', -- event / export
+                    ['content'] = 'renzu_garage:property',
+                    ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {`street`,`coord`}, arg_unpack = true}, -- `street` = send current street name, `coord` = send current coordinates ( this is a shorcut function for custom args )
+                },
             },
-        },
-    }
+        }
 
-    add = exports['renzu_rayzone']:AddRayCastTarget("Parking Target",parking_prop)
+        add = exports['renzu_rayzone']:AddRayCastTarget("Parking Target",parking_prop)
+    end
 end)
 
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
@@ -118,7 +119,6 @@ ESX.RegisterServerCallback('renzu_garage:getowner',function(source, cb, identifi
 end)
 
 function bool_to_number(value)
-    print(value)
     if value then
     return tonumber(1)
     else
@@ -185,15 +185,18 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     ['@plate'] = plate
                 }, function (result)
                     if #result > 0 then
-                        MySQL.Sync.execute('UPDATE owned_vehicles SET stored = @stored, garage_id = @garage_id, impound = @impound, chopstatus = @chopstatus, vehicle = @vehicle WHERE plate = @plate',
-                        {
-                            ['vehicle'] = json.encode(props),
-                            ['@garage_id'] = garage_id,
-                            ['@impound'] = state,
-                            ['@plate'] = plate,
-                            ['@stored'] = state,
-                            ['@chopstatus'] = chopstatus
-                        })
+                        if veh.model == model then
+                            MySQL.Sync.execute('UPDATE owned_vehicles SET stored = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle WHERE plate = @plate',
+                            {
+                                ['vehicle'] = json.encode(props),
+                                ['@garage_id'] = garage_id,
+                                ['@impound'] = state,
+                                ['@plate'] = plate,
+                                ['@stored'] = state
+                            })
+                        else
+                            print('exploiting')
+                        end
                     else
                         xPlayer.showNotification("This Vehicle is local car", 1, 0)
                     end

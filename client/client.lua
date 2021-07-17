@@ -27,6 +27,41 @@ end)
 RegisterNetEvent('esx:playerLoaded')
 AddEventHandler('esx:playerLoaded', function(xPlayer)
     playerloaded = true
+    for k, v in pairs (garagecoord) do
+        local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
+        SetBlipSprite (blip, v.Blip.sprite)
+        SetBlipDisplay(blip, 4)
+        SetBlipScale  (blip, v.Blip.scale)
+        SetBlipColour (blip, v.Blip.color)
+        SetBlipAsShortRange(blip, true)
+        BeginTextCommandSetBlipName('STRING')
+        AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+        EndTextCommandSetBlipName(blip)
+    end
+    for k, v in pairs (impoundcoord) do
+        local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
+        SetBlipSprite (blip, v.Blip.sprite)
+        SetBlipDisplay(blip, 4)
+        SetBlipScale  (blip, v.Blip.scale)
+        SetBlipColour (blip, v.Blip.color)
+        SetBlipAsShortRange(blip, true)
+        BeginTextCommandSetBlipName('STRING')
+        AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+        EndTextCommandSetBlipName(blip)
+    end
+    if PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+        for k, v in pairs (helispawn[PlayerData.job.name]) do
+            local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
+            SetBlipSprite (blip, v.Blip.sprite)
+            SetBlipDisplay(blip, 4)
+            SetBlipScale  (blip, v.Blip.scale)
+            SetBlipColour (blip, v.Blip.color)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+            EndTextCommandSetBlipName(blip)
+        end
+    end
 end)
 
 
@@ -34,23 +69,6 @@ RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
 	PlayerData.job = job
 	playerjob = PlayerData.job.name
-end)
-
-local vali2 = true
-Citizen.CreateThread(function()
-    for k, v in pairs (garagecoord) do
-        --if v.Type ~= nil then
-            local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
-            SetBlipSprite (blip, 289)
-            SetBlipDisplay(blip, 4)
-            SetBlipScale  (blip, 0.6)
-            SetBlipColour (blip, 38)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
-            EndTextCommandSetBlipName(blip)
-        --end
-    end
 end)
 
 local drawtext = false
@@ -64,9 +82,60 @@ function tostringplate(plate)
     end
 end
 
+function PopUI(name,v)
+    local table = {
+        ['event'] = 'opengarage',
+        ['title'] = 'Garage '..name,
+        ['server_event'] = false,
+        ['unpack_arg'] = false,
+        ['invehicle_title'] = 'Store Vehicle',
+        ['confirm'] = '[ENTER]',
+        ['reject'] = '[CLOSE]',
+        ['custom_arg'] = {}, -- example: {1,2,3,4}
+        ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
+    }
+    TriggerEvent('renzu_popui:showui',table)
+    local dist = #(v - GetEntityCoords(PlayerPedId()))
+    while dist < 10 do
+        dist = #(v - GetEntityCoords(PlayerPedId()))
+        Wait(100)
+    end
+    TriggerEvent('renzu_popui:closeui')
+end
+
+CreateThread(function()
+    if Config.UsePopUI then
+        while true do
+            for k,v in pairs(garagecoord) do
+                local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+                local dist = #(vec - GetEntityCoords(PlayerPedId()))
+                if dist < 10 then
+                    PopUI(v.garage,vec)
+                end
+            end
+            for k,v in pairs(impoundcoord) do
+                local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+                local dist = #(vec - GetEntityCoords(PlayerPedId()))
+                if dist < 10 then
+                    PopUI(v.garage,vec)
+                end
+            end
+            if PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+                for k,v in pairs(helispawn[PlayerData.job.name]) do
+                    local vec = vector3(v.coords.x,v.coords.y,v.coords.z)
+                    local dist = #(vec - GetEntityCoords(PlayerPedId()))
+                    if dist < 10 then
+                        PopUI(v.garage,vec)
+                    end
+                end
+            end
+            Wait(1000)
+        end
+    end
+end)
+
 RegisterNetEvent('opengarage')
 AddEventHandler('opengarage', function()
-    print("open garage")
     local sleep = 2000
     local ped = PlayerPedId()
     local vehiclenow = GetVehiclePedIsIn(GetPlayerPed(-1), false)
@@ -90,10 +159,10 @@ AddEventHandler('opengarage', function()
                 end
             elseif not DoesEntityExist(vehiclenow) then
                 if dist <= 7.0 and not jobgarage and v.garage ~= 'impound' or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and v.garage ~= 'impound' then
-                    print("inside")
                     id = v.garage
                     ESX.ShowNotification("Opening Garage...Please wait..")
                     TriggerServerEvent("renzu_garage:GetVehiclesTable")
+                    fetchdone = false
                     while not fetchdone do
                         Wait(0)
                     end
@@ -117,7 +186,6 @@ AddEventHandler('opengarage', function()
         if v.job ~= nil then
             jobgarage = true
         end
-        print(PlayerData.job ~= nil and PlayerData.job.name == v.job)
         if DoesEntityExist(vehiclenow) then
             if dist <= 3.0 and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
                 id = v.garage
@@ -129,6 +197,7 @@ AddEventHandler('opengarage', function()
                 id = v.garage
                 ESX.ShowNotification("Opening Impound...Please wait..")
                 TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
+                fetchdone = false
                 while not fetchdone do
                     Wait(0)
                 end
@@ -144,9 +213,9 @@ AddEventHandler('opengarage', function()
 
     if PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
         for k,v in pairs(helispawn[PlayerData.job.name]) do
-            local actualShop = v.coords
+            local coord = v.coords
             local v = v.coords
-            local dist = GetDistanceBetweenCoords(vector3(actualShop.x,actualShop.y,actualShop.z) , GetEntityCoords(ped), true)
+            local dist = GetDistanceBetweenCoords(vector3(coord.x,coord.y,coord.z) , GetEntityCoords(ped), true)
             if DoesEntityExist(vehiclenow) then
                 if dist <= 7.0 then
                     helidel(vehiclenow)
@@ -192,16 +261,203 @@ function GetPerformanceStats(vehicle)
     return data
 end
 
-function SetVehicleProperties(vehicle, props)
-    ESX.Game.SetVehicleProperties(vehicle, props)
+function SetVehicleProp(vehicle, props)
+    if ESX == nil then
+        if DoesEntityExist(vehicle) then
+            local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
+            local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
+            SetVehicleModKit(vehicle, 0)
+            if props.sound then ForceVehicleEngineAudio(vehicle, props.sound) end
+            if props.plate then SetVehicleNumberPlateText(vehicle, props.plate) end
+            if props.plateIndex then SetVehicleNumberPlateTextIndex(vehicle, props.plateIndex) end
+            if props.bodyHealth then SetVehicleBodyHealth(vehicle, props.bodyHealth + 0.0) end
+            if props.engineHealth then SetVehicleEngineHealth(vehicle, props.engineHealth + 0.0) end
+            if props.tankHealth then SetVehiclePetrolTankHealth(vehicle, props.tankHealth + 0.0) end
+            if props.fuelLevel then SetVehicleFuelLevel(vehicle, props.fuelLevel + 0.0) end
+            if props.dirtLevel then SetVehicleDirtLevel(vehicle, props.dirtLevel + 0.0) end
+            if props.rgb then SetVehicleCustomPrimaryColour(vehicle, props.rgb[1], props.rgb[2], props.rgb[3]) end
+            if props.rgb2 then SetVehicleCustomSecondaryColour(vehicle, props.rgb[1], props.rgb[2], props.rgb[3]) end
+            if props.color1 then SetVehicleColours(vehicle, props.color1, colorSecondary) end
+            if props.color2 then SetVehicleColours(vehicle, props.color1 or colorPrimary, props.color2) end
+            if props.pearlescentColor then SetVehicleExtraColours(vehicle, props.pearlescentColor, wheelColor) end
+            if props.wheelColor then SetVehicleExtraColours(vehicle, props.pearlescentColor or pearlescentColor, props.wheelColor) end
+            if props.wheels then SetVehicleWheelType(vehicle, props.wheels) end
+            if props.windowTint then SetVehicleWindowTint(vehicle, props.windowTint) end
+    
+            if props.neonEnabled then
+                SetVehicleNeonLightEnabled(vehicle, 0, props.neonEnabled[1])
+                SetVehicleNeonLightEnabled(vehicle, 1, props.neonEnabled[2])
+                SetVehicleNeonLightEnabled(vehicle, 2, props.neonEnabled[3])
+                SetVehicleNeonLightEnabled(vehicle, 3, props.neonEnabled[4])
+            end
+    
+            if props.extras then
+                for extraId,enabled in pairs(props.extras) do
+                    if enabled then
+                        SetVehicleExtra(vehicle, tonumber(extraId), 0)
+                    else
+                        SetVehicleExtra(vehicle, tonumber(extraId), 1)
+                    end
+                end
+            end
+    
+            if props.neonColor then SetVehicleNeonLightsColour(vehicle, props.neonColor[1], props.neonColor[2], props.neonColor[3]) end
+            if props.xenonColor then SetVehicleXenonLightsColour(vehicle, props.xenonColor) end
+            if props.modSmokeEnabled then ToggleVehicleMod(vehicle, 20, true) end
+            if props.tyreSmokeColor then SetVehicleTyreSmokeColor(vehicle, props.tyreSmokeColor[1], props.tyreSmokeColor[2], props.tyreSmokeColor[3]) end
+            if props.modSpoilers then SetVehicleMod(vehicle, 0, props.modSpoilers, false) end
+            if props.modFrontBumper then SetVehicleMod(vehicle, 1, props.modFrontBumper, false) end
+            if props.modRearBumper then SetVehicleMod(vehicle, 2, props.modRearBumper, false) end
+            if props.modSideSkirt then SetVehicleMod(vehicle, 3, props.modSideSkirt, false) end
+            if props.modExhaust then SetVehicleMod(vehicle, 4, props.modExhaust, false) end
+            if props.modFrame then SetVehicleMod(vehicle, 5, props.modFrame, false) end
+            if props.modGrille then SetVehicleMod(vehicle, 6, props.modGrille, false) end
+            if props.modHood then SetVehicleMod(vehicle, 7, props.modHood, false) end
+            if props.modFender then SetVehicleMod(vehicle, 8, props.modFender, false) end
+            if props.modRightFender then SetVehicleMod(vehicle, 9, props.modRightFender, false) end
+            if props.modRoof then SetVehicleMod(vehicle, 10, props.modRoof, false) end
+            if props.modEngine then SetVehicleMod(vehicle, 11, props.modEngine, false) end
+            if props.modBrakes then SetVehicleMod(vehicle, 12, props.modBrakes, false) end
+            if props.modTransmission then SetVehicleMod(vehicle, 13, props.modTransmission, false) end
+            if props.modHorns then SetVehicleMod(vehicle, 14, props.modHorns, false) end
+            if props.modSuspension then SetVehicleMod(vehicle, 15, props.modSuspension, false) end
+            if props.modArmor then SetVehicleMod(vehicle, 16, props.modArmor, false) end
+            if props.modTurbo then ToggleVehicleMod(vehicle,  18, props.modTurbo) end
+            if props.modXenon then ToggleVehicleMod(vehicle,  22, props.modXenon) end
+            if props.modFrontWheels then SetVehicleMod(vehicle, 23, props.modFrontWheels, false) end
+            if props.modBackWheels then SetVehicleMod(vehicle, 24, props.modBackWheels, false) end
+            if props.modPlateHolder then SetVehicleMod(vehicle, 25, props.modPlateHolder, false) end
+            if props.modVanityPlate then SetVehicleMod(vehicle, 26, props.modVanityPlate, false) end
+            if props.modTrimA then SetVehicleMod(vehicle, 27, props.modTrimA, false) end
+            if props.modOrnaments then SetVehicleMod(vehicle, 28, props.modOrnaments, false) end
+            if props.modDashboard then SetVehicleMod(vehicle, 29, props.modDashboard, false) end
+            if props.modDial then SetVehicleMod(vehicle, 30, props.modDial, false) end
+            if props.modDoorSpeaker then SetVehicleMod(vehicle, 31, props.modDoorSpeaker, false) end
+            if props.modSeats then SetVehicleMod(vehicle, 32, props.modSeats, false) end
+            if props.modSteeringWheel then SetVehicleMod(vehicle, 33, props.modSteeringWheel, false) end
+            if props.modShifterLeavers then SetVehicleMod(vehicle, 34, props.modShifterLeavers, false) end
+            if props.modAPlate then SetVehicleMod(vehicle, 35, props.modAPlate, false) end
+            if props.modSpeakers then SetVehicleMod(vehicle, 36, props.modSpeakers, false) end
+            if props.modTrunk then SetVehicleMod(vehicle, 37, props.modTrunk, false) end
+            if props.modHydrolic then SetVehicleMod(vehicle, 38, props.modHydrolic, false) end
+            if props.modEngineBlock then SetVehicleMod(vehicle, 39, props.modEngineBlock, false) end
+            if props.modAirFilter then SetVehicleMod(vehicle, 40, props.modAirFilter, false) end
+            if props.modStruts then SetVehicleMod(vehicle, 41, props.modStruts, false) end
+            if props.modArchCover then SetVehicleMod(vehicle, 42, props.modArchCover, false) end
+            if props.modAerials then SetVehicleMod(vehicle, 43, props.modAerials, false) end
+            if props.modTrimB then SetVehicleMod(vehicle, 44, props.modTrimB, false) end
+            if props.modTank then SetVehicleMod(vehicle, 45, props.modTank, false) end
+            if props.modWindows then SetVehicleMod(vehicle, 46, props.modWindows, false) end
+    
+            if props.modLivery then
+                SetVehicleMod(vehicle, 48, props.modLivery, false)
+                SetVehicleLivery(vehicle, props.modLivery)
+            end
+        end
+    else
+        ESX.Game.SetVehicleProperties(vehicle, props)
+    end
 end
 
 function GetVehicleProperties(vehicle)
     if DoesEntityExist(vehicle) then
         local props
-        props = ESX.Game.GetVehicleProperties(vehicle)
-        props.plate = string.gsub(tostring(props.plate), '^%s*(.-)%s*$', '%1')
-        return props
+        if ESX == nil then
+            if DoesEntityExist(vehicle) then
+                local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
+                local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
+                local extras = {}
+        
+                for extraId=0, 12 do
+                    if DoesExtraExist(vehicle, extraId) then
+                        local state = IsVehicleExtraTurnedOn(vehicle, extraId) == 1
+                        extras[tostring(extraId)] = state
+                    end
+                end
+        
+                return {
+                    model             = GetEntityModel(vehicle),
+                    plate             = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1'),
+                    plateIndex        = GetVehicleNumberPlateTextIndex(vehicle),
+                    bodyHealth        = Round(GetVehicleBodyHealth(vehicle), 1),
+                    engineHealth      = Round(GetVehicleEngineHealth(vehicle), 1),
+                    tankHealth        = Round(GetVehiclePetrolTankHealth(vehicle), 1),
+        
+                    fuelLevel         = Round(GetVehicleFuelLevel(vehicle), 1),
+                    dirtLevel         = Round(GetVehicleDirtLevel(vehicle), 1),
+                    color1            = colorPrimary,
+                    color2            = colorSecondary,
+                    rgb				  = table.pack(GetVehicleCustomPrimaryColour(vehicle)),
+                    rgb2				  = table.pack(GetVehicleCustomSecondaryColour(vehicle)),
+                    pearlescentColor  = pearlescentColor,
+                    wheelColor        = wheelColor,
+        
+                    wheels            = GetVehicleWheelType(vehicle),
+                    windowTint        = GetVehicleWindowTint(vehicle),
+                    xenonColor        = GetVehicleXenonLightsColour(vehicle),
+                    neonEnabled       = {
+                        IsVehicleNeonLightEnabled(vehicle, 0),
+                        IsVehicleNeonLightEnabled(vehicle, 1),
+                        IsVehicleNeonLightEnabled(vehicle, 2),
+                        IsVehicleNeonLightEnabled(vehicle, 3)
+                    },
+                    neonColor         = table.pack(GetVehicleNeonLightsColour(vehicle)),
+                    extras            = extras,
+                    tyreSmokeColor    = table.pack(GetVehicleTyreSmokeColor(vehicle)),
+                    modSpoilers       = GetVehicleMod(vehicle, 0),
+                    modFrontBumper    = GetVehicleMod(vehicle, 1),
+                    modRearBumper     = GetVehicleMod(vehicle, 2),
+                    modSideSkirt      = GetVehicleMod(vehicle, 3),
+                    modExhaust        = GetVehicleMod(vehicle, 4),
+                    modFrame          = GetVehicleMod(vehicle, 5),
+                    modGrille         = GetVehicleMod(vehicle, 6),
+                    modHood           = GetVehicleMod(vehicle, 7),
+                    modFender         = GetVehicleMod(vehicle, 8),
+                    modRightFender    = GetVehicleMod(vehicle, 9),
+                    modRoof           = GetVehicleMod(vehicle, 10),
+                    modEngine         = GetVehicleMod(vehicle, 11),
+                    modBrakes         = GetVehicleMod(vehicle, 12),
+                    modTransmission   = GetVehicleMod(vehicle, 13),
+                    modHorns          = GetVehicleMod(vehicle, 14),
+                    modSuspension     = GetVehicleMod(vehicle, 15),
+                    modArmor          = GetVehicleMod(vehicle, 16),
+                    modTurbo          = IsToggleModOn(vehicle, 18),
+                    modSmokeEnabled   = IsToggleModOn(vehicle, 20),
+                    modXenon          = IsToggleModOn(vehicle, 22),
+                    modFrontWheels    = GetVehicleMod(vehicle, 23),
+                    modBackWheels     = GetVehicleMod(vehicle, 24),
+                    modPlateHolder    = GetVehicleMod(vehicle, 25),
+                    modVanityPlate    = GetVehicleMod(vehicle, 26),
+                    modTrimA          = GetVehicleMod(vehicle, 27),
+                    modOrnaments      = GetVehicleMod(vehicle, 28),
+                    modDashboard      = GetVehicleMod(vehicle, 29),
+                    modDial           = GetVehicleMod(vehicle, 30),
+                    modDoorSpeaker    = GetVehicleMod(vehicle, 31),
+                    modSeats          = GetVehicleMod(vehicle, 32),
+                    modSteeringWheel  = GetVehicleMod(vehicle, 33),
+                    modShifterLeavers = GetVehicleMod(vehicle, 34),
+                    modAPlate         = GetVehicleMod(vehicle, 35),
+                    modSpeakers       = GetVehicleMod(vehicle, 36),
+                    modTrunk          = GetVehicleMod(vehicle, 37),
+                    modHydrolic       = GetVehicleMod(vehicle, 38),
+                    modEngineBlock    = GetVehicleMod(vehicle, 39),
+                    modAirFilter      = GetVehicleMod(vehicle, 40),
+                    modStruts         = GetVehicleMod(vehicle, 41),
+                    modArchCover      = GetVehicleMod(vehicle, 42),
+                    modAerials        = GetVehicleMod(vehicle, 43),
+                    modTrimB          = GetVehicleMod(vehicle, 44),
+                    modTank           = GetVehicleMod(vehicle, 45),
+                    modWindows        = GetVehicleMod(vehicle, 46),
+                    modLivery         = GetVehicleLivery(vehicle)
+                }
+            else
+                return
+            end
+        else
+            props = ESX.Game.GetVehicleProperties(vehicle)
+            props.plate = string.gsub(tostring(props.plate), '^%s*(.-)%s*$', '%1')
+            return props
+        end
     end
 end
 
@@ -209,9 +465,10 @@ local owned_veh = {}
 RegisterNetEvent('renzu_garage:receive_vehicles')
 AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     fetchdone = false
-    OwnedVehicles = {}
+    OwnedVehicles = nil
     Wait(100)
-    tableVehicles = {}
+    OwnedVehicles = {}
+    tableVehicles = nil
     tableVehicles = tb
     local vehdata = vehdata
     local vehicle_data = {}
@@ -332,11 +589,12 @@ function OpenGarage(id)
     end
     local vehtable = {}
     vehtable[id] = {}
+    local cars = 0
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if id or v.garage_id == 'impound' then
-                print(v.name)
-                print(v.model)
+            --if id == v.garage_id or v.garage_id == 'impound' then
+            if id == v.garage_id or v.garage_id == 'impound' then
+                cars = cars + 1
                 if v.garage_id == 'impound' then
                     v.garage_id = 'A'
                 end
@@ -368,37 +626,40 @@ function OpenGarage(id)
             end
         end
     end
-    SendNUIMessage(
-        {
-            garage_id = id,
-            data = vehtable,
-            type = "display"
-        }
-    )
+    if cars > 0 then
+        SendNUIMessage(
+            {
+                garage_id = id,
+                data = vehtable,
+                type = "display"
+            }
+        )
 
-    SetNuiFocus(true, true)
-    if not Config.Quickpick then
-        RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
-        for k,v in pairs(garagecoord) do
-            local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-            if dist <= 40.0 and id == v.garage then
-            cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z-28.0, 360.00, 0.00, 0.00, 60.00, false, 0)
-            PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z-30.0)
-            SetCamActive(cam, true)
-            RenderScriptCams(true, true, 1, true, true)
-            SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
-            DisplayHud(false)
-            DisplayRadar(false)
-            print("INSHOP")
+        SetNuiFocus(true, true)
+        if not Config.Quickpick then
+            RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
+            for k,v in pairs(garagecoord) do
+                local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
+                if dist <= 40.0 and id == v.garage then
+                cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z-28.0, 360.00, 0.00, 0.00, 60.00, false, 0)
+                PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z-30.0)
+                SetCamActive(cam, true)
+                RenderScriptCams(true, true, 1, true, true)
+                SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
+                DisplayHud(false)
+                DisplayRadar(false)
+                end
+            end
+            while inGarage do
+                Citizen.Wait(111)
             end
         end
-        while inGarage do
-            Citizen.Wait(111)
-        end
-    end
 
-    if LastVehicleFromGarage ~= nil then
-        DeleteEntity(LastVehicleFromGarage)
+        if LastVehicleFromGarage ~= nil then
+            DeleteEntity(LastVehicleFromGarage)
+        end
+    else
+        ESX.ShowNotification("You dont have any vehicle")
     end
 
 end
@@ -461,7 +722,6 @@ function OpenHeli(id)
                 SetFocusPosAndVel(v.x, v.y, v.z+4.0, 0.0, 0.0, 0.0)
                 DisplayHud(false)
                 DisplayRadar(false)
-                print("INSHOP")
             end
         end
         while inGarage do
@@ -540,7 +800,6 @@ function OpenImpound(id)
             SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
             DisplayHud(false)
             DisplayRadar(false)
-            print("INSHOP")
             end
         end
         while inGarage do
@@ -597,7 +856,7 @@ local shell = nil
 function CreateGarageShell()
     local ped = PlayerPedId()
     garage_coords = GetEntityCoords(ped)-vector3(0,0,30)
-    local model = GetHashKey('10cargarage_shell')
+    local model = GetHashKey('garage')
     shell = CreateObject(model, garage_coords.x, garage_coords.y, garage_coords.z, false, false, false)
     while not DoesEntityExist(shell) do Wait(0) end
     FreezeEntityPosition(shell, true)
@@ -803,8 +1062,6 @@ function GotoGarage(id, property, propertycoord, data)
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if id ~= nil or v.garage_id == 'impound' then
-                print(id)
-                print("open garage")
                 if vehtable[v.garage_id] == nil and not property then
                     vehtable[v.garage_id] = {}
                 end
@@ -852,7 +1109,6 @@ function GotoGarage(id, property, propertycoord, data)
     local ped = GetPlayerPed(-1)
     if not property then
         for k,v in pairs(garagecoord) do
-            print(v.garage_x,v.garage_y,v.garage_z)
             local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
             local actualShop = v
             if dist <= 70.0 and id == v.garage then
@@ -864,7 +1120,7 @@ function GotoGarage(id, property, propertycoord, data)
         garage_coords =vector3(property_shell.x,property_shell.y,property_shell.z)-vector3(0,0,30)
     end
     if shell == nil then
-    local model = GetHashKey('10cargarage_shell')
+    local model = GetHashKey('garage')
     shell = CreateObject(model, garage_coords.x, garage_coords.y-7.0, garage_coords.z, false, false, false)
     while not DoesEntityExist(shell) do Wait(0) print("Creating Shell") end
     FreezeEntityPosition(shell, true)
@@ -883,8 +1139,6 @@ function GotoGarage(id, property, propertycoord, data)
     Citizen.Wait(500)
     for k2,v2 in pairs(vehtable) do
         for k,v in pairs(v2) do
-            print(k)
-            print(v.props)
             if i < 10 then
                 i = i + 1
                 local props = json.decode(v.props)
@@ -904,15 +1158,13 @@ function GotoGarage(id, property, propertycoord, data)
                 local count = 0
                 if not HasModelLoaded(hash) then
                     RequestModel(hash)
-                    print("model")
-                    while not HasModelLoaded(hash) and count < 7000 do
-                        count = count + 10
+                    while not HasModelLoaded(hash) and count < 2000 do
+                        count = count + 101
                         Citizen.Wait(10)
-                        print(count)
                     end
                 end
                 spawnedgarage[i] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
-                ESX.Game.SetVehicleProperties(spawnedgarage[i], props)
+                SetVehicleProp(spawnedgarage[i], props)
                 SetEntityNoCollisionEntity(spawnedgarage[i], shell, false)
                 SetModelAsNoLongerNeeded(hash)
                 if i <=5 then
@@ -1064,7 +1316,7 @@ Citizen.CreateThread(
                                 end
                             end
                             spawnedgarage[i2] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
-                            ESX.Game.SetVehicleProperties(spawnedgarage[i2], props)
+                            SetVehicleProp(spawnedgarage[i2], props)
                             SetEntityNoCollisionEntity(spawnedgarage[i2], shell, false)
                             SetModelAsNoLongerNeeded(hash)
                             NetworkFadeInEntity(spawnedgarage[i2], true, true)
@@ -1175,7 +1427,7 @@ Citizen.CreateThread(
                                     end
                                 end
                                 spawnedgarage[i2] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
-                                ESX.Game.SetVehicleProperties(spawnedgarage[i2], props)
+                                SetVehicleProp(spawnedgarage[i2], props)
                                 SetEntityNoCollisionEntity(spawnedgarage[i2], shell, false)
                                 SetModelAsNoLongerNeeded(hash)
                                 NetworkFadeInEntity(spawnedgarage[i2], true, true)
@@ -1248,9 +1500,6 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                     if not HasModelLoaded(hash) then
                                         RequestModel(hash)
                                         while not HasModelLoaded(hash) and count < 1111 do
-                                            print("Requesting model 1")
-                                            print(HasModelLoaded(hash))
-                                            print(model)
                                             count = count + 10
                                             Citizen.Wait(10)
                                             if count > 9999 then
@@ -1260,7 +1509,8 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                     end
                                     v = CreateVehicle(model, actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
                                     CheckWanderingVehicle(vp.plate)
-                                    ESX.Game.SetVehicleProperties(v, vp)
+                                    vp.health = GetVehicleEngineHealth(GetVehiclePedIsIn(PlayerPedId()))
+                                    SetVehicleProp(v, vp)
                                     Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
                                     TaskWarpPedIntoVehicle(GetPlayerPed(-1), v, -1)
                                     veh = v
@@ -1279,18 +1529,40 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                 elseif impound == 1 then
                                     drawtext = true
                                     SetEntityAlpha(vehicle, 51, false)
-                                    TriggerEvent('cd_drawtextui:HideUI')
-                                    text = '<b>This Vehicle is not in garage: </b> <br><br> Vehicle Impounded <br>'
-                                    TriggerEvent("cd_drawtextui:ShowUI", 'show', text)
+                                    TriggerEvent('renzu_popui:closeui')
+                                    Wait(100)
+                                    local t = {
+                                        ['event'] = 'impounded',
+                                        ['title'] = 'Vehicle is Impounded',
+                                        ['server_event'] = false,
+                                        ['unpack_arg'] = false,
+                                        ['invehicle_title'] = 'Store Vehicle',
+                                        ['confirm'] = '[ENTER]',
+                                        ['reject'] = '[CLOSE]',
+                                        ['custom_arg'] = {}, -- example: {1,2,3,4}
+                                        ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
+                                    }
+                                    TriggerEvent('renzu_popui:showui',t)
                                     Citizen.Wait(3000)
-                                    TriggerEvent('cd_drawtextui:HideUI')
+                                    TriggerEvent('renzu_popui:closeui')
                                     drawtext = false
                                 else
                                     drawtext = true
                                     SetEntityAlpha(vehicle, 51, false)
-                                    TriggerEvent('cd_drawtextui:HideUI')
-                                    text = '<b>This Vehicle is not in garage: </b> <br><br> Press [E] to Return Vehicle <br>'
-                                    TriggerEvent("cd_drawtextui:ShowUI", 'show', text)
+                                    TriggerEvent('renzu_popui:closeui')
+                                    Wait(100)
+                                    local t = {
+                                        ['event'] = 'outside',
+                                        ['title'] = 'Vehicle is in Outside:',
+                                        ['server_event'] = false,
+                                        ['unpack_arg'] = false,
+                                        ['invehicle_title'] = 'Store Vehicle',
+                                        ['confirm'] = '[E] Return',
+                                        ['reject'] = '[CLOSE]',
+                                        ['custom_arg'] = {}, -- example: {1,2,3,4}
+                                        ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
+                                    }
+                                    TriggerEvent('renzu_popui:showui',t)
                                     local paying = 0
                                     while paying < 10111 and dist < 3 do
                                         if IsControlJustPressed(0, 38) then
@@ -1306,10 +1578,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                             if not HasModelLoaded(hash) then
                                                 RequestModel(hash)
                                                 while not HasModelLoaded(hash) and count < 1111 do
-                                                    print("Requesting model 2")
-                                                    print(HasModelLoaded(hash))
-                                                    print(model)
-                                                    count = count + 10
+                                                    count = count + 101
                                                     Citizen.Wait(10)
                                                     if count > 9999 then
                                                     return
@@ -1318,14 +1587,14 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                             end
                                             v = CreateVehicle(model, actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
                                             CheckWanderingVehicle(vp.plate)
-                                            ESX.Game.SetVehicleProperties(v, vp)
+                                            vp.health = GetVehicleEngineHealth(GetVehiclePedIsIn(PlayerPedId()))
+                                            SetVehicleProp(v, vp)
                                             Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
                                             TaskWarpPedIntoVehicle(GetPlayerPed(-1), v, -1)
                                             veh = v
                                             DoScreenFadeIn(333)
                                             TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, id, vp.model, vp)
                                             for i = 1, #spawnedgarage do
-                                            print(i)
                                             DeleteEntity(spawnedgarage[i])
                                             Citizen.Wait(0)
                                             end
@@ -1343,7 +1612,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                         paying = paying + 1
                                         Citizen.Wait(0)
                                     end
-                                    TriggerEvent('cd_drawtextui:HideUI')
+                                    TriggerEvent('renzu_popui:closeui')
                                     drawtext = false
                                 end
                             end,plate)
@@ -1380,7 +1649,6 @@ function DeleteGarage()
     max = 10
     plus = 0
     for i = 1, #spawnedgarage do
-        print(i)
         DeleteEntity(spawnedgarage[i])
         spawnedgarage[i] = nil
         Citizen.Wait(0)
@@ -1411,6 +1679,8 @@ function Storevehicle(vehicle,impound)
     if impound then
     id = 'impound'
     end
+    TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
+    Wait(2000)
     TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, id, vehicleProps.model, vehicleProps)
     DeleteEntity(vehicle)
 end
@@ -1426,7 +1696,7 @@ function SpawnVehicle(vehicle, plate ,coord)
 		y = coord.y,
 		z = coord.z + 1
 	}, coord.h, function(callback_vehicle)
-		ESX.Game.SetVehicleProperties(callback_vehicle, vehicle)
+		SetVehicleProp(callback_vehicle, vehicle)
 		TaskWarpPedIntoVehicle(GetPlayerPed(-1), callback_vehicle, -1)
         veh = callback_vehicle
 	end)
@@ -1456,9 +1726,6 @@ function SpawnVehicleLocal(model, props)
             if not HasModelLoaded(hash) then
                 RequestModel(hash)
                 while not HasModelLoaded(hash) and count < 1111 do
-                    print("Requesting model 3")
-                    print(HasModelLoaded(hash))
-                    print(model)
                     count = count + 10
                     Citizen.Wait(10)
                     if count > 9999 then
@@ -1470,7 +1737,7 @@ function SpawnVehicleLocal(model, props)
             SetEntityHeading(LastVehicleFromGarage, 50.117)
             FreezeEntityPosition(LastVehicleFromGarage, true)
             SetEntityCollision(LastVehicleFromGarage,false)
-            ESX.Game.SetVehicleProperties(LastVehicleFromGarage, props)
+            SetVehicleProp(LastVehicleFromGarage, props)
             currentcar = LastVehicleFromGarage
             if currentcar ~= LastVehicleFromGarage then
                 DeleteEntity(LastVehicleFromGarage)
@@ -1502,9 +1769,6 @@ function SpawnChopperLocal(model, props)
             if not HasModelLoaded(hash) then
                 RequestModel(hash)
                 while not HasModelLoaded(hash) and count < 1111 do
-                    print("Requesting model 4")
-                    print(HasModelLoaded(hash))
-                    print(model)
                     RequestModel(hash)
                     count = count + 10
                     Citizen.Wait(10)
@@ -1555,10 +1819,6 @@ RegisterNUICallback(
 RegisterNUICallback("ownerinfo",function(data, cb)
     ESX.TriggerServerCallback("renzu_garage:getowner",function(a)
         if a ~= nil then
-        for k,v in pairs(a) do
-            print(v)
-            print(k)
-        end
         SendNUIMessage(
             {
                 type = "ownerinfo",
@@ -1582,22 +1842,61 @@ RegisterNUICallback("SpawnChopper",function(data, cb)
     end
 end)
 
+local vhealth = 1000
+
+function SetVehicleStatus(curVehicle)
+    myvehlife = GetVehicleEngineHealth(curVehicle)
+    if myvehlife < 600 then
+        SetVehicleDoorBroken(curVehicle, 0, true)
+        SetVehicleDoorBroken(curVehicle, 1, true)
+    end
+    if myvehlife < 500 then
+        SetVehicleDoorBroken(curVehicle, 3, true)
+        SetVehicleDoorBroken(curVehicle, 4, true)
+        SmashVehicleWindow(curVehicle, 0)
+        SmashVehicleWindow(curVehicle, 1)
+        SmashVehicleWindow(curVehicle, 2)
+        SmashVehicleWindow(curVehicle, 3)
+        SmashVehicleWindow(curVehicle, 4)
+        SmashVehicleWindow(curVehicle, 7)
+    end
+    if myvehlife < 400 then
+        SetVehicleDoorBroken(curVehicle, 4, true)
+        SetVehicleDoorBroken(curVehicle, 5, true)
+        SmashVehicleWindow(curVehicle, 8)
+        DetachVehicleWindscreen(curVehicle)
+        SmashVehicleWindow(curVehicle, 0)
+        SetVehicleEnveffScale(curVehicle, 1.0)
+        SetVehicleDirtLevel(curVehicle,15.0)
+    else
+    --SetVehicleDirtLevel(curVehicle,0.0)
+    end
+    if myvehlife < 300 then
+        SetVehicleDoorBroken(curVehicle, 0, true)
+        DetachVehicleWindscreen(curVehicle)
+        SetVehicleReduceGrip(curVehicle, true)
+        SetVehicleReduceTraction(curVehicle, true)
+    else
+        SetVehicleReduceGrip(curVehicle, false)
+        SetVehicleReduceTraction(curVehicle, false)
+    end
+    if myvehlife < 200 then
+        SetVehicleDoorBroken(curVehicle, 0, true)
+    end
+end
 
 RegisterNUICallback(
     "GetVehicleFromGarage",
     function(data, cb)
         local ped = GetPlayerPed(-1)
         local props = json.decode(data.props)
-        print(props)
         local veh = nil
     ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound)
         if stored == 1 and impound == 0 or id == 'impound' then
-            print("inside")
             for k,v in pairs(garagecoord) do
                 local actualShop = v
                 local dist = #(vector3(v.spawn_x,v.spawn_y,v.spawn_z) - GetEntityCoords(GetPlayerPed(-1)))
-                print(dist)
-                if dist <= 70.0 and id == v.garage then
+                if dist <= 70.0 and id == v.garage or dist <= 70.0 and id == 'impound' then
                     DoScreenFadeOut(333)
                     Citizen.Wait(333)
                     DeleteEntity(LastVehicleFromGarage)
@@ -1609,9 +1908,6 @@ RegisterNUICallback(
                     if not HasModelLoaded(hash) then
                         RequestModel(hash)
                         while not HasModelLoaded(hash) and count < 1111 do
-                            print("Requesting model 5")
-                            print(HasModelLoaded(hash))
-                            print(hash)
                             count = count + 10
                             Citizen.Wait(1)
                             if count > 9999 then
@@ -1620,18 +1916,15 @@ RegisterNUICallback(
                         end
                     end
                     v = CreateVehicle(tonumber(props.model), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
-                    ESX.Game.SetVehicleProperties(v, props)
+                    SetVehicleProp(v, props)
                     Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
                     veh = v
-                    DoScreenFadeIn(333)
+                    DoScreenFadeIn(111)
                     while veh == nil do
                         Citizen.Wait(101)
                     end
-                    TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
-                    print("warping")
-                    TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
-                    print("warping")
-                    TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
+                    NetworkFadeInEntity(v,1)
+                    TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
                     veh = v
                 end
             end
@@ -1644,6 +1937,9 @@ RegisterNUICallback(
             TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
             CloseNui()
             TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
+            SetVehicleEngineHealth(v,props.engineHealth)
+            Wait(100)
+            SetVehicleStatus(GetVehiclePedIsIn(PlayerPedId()))
             i = 0
             min = 0
             max = 10
@@ -1706,9 +2002,6 @@ RegisterNUICallback(
                 if not HasModelLoaded(hash) then
                     RequestModel(hash)
                     while not HasModelLoaded(hash) and count < 1111 do
-                        print("Requesting model 6")
-                        print(HasModelLoaded(hash))
-                        print(hash)
                         count = count + 10
                         Citizen.Wait(1)
                         if count > 9999 then
@@ -1723,10 +2016,6 @@ RegisterNUICallback(
                 while veh == nil do
                     Citizen.Wait(101)
                 end
-                TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
-                print("warping")
-                TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
-                print("warping")
                 TaskWarpPedIntoVehicle(GetPlayerPed(-1), veh, -1)
                 veh = v
             end
@@ -1764,16 +2053,11 @@ RegisterNUICallback(
                     Citizen.Wait(1333)
                     SetEntityCoords(PlayerPedId(), v.garage_x,v.garage_y,v.garage_z, false, false, false, true)
                     Citizen.Wait(1000)
-                    print("SPAWNING")
-                    print(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2)
                     local hash = tonumber(data.modelcar)
                     local count = 0
                     if not HasModelLoaded(hash) then
                         RequestModel(hash)
                         while not HasModelLoaded(hash) and count < 1111 do
-                            print("Requesting model 7")
-                            print(HasModelLoaded(hash))
-                            print(hash)
                             count = count + 10
                             Citizen.Wait(1)
                             if count > 9999 then
@@ -1782,10 +2066,13 @@ RegisterNUICallback(
                         end
                     end
                     v = CreateVehicle(tonumber(data.modelcar), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.h_2, 1, 1)
-                    ESX.Game.SetVehicleProperties(v, props)
+                    SetVehicleProp(v, props)
                     Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
                     TaskWarpPedIntoVehicle(GetPlayerPed(-1), v, -1)
                     veh = v
+                    SetVehicleEngineHealth(v,props.engineHealth)
+                    Wait(100)
+                    SetVehicleStatus(veh)
                     DoScreenFadeIn(333)
                 end
             end
@@ -1879,7 +2166,7 @@ function CheckWanderingVehicle(plate)
     for i = 1, #gameVehicles do
         local vehicle = gameVehicles[i]
         if DoesEntityExist(vehicle) then
-            if string.match(GetVehicleNumberPlateText(vehicle), '%f[%d]%d[,.%d]*%f[%D]') == string.match(plate, '%f[%d]%d[,.%d]*%f[%D]') then
+            if string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1') == string.gsub(tostring(GetVehicleNumberPlateText(plate)), '^%s*(.-)%s*$', '%1') then
                 ReqAndDelete(vehicle)
                 break
             end
@@ -1898,9 +2185,9 @@ function GetNearestVehicleinPool(coords)
     data.dist = -1
     data.state = false
     for k,vehicle in pairs(GetGamePool('CVehicle')) do
-        local vehcoords = GetEntityCoords(vehicle)
+        local vehcoords = GetEntityCoords(vehicle,false)
         local dist = #(coords-vehcoords)
-        if dist < data.dist then
+        if data.dist == -1 or dist < data.dist then
             data.dist = dist
             data.vehicle = vehicle
             data.coords = vehcoords
@@ -1912,7 +2199,7 @@ end
 
 RegisterCommand('impound', function(source, args, rawCommand)
     if PlayerData.job ~= nil and PlayerData.job.name == 'police' or PlayerData.job ~= nil and PlayerData.job.name == 'sheriff' then
-        local ped = GetPlayerPed(-1)
+        local ped = PlayerPedId()
         local coords = GetEntityCoords(ped)
         local vehicle = GetNearestVehicleinPool(coords, 5)
         if not IsPedInAnyVehicle(ped, false) then
@@ -1941,7 +2228,7 @@ RegisterCommand('transfer', function(source, args, rawCommand)
                 TaskStartScenarioInPlace(ped, 'WORLD_HUMAN_CLIPBOARD', 0, true)
                 Wait(5000)
                 ClearPedTasksImmediately(ped)
-                local plate = string.match(GetVehicleNumberPlateText(vehicle.vehicle), '%f[%d]%d[,.%d]*%f[%D]')
+                local plate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle.vehicle)), '^%s*(.-)%s*$', '%1')
                 local userid = args[1]
                 TriggerServerEvent("renzu_garage:transfercar", plate, userid)
             elseif args[1] == nil then
