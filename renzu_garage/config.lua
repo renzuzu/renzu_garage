@@ -262,7 +262,18 @@ heli = {
         {plate = "PDHELI", model = "akula"},
         {plate = "PDHELI", model = "buzzard"},
         {plate = "PDHELI", model = "cargobob2"}
-    }
+    },
+    ["ambulance"] = {
+        -- job
+        {plate = "AMBHELI", model = "maverick"},
+        {plate = "AMBHELI", model = "frogger"},
+        {plate = "AMBHELI", model = "havoc"},
+        {plate = "AMBHELI", model = "polmav"},
+        {plate = "AMBHELI", model = "valkyrie"},
+        {plate = "AMBHELI", model = "akula"},
+        {plate = "AMBHELI", model = "buzzard"},
+        {plate = "AMBHELI", model = "cargobob2"}
+    },
 }
 
 helispawn = {
