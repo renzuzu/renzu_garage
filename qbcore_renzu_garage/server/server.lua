@@ -152,7 +152,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     end
                 end
             elseif xPlayer.PlayerData.job.name == 'police' and garage_id == 'impound' then
-                if state == 1 then
+                if state == 2 then
                 garage_id = 'impound'
                 chopstatus = os.time()
                 else
