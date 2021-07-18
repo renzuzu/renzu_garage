@@ -481,7 +481,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     end
 
     for _,value in pairs(tableVehicles) do
-        OwnedVehicles[value.type] = {}
+        OwnedVehicles['garage'] = {}
     end
 
     for _,value in pairs(tableVehicles) do
@@ -528,7 +528,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             stored = value.stored,
             identifier = value.owner
         }
-        table.insert(OwnedVehicles[value.type], VTable)
+        table.insert(OwnedVehicles['garage'], VTable)
     end
     fetchdone = true
 end)
