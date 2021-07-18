@@ -38,18 +38,20 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
         AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
         EndTextCommandSetBlipName(blip)
     end
-    for k, v in pairs (impoundcoord) do
-        local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
-        SetBlipSprite (blip, v.Blip.sprite)
-        SetBlipDisplay(blip, 4)
-        SetBlipScale  (blip, v.Blip.scale)
-        SetBlipColour (blip, v.Blip.color)
-        SetBlipAsShortRange(blip, true)
-        BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
-        EndTextCommandSetBlipName(blip)
+    if Config.EnableImpound then
+        for k, v in pairs (impoundcoord) do
+            local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
+            SetBlipSprite (blip, v.Blip.sprite)
+            SetBlipDisplay(blip, 4)
+            SetBlipScale  (blip, v.Blip.scale)
+            SetBlipColour (blip, v.Blip.color)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+            EndTextCommandSetBlipName(blip)
+        end
     end
-    if PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+    if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
         for k, v in pairs (helispawn[PlayerData.job.name]) do
             local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
             SetBlipSprite (blip, v.Blip.sprite)
@@ -115,15 +117,17 @@ CreateThread(function()
                     PopUI(v.garage,vec)
                 end
             end
-            for k,v in pairs(impoundcoord) do
-                local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
-                local dist = #(vec - GetEntityCoords(PlayerPedId()))
-                if dist < v.Dist then
-                    neargarage = true
-                    PopUI(v.garage,vec)
+            if Config.EnableImpound then
+                for k,v in pairs(impoundcoord) do
+                    local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+                    local dist = #(vec - GetEntityCoords(PlayerPedId()))
+                    if dist < v.Dist then
+                        neargarage = true
+                        PopUI(v.garage,vec)
+                    end
                 end
             end
-            if PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+            if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
                 for k,v in pairs(helispawn[PlayerData.job.name]) do
                     local vec = vector3(v.coords.x,v.coords.y,v.coords.z)
                     local dist = #(vec - GetEntityCoords(PlayerPedId()))
@@ -183,39 +187,40 @@ AddEventHandler('opengarage', function()
 
     --IMPOUND
 
-
-    for k,v in pairs(impoundcoord) do
-        local actualShop = v
-        local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-        if v.job ~= nil then
-            jobgarage = true
-        end
-        if DoesEntityExist(vehiclenow) then
-            if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
-                id = v.garage
-                Storevehicle(vehiclenow)
-                break
+    if Config.EnableImpound then
+        for k,v in pairs(impoundcoord) do
+            local actualShop = v
+            local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
+            if v.job ~= nil then
+                jobgarage = true
             end
-        elseif not DoesEntityExist(vehiclenow) then
-            if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
-                id = v.garage
-                ESX.ShowNotification("Opening Impound...Please wait..")
-                TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
-                fetchdone = false
-                while not fetchdone do
-                    Wait(0)
+            if DoesEntityExist(vehiclenow) then
+                if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
+                    id = v.garage
+                    Storevehicle(vehiclenow)
+                    break
                 end
-                OpenImpound(v.garage)
-                break
+            elseif not DoesEntityExist(vehiclenow) then
+                if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
+                    id = v.garage
+                    ESX.ShowNotification("Opening Impound...Please wait..")
+                    TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
+                    fetchdone = false
+                    while not fetchdone do
+                        Wait(0)
+                    end
+                    OpenImpound(v.garage)
+                    break
+                end
             end
-        end
-        if dist > 11 or ingarage then
-            indist = false
+            if dist > 11 or ingarage then
+                indist = false
+            end
         end
     end
 
 
-    if PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+    if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
         for k,v in pairs(helispawn[PlayerData.job.name]) do
             local coord = v.coords
             local v = v.coords
@@ -1255,7 +1260,6 @@ Citizen.CreateThread(
                             garage_id = v.garage_id,
                             impound = v.impound,
                             ingarage = v.ingarage,
-                            impound = v.impound,
                             stored = v.stored,
                             identifier = v.owner
                             }
@@ -1375,7 +1379,6 @@ Citizen.CreateThread(
                             garage_id = v.garage_id,
                             impound = v.impound,
                             ingarage = v.ingarage,
-                            impound = v.impound,
                             stored = v.stored,
                             identifier = v.owner
                             }
@@ -2201,7 +2204,7 @@ function GetNearestVehicleinPool(coords)
 end
 
 RegisterCommand('impound', function(source, args, rawCommand)
-    if PlayerData.job ~= nil and PlayerData.job.name == 'police' or PlayerData.job ~= nil and PlayerData.job.name == 'sheriff' then
+    if Config.EnableImpound and PlayerData.job ~= nil and PlayerData.job.name == 'police' or Config.EnableImpound and PlayerData.job ~= nil and PlayerData.job.name == 'sheriff' then
         local ped = PlayerPedId()
         local coords = GetEntityCoords(ped)
         local vehicle = GetNearestVehicleinPool(coords, 5)
