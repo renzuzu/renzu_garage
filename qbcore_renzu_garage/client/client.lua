@@ -1479,7 +1479,7 @@ function Storevehicle(vehicle,impound)
     end
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
     Wait(2000)
-    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, id, vehicleProps.model, vehicleProps)
+    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 2, id, vehicleProps.model, vehicleProps)
     DeleteEntity(vehicle)
     neargarage = false
 end
