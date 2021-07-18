@@ -276,13 +276,9 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     tableVehicles = nil
     tableVehicles = tb
     local vehdata = vehdata
-    local vehicle_data = {}
-    for _,value in pairs(vehdata) do
-        vehicle_data[value.model] = value.name
-    end
 
     for _,value in pairs(tableVehicles) do
-        OwnedVehicles[value.type] = {}
+        OwnedVehicles['garage'] = {}
     end
 
     for _,value in pairs(tableVehicles) do
@@ -296,8 +292,6 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         if QBCore.Shared.Vehicles[modeln] ~= nil then
             vehname = QBCore.Shared.Vehicles[modeln]["model"]["name"]
         end
-        --local vehname = vehicle_data[GetDisplayNameFromVehicleModel(tonumber(props.model))]
-
         if vehname == nil then
             vehname = GetDisplayNameFromVehicleModel(tonumber(props.hash))
         end
@@ -325,7 +319,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             stored = value.state,
             identifier = value.citizenid
         }
-        table.insert(OwnedVehicles[value.type], VTable)
+        table.insert(OwnedVehicles['garage'], VTable)
     end
     fetchdone = true
 end)
@@ -337,11 +331,6 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
     tableVehicles = {}
     tableVehicles = tb
     local vehdata = vehdata
-    local vehicle_data = {}
-    for _,value in pairs(available) do
-        vehicle_data[job] = value.model
-    end
-
     for _,value in pairs(available) do
         OwnedVehicles[job] = {}
     end
@@ -1476,8 +1465,8 @@ function Storevehicle(vehicle,impound)
     id = 'A'
     end
     if impound then
-    id = 'impound'
-    state = 2
+        id = 'impound'
+        state = 2
     end
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
     Wait(2000)
