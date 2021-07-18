@@ -21,26 +21,10 @@ Citizen.CreateThread(function()
                 max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
             }
         end
-
-        for k,v in pairs(impoundcoord) do -- repack the coordinates to new table
-            garages['multi_zone'][tostring(v.garage)] = {
-                coord = vector3(v.garage_x,v.garage_y,v.garage_z),
-                custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
-                custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
-                custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
-                arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
-                custom_ped = `g_m_importexport_01`, -- custom ped for this zone
-                custom_heading = 100.0,
-                server_event = false,
-                min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
-                max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
-            }
-        end
-
-        for k,t in pairs(helispawn) do -- repack the coordinates to new table
-            for k,v in pairs(t) do
+        if Config.EnableImpound then
+            for k,v in pairs(impoundcoord) do -- repack the coordinates to new table
                 garages['multi_zone'][tostring(v.garage)] = {
-                    coord = vector3(v.coords.x,v.coords.y,v.coords.z),
+                    coord = vector3(v.garage_x,v.garage_y,v.garage_z),
                     custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
                     custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
                     custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
@@ -51,6 +35,25 @@ Citizen.CreateThread(function()
                     min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
                     max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
                 }
+            end
+        end
+
+        if Config.EnableHeliGarage then
+            for k,t in pairs(helispawn) do -- repack the coordinates to new table
+                for k,v in pairs(t) do
+                    garages['multi_zone'][tostring(v.garage)] = {
+                        coord = vector3(v.coords.x,v.coords.y,v.coords.z),
+                        custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
+                        custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
+                        custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
+                        arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
+                        custom_ped = `g_m_importexport_01`, -- custom ped for this zone
+                        custom_heading = 100.0,
+                        server_event = false,
+                        min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
+                        max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
+                    }
+                end
             end
         end
 
