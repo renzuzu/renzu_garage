@@ -21,33 +21,9 @@ AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
         Wait(1000)
         QBCore.Functions.GetPlayerData(function(PlayerData)
             PlayerJob = PlayerData.job
-        end)
-        playerloaded = true
-        for k, v in pairs (garagecoord) do
-            local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
-            SetBlipSprite (blip, v.Blip.sprite)
-            SetBlipDisplay(blip, 4)
-            SetBlipScale  (blip, v.Blip.scale)
-            SetBlipColour (blip, v.Blip.color)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
-            EndTextCommandSetBlipName(blip)
-        end
-        for k, v in pairs (impoundcoord) do
-            local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
-            SetBlipSprite (blip, v.Blip.sprite)
-            SetBlipDisplay(blip, 4)
-            SetBlipScale  (blip, v.Blip.scale)
-            SetBlipColour (blip, v.Blip.color)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
-            EndTextCommandSetBlipName(blip)
-        end
-        if PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
-            for k, v in pairs (helispawn[PlayerData.job.name]) do
-                local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
+            playerloaded = true
+            for k, v in pairs (garagecoord) do
+                local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
                 SetBlipSprite (blip, v.Blip.sprite)
                 SetBlipDisplay(blip, 4)
                 SetBlipScale  (blip, v.Blip.scale)
@@ -57,7 +33,31 @@ AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
                 AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
                 EndTextCommandSetBlipName(blip)
             end
-        end
+            for k, v in pairs (impoundcoord) do
+                local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
+                SetBlipSprite (blip, v.Blip.sprite)
+                SetBlipDisplay(blip, 4)
+                SetBlipScale  (blip, v.Blip.scale)
+                SetBlipColour (blip, v.Blip.color)
+                SetBlipAsShortRange(blip, true)
+                BeginTextCommandSetBlipName('STRING')
+                AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+                EndTextCommandSetBlipName(blip)
+            end
+            if PlayerJob ~= nil and helispawn[PlayerJob.name] ~= nil then
+                for k, v in pairs (helispawn[PlayerJob.name]) do
+                    local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
+                    SetBlipSprite (blip, v.Blip.sprite)
+                    SetBlipDisplay(blip, 4)
+                    SetBlipScale  (blip, v.Blip.scale)
+                    SetBlipColour (blip, v.Blip.color)
+                    SetBlipAsShortRange(blip, true)
+                    BeginTextCommandSetBlipName('STRING')
+                    AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+                    EndTextCommandSetBlipName(blip)
+                end
+            end
+        end)
     end)
 end)
 
