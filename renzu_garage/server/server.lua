@@ -185,6 +185,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     ['@plate'] = plate
                 }, function (result)
                     if #result > 0 then
+                        local veh = json.decode(result[1].vehicle)
                         if veh.model == model then
                             MySQL.Sync.execute('UPDATE owned_vehicles SET stored = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle WHERE plate = @plate',
                             {
