@@ -261,11 +261,7 @@ end
 
 function GetVehicleProperties(vehicle)
     if DoesEntityExist(vehicle) then
-        local props = nil
-        QBCore.Functions.TriggerCallback('qb-garage:server:GetVehicleProperties', function(properties)
-            props = properties
-        end,string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1'))
-        while props == nil do Wait(0) end
+        local props = QBCore.Functions.GetVehicleProperties(vehicle)
         return props
     end
 end
