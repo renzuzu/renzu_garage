@@ -1471,15 +1471,17 @@ end)
 
 function Storevehicle(vehicle,impound)
     local vehicleProps = GetVehicleProperties(vehicle)
+    local state = 1
     if id == nil then
     id = 'A'
     end
     if impound then
     id = 'impound'
+    state = 2
     end
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
     Wait(2000)
-    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 2, id, vehicleProps.model, vehicleProps)
+    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, state, id, vehicleProps.model, vehicleProps)
     DeleteEntity(vehicle)
     neargarage = false
 end
