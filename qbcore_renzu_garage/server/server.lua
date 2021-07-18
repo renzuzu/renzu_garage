@@ -138,8 +138,8 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
         }, function (result)
             if #result > 0 and garage_id ~= 'impound' then
                 if result[1].vehicle ~= nil then
-                    local veh = json.decode(result[1].vehicle)
-                    if veh.model == model then
+                    local veh = json.decode(result[1].mods)
+                    if veh.hash == model then
                         MySQL.Sync.execute('UPDATE player_vehicles SET state = @stored, garage = @garage_id WHERE plate = @plate and citizenid = @owner',
                         {
                             ['@garage_id'] = garage_id,
@@ -163,7 +163,8 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     ['@plate'] = plate
                 }, function (result)
                     if #result > 0 then
-                        if veh.model == model then
+                        local veh = json.decode(result[1].mods)
+                        if veh.hash == model then
                             MySQL.Sync.execute('UPDATE player_vehicles SET state = @stored, garage = @garage_id WHERE plate = @plate',
                             {
                                 ['@garage_id'] = garage_id,
