@@ -20,14 +20,9 @@ window.addEventListener('message', function(event) {
         garage_id = event.data.garage_id
     }
     if (event.data.type == "ownerinfo") {
-    var offset = +8;
     var utcSeconds = event.data.chopstats;
-    const unixTimestamp = 1575909015
-
     const milliseconds = utcSeconds * 1000 // 1575909015000
-
     const dateObject = new Date(milliseconds)
-
     const humanDateFormat = dateObject.toLocaleString()
         document.getElementById("dateissue").innerHTML = humanDateFormat;
         for(var [key,value] of Object.entries(data.info)){
@@ -385,7 +380,6 @@ function returnvehicle(option) {
 
 function cleanup() {
     document.getElementById("vehlist").innerHTML = '';
-    document.getElementById("carouselCars").innerHTML = '';
 }
 
 var scrollAmount = 0
