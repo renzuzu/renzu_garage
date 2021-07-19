@@ -509,7 +509,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         if vehname == nil then
             vehname = GetDisplayNameFromVehicleModel(tonumber(props.model))
         end
-        if props.engineHealth < 100 then
+        if props ~= nil and props.engineHealth ~= nil and props.engineHealth < 100 then
             props.engineHealth = 200
         end
         local VTable = 
@@ -525,9 +525,9 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             model2 = tonumber(props.model),
             plate = value.plate,
             props = value.vehicle,
-            fuel = props.fuelLevel,
-            bodyhealth = props.bodyHealth,
-            enginehealth = props.engineHealth,
+            fuel = props.fuelLevel or 100,
+            bodyhealth = props.bodyHealth or 1000,
+            enginehealth = props.engineHealth or 1000,
             garage_id = value.garage_id,
             impound = value.impound,
             stored = value.stored,
