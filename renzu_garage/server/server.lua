@@ -129,6 +129,17 @@ function bool_to_number(value)
     end
 end
 
+ESX.RegisterServerCallback('renzu_garage:returnpayment', function (source, cb)
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if xPlayer.getMoney() >= Config.ReturnPayment then
+        xPlayer.removeMoney(Config.ReturnPayment)
+        cb(true)
+    else
+        cb(false)
+    end
+end)
+
 ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate)
     local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
 	MySQL.Async.fetchAll('SELECT stored,impound FROM owned_vehicles WHERE plate = @plate', {

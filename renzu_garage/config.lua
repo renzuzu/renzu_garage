@@ -6,6 +6,7 @@ Config.Quickpick = true -- if false system will create a garage shell and spawn 
 Config.UniqueCarperGarage = false -- if false show all cars to all garage location! else if true, Vehicles Saved in Garage A cannot be take out from Garage B for example.
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
+Config.ReturnPayment = 1000
 garagecoord = {
     {
         garage = "A", --LEGION
