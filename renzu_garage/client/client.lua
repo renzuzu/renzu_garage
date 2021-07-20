@@ -1267,8 +1267,8 @@ Citizen.CreateThread(
                         end
                     end
                 end
-                for i = 1, #spawnedgarage do
-                    DeleteEntity(spawnedgarage[i])
+                for k,v in pairs(spawnedgarage) do
+                    ReqAndDelete(v)
                 end
                 Citizen.Wait(111)
                 local leftx = 4.0
@@ -1308,30 +1308,31 @@ Citizen.CreateThread(
                             local lefthead = 225.0
                             local righthead = 125.0
                             CheckWanderingVehicle(props.plate)
-                            Citizen.Wait(1000)
+                            Citizen.Wait(111)
                             local hash = tonumber(v.model2)
                             local count = 0
                             if not HasModelLoaded(hash) then
                                 RequestModel(hash)
                                 while not HasModelLoaded(hash) and count < 10000 do
                                     count = count + 10
-                                    Citizen.Wait(10)
+                                    Citizen.Wait(1)
                                     if count > 9999 then
                                     return
                                     end
                                 end
                             end
-                            spawnedgarage[i2] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
-                            SetVehicleProp(spawnedgarage[i2], props)
-                            SetEntityNoCollisionEntity(spawnedgarage[i2], shell, false)
+                            local indexnew = tonumber('1'..i2..'')
+                            spawnedgarage[indexnew] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
+                            SetVehicleProp(spawnedgarage[indexnew], props)
+                            SetEntityNoCollisionEntity(spawnedgarage[indexnew], shell, false)
                             SetModelAsNoLongerNeeded(hash)
-                            NetworkFadeInEntity(spawnedgarage[i2], true, true)
+                            NetworkFadeInEntity(spawnedgarage[indexnew], true, true)
                             if current <=5 then
-                                SetEntityHeading(spawnedgarage[i2], lefthead)
+                                SetEntityHeading(spawnedgarage[indexnew], lefthead)
                             else
-                                SetEntityHeading(spawnedgarage[i2], righthead)
+                                SetEntityHeading(spawnedgarage[indexnew], righthead)
                             end
-                            FreezeEntityPosition(spawnedgarage[i2], true)
+                            FreezeEntityPosition(spawnedgarage[indexnew], true)
                         end
 
                         if current >= 9 then
@@ -1346,6 +1347,7 @@ Citizen.CreateThread(
                 if max <= 9 then
                     max = 10
                 end
+                Wait(1000)
             end
             
             if IsControlJustPressed(0, 175) then
@@ -1386,8 +1388,8 @@ Citizen.CreateThread(
                         end
                     end
                 end
-                for i = 1, #spawnedgarage do
-                    DeleteEntity(spawnedgarage[i])
+                for k,v in pairs(spawnedgarage) do
+                    ReqAndDelete(v)
                 end
                 Citizen.Wait(111)
                 local leftx = 4.0
@@ -1431,17 +1433,18 @@ Citizen.CreateThread(
                                         end
                                     end
                                 end
-                                spawnedgarage[i2] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
-                                SetVehicleProp(spawnedgarage[i2], props)
-                                SetEntityNoCollisionEntity(spawnedgarage[i2], shell, false)
+                                local indexnew = tonumber('2'..i2..'')
+                                spawnedgarage[indexnew] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
+                                SetVehicleProp(spawnedgarage[indexnew], props)
+                                SetEntityNoCollisionEntity(spawnedgarage[indexnew], shell, false)
                                 SetModelAsNoLongerNeeded(hash)
-                                NetworkFadeInEntity(spawnedgarage[i2], true, true)
+                                NetworkFadeInEntity(spawnedgarage[indexnew], true, true)
                                 if current <=5 then
-                                    SetEntityHeading(spawnedgarage[i2], lefthead)
+                                    SetEntityHeading(spawnedgarage[indexnew], lefthead)
                                 else
-                                    SetEntityHeading(spawnedgarage[i2], righthead)
+                                    SetEntityHeading(spawnedgarage[indexnew], righthead)
                                 end
-                                FreezeEntityPosition(spawnedgarage[i2], true)
+                                FreezeEntityPosition(spawnedgarage[indexnew], true)
                             end
 
                             if i >= (max + 10) then
@@ -1450,6 +1453,7 @@ Citizen.CreateThread(
                     end
                 end
                 max = max + 10
+                Wait(1000)
             end
             Citizen.Wait(sleep)
         end
@@ -2170,12 +2174,9 @@ function ReqAndDelete(object, detach)
 		local attempt = 0
 		while not NetworkHasControlOfEntity(object) and attempt < 100 and DoesEntityExist(object) do
 			NetworkRequestControlOfEntity(object)
-			Citizen.Wait(11)
+			Citizen.Wait(1)
 			attempt = attempt + 1
 		end
-		--if detach then
-			DetachEntity(object, 0, false)
-		--end
 		SetEntityCollision(object, false, false)
 		SetEntityAlpha(object, 0.0, true)
 		SetEntityAsMissionEntity(object, true, true)
