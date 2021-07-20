@@ -1418,14 +1418,14 @@ Citizen.CreateThread(
                                 local lefthead = 225.0
                                 local righthead = 125.0
                                 CheckWanderingVehicle(props.plate)
-                                Citizen.Wait(1000)
+                                Citizen.Wait(111)
                                 local hash = tonumber(v.model2)
                                 local count = 0
                                 if not HasModelLoaded(hash) then
                                     RequestModel(hash)
                                     while not HasModelLoaded(hash) and count < 10000 do
                                         count = count + 10
-                                        Citizen.Wait(10)
+                                        Citizen.Wait(1)
                                         if count > 9999 then
                                         return
                                         end
@@ -2048,57 +2048,75 @@ RegisterNUICallback(
         local ped = GetPlayerPed(-1)
         local props = json.decode(data.props)
         local veh = nil
-            for k,v in pairs(garagecoord) do
-                local actualShop = v
-                local dist = #(vector3(v.spawn_x,v.spawn_y,v.spawn_z) - GetEntityCoords(ped))
-                if dist <= 40.0 and id == v.garage then
-                    DoScreenFadeOut(333)
-                    Citizen.Wait(333)
-                    CheckWanderingVehicle(props.plate)
-                    Citizen.Wait(1333)
-                    SetEntityCoords(PlayerPedId(), v.garage_x,v.garage_y,v.garage_z, false, false, false, true)
-                    Citizen.Wait(1000)
-                    local hash = tonumber(data.modelcar)
-                    local count = 0
-                    if not HasModelLoaded(hash) then
-                        RequestModel(hash)
-                        while not HasModelLoaded(hash) and count < 1111 do
-                            count = count + 10
-                            Citizen.Wait(1)
-                            if count > 9999 then
-                            return
+        local bool = false
+        ESX.TriggerServerCallback("renzu_garage:returnpayment",function(canreturn)
+            if canreturn then
+                for k,v in pairs(garagecoord) do
+                    local actualShop = v
+                    local dist = #(vector3(v.spawn_x,v.spawn_y,v.spawn_z) - GetEntityCoords(ped))
+                    if dist <= 40.0 and id == v.garage then
+                        DoScreenFadeOut(333)
+                        Citizen.Wait(111)
+                        CheckWanderingVehicle(props.plate)
+                        Citizen.Wait(555)
+                        SetEntityCoords(PlayerPedId(), v.garage_x,v.garage_y,v.garage_z, false, false, false, true)
+                        Citizen.Wait(555)
+                        local hash = tonumber(data.modelcar)
+                        local count = 0
+                        if not HasModelLoaded(hash) then
+                            RequestModel(hash)
+                            while not HasModelLoaded(hash) and count < 1111 do
+                                count = count + 10
+                                Citizen.Wait(1)
+                                if count > 9999 then
+                                return
+                                end
                             end
                         end
+                        v = CreateVehicle(tonumber(data.modelcar), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
+                        SetVehicleProp(v, props)
+                        Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
+                        TaskWarpPedIntoVehicle(GetPlayerPed(-1), v, -1)
+                        veh = v
+                        SetVehicleEngineHealth(v,props.engineHealth)
+                        Wait(100)
+                        SetVehicleStatus(veh)
+                        DoScreenFadeIn(333)
                     end
-                    v = CreateVehicle(tonumber(data.modelcar), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
-                    SetVehicleProp(v, props)
-                    Spawn_Vehicle_Forward(v, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
-                    TaskWarpPedIntoVehicle(GetPlayerPed(-1), v, -1)
-                    veh = v
-                    SetVehicleEngineHealth(v,props.engineHealth)
-                    Wait(100)
-                    SetVehicleStatus(veh)
-                    DoScreenFadeIn(333)
                 end
+                bool = true
+                while veh == nil do
+                    Citizen.Wait(1)
+                end
+                TriggerServerEvent("renzu_garage:changestate", props.plate, 0, id, props.model, props)
+                LastVehicleFromGarage = nil
+                Wait(111)
+                CloseNui()
+                i = 0
+                min = 0
+                max = 10
+                plus = 0
+                drawtext = false
+                indist = false
+                SendNUIMessage({
+                    type = "cleanup"
+                })
+            else
+                ESX.ShowNotification("You dont have a money to pay the delivery")
+                LastVehicleFromGarage = nil
+                Wait(111)
+                CloseNui()
+                i = 0
+                min = 0
+                max = 10
+                plus = 0
+                drawtext = false
+                indist = false
+                SendNUIMessage({
+                    type = "cleanup"
+                })
             end
-
-            while veh == nil do
-                Citizen.Wait(10)
-            end
-            TriggerServerEvent("renzu_garage:changestate", props.plate, 0, id, props.model, props)
-            LastVehicleFromGarage = nil
-            CloseNui()
-            i = 0
-            min = 0
-            max = 10
-            plus = 0
-            drawtext = false
-            indist = false
-            SendNUIMessage(
-            {
-                type = "cleanup"
-            })
-
+        end)
 end)
 
 
