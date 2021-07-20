@@ -1270,6 +1270,7 @@ Citizen.CreateThread(
                 for k,v in pairs(spawnedgarage) do
                     ReqAndDelete(v)
                 end
+                spawnedgarage = {}
                 Citizen.Wait(111)
                 local leftx = 4.0
                 local lefty = 4.0
@@ -1391,6 +1392,7 @@ Citizen.CreateThread(
                 for k,v in pairs(spawnedgarage) do
                     ReqAndDelete(v)
                 end
+                spawnedgarage = {}
                 Citizen.Wait(111)
                 local leftx = 4.0
                 local lefty = 4.0
@@ -1525,9 +1527,10 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                     veh = v
                                     DoScreenFadeIn(333)
                                     TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, id, vp.model, vp)
-                                    for i = 1, #spawnedgarage do
-                                        DeleteEntity(spawnedgarage[i])
+                                    for k,v in pairs(spawnedgarage) do
+                                        ReqAndDelete(v)
                                     end
+                                    spawnedgarage = {}
                                     ingarage = false
                                     DeleteGarage()
                                     shell = nil
@@ -1603,10 +1606,10 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                                             veh = v
                                             DoScreenFadeIn(333)
                                             TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, id, vp.model, vp)
-                                            for i = 1, #spawnedgarage do
-                                            DeleteEntity(spawnedgarage[i])
-                                            Citizen.Wait(0)
+                                            for k,v in pairs(spawnedgarage) do
+                                                ReqAndDelete(v)
                                             end
+                                            spawnedgarage = {}
                                             ingarage = false
                                             DeleteGarage()
                                             shell = nil
@@ -1657,11 +1660,10 @@ function DeleteGarage()
     min = 0
     max = 10
     plus = 0
-    for i = 1, #spawnedgarage do
-        DeleteEntity(spawnedgarage[i])
-        spawnedgarage[i] = nil
-        Citizen.Wait(0)
+    for k,v in pairs(spawnedgarage) do
+        ReqAndDelete(v)
     end
+    spawnedgarage = {}
     TriggerEvent('EndScaleformMovie','mp_car_stats_01')
     TriggerEvent('EndScaleformMovie','mp_car_stats_02')
 end
