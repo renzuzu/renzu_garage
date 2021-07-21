@@ -142,7 +142,7 @@ end)
 
 ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate)
     local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
-	MySQL.Async.fetchAll('SELECT stored,impound FROM owned_vehicles WHERE plate = @plate', {
+	MySQL.Async.fetchAll('SELECT `stored` ,impound FROM owned_vehicles WHERE plate = @plate', {
 		['@plate'] = plate
 	}, function (result)
         local stored = result[1].stored
@@ -175,7 +175,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                 if result[1].vehicle ~= nil then
                     local veh = json.decode(result[1].vehicle)
                     if veh.model == model then
-                        MySQL.Sync.execute('UPDATE owned_vehicles SET stored = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE plate = @plate and owner = @owner',
+                        MySQL.Sync.execute('UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE plate = @plate and owner = @owner',
                         {
                             ['vehicle'] = json.encode(props),
                             ['@garage_id'] = garage_id,
@@ -201,7 +201,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     if #result > 0 then
                         local veh = json.decode(result[1].vehicle)
                         if veh.model == model then
-                            MySQL.Sync.execute('UPDATE owned_vehicles SET stored = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle WHERE plate = @plate',
+                            MySQL.Sync.execute('UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle WHERE plate = @plate',
                             {
                                 ['vehicle'] = json.encode(props),
                                 ['@garage_id'] = garage_id,
