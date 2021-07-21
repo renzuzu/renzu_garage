@@ -501,13 +501,14 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         for _,value in pairs(vehdata) do -- fetch vehicle names from vehicles sql table
             if tonumber(props.model) == GetHashKey(value.model) then
                 vehname = value.name
+                break
             end
         end
 
         --local vehname = vehicle_data[GetDisplayNameFromVehicleModel(tonumber(props.model))]
 
         if vehname == nil then
-            vehname = GetDisplayNameFromVehicleModel(tonumber(props.model))
+            vehname = GetLabelText(GetDisplayNameFromVehicleModel(tonumber(props.model)):lower())
         end
         if props ~= nil and props.engineHealth ~= nil and props.engineHealth < 100 then
             props.engineHealth = 200
