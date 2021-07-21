@@ -168,17 +168,8 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
 	})
     local stored = result[1].stored
     local impound = result[1].impound
-    if tonumber(stored) then
-        stored = stored
-    else
-        stored = bool_to_number(stored)
-    end
-    if tonumber(impound) then
-        impound = impound
-    else
-        impound = bool_to_number(impound)
-    end
-    cb(tonumber(stored),tonumber(impound))
+    print(stored,impound)
+    cb(stored,impound)
 end)
 
 RegisterServerEvent('renzu_garage:changestate')
