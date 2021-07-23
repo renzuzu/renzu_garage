@@ -179,7 +179,7 @@ end)
 RegisterServerEvent('renzu_garage:changestate')
 AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model,props)
     if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):uppwer()
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
         plate = plate:upper()
     end
@@ -194,7 +194,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
             if result[1].vehicle ~= nil then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
-                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE plate = @plate and owner = @owner', {
+                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE UPPER(plate) = @plate and owner = @owner', {
                         ['vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
                         ['@plate'] = plate:upper(),
@@ -214,7 +214,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                 chopstatus = os.time()
             end
             local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE UPPER(plate) = @plate LIMIT 1', {
-                ['@plate'] = plate
+                ['@plate'] = plate:upper()
             })
             if #result > 0 then
                 local veh = json.decode(result[1].vehicle)
@@ -223,7 +223,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         ['vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
                         ['@impound'] = state,
-                        ['@plate'] = plate,
+                        ['@plate'] = plate:upper(),
                         ['@stored'] = state
                     })
                 else
@@ -253,12 +253,12 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
     else
         if tonumber(plate) and transfer then
             local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE UPPER(plate) = @plate and owner = @owner LIMIT 1', {
-                ['@plate'] = plate,
+                ['@plate'] = plate:upper(),
                 ['@owner'] = xPlayer.identifier
             })
             if #result > 0 then
                 MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET owner = @owner WHERE plate = @plate', {
-                    ['plate'] = plate,
+                    ['plate'] = plate:upper(),
                     ['owner'] = transfer.identifier
                 })
                 print("transfer success")
