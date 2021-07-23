@@ -162,7 +162,9 @@ ESX.RegisterServerCallback('renzu_garage:returnpayment', function (source, cb)
 end)
 
 ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate)
-    local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+    if not Config.PlateSpace then
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+    end
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE plate = @plate', {
 		['@plate'] = plate
 	})
@@ -174,7 +176,9 @@ end)
 
 RegisterServerEvent('renzu_garage:changestate')
 AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model,props)
-    local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+    if not Config.PlateSpace then
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+    end
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     if xPlayer then
@@ -232,7 +236,9 @@ end)
 
 RegisterServerEvent('renzu_garage:transfercar')
 AddEventHandler('renzu_garage:transfercar', function(plate,id)
-    local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+    if not Config.PlateSpace then
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+    end
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local transfer = ESX.GetPlayerFromId(id)

@@ -78,7 +78,11 @@ local indist = false
 
 function tostringplate(plate)
     if plate ~= nil then
-        return string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+        if not Config.PlateSpace then
+            return string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+        else
+            return tostring(plate)
+        end
     else
         return 123454
     end
@@ -464,7 +468,9 @@ function GetVehicleProperties(vehicle)
             end
         else
             props = ESX.Game.GetVehicleProperties(vehicle)
-            props.plate = string.gsub(tostring(props.plate), '^%s*(.-)%s*$', '%1')
+            if not Config.PlateSpace then
+                props.plate = string.gsub(tostring(props.plate), '^%s*(.-)%s*$', '%1')
+            end
             return props
         end
     end
@@ -2194,7 +2200,7 @@ function CheckWanderingVehicle(plate)
     for i = 1, #gameVehicles do
         local vehicle = gameVehicles[i]
         if DoesEntityExist(vehicle) then
-            if string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1') == string.gsub(tostring(GetVehicleNumberPlateText(plate)), '^%s*(.-)%s*$', '%1') then
+            if GetVehicleNumberPlateText(vehicle) == GetVehicleNumberPlateText(plate) then
                 ReqAndDelete(vehicle)
                 break
             end
@@ -2256,7 +2262,7 @@ RegisterCommand('transfer', function(source, args, rawCommand)
                 TaskStartScenarioInPlace(ped, 'WORLD_HUMAN_CLIPBOARD', 0, true)
                 Wait(5000)
                 ClearPedTasksImmediately(ped)
-                local plate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle.vehicle)), '^%s*(.-)%s*$', '%1')
+                local plate = GetVehicleNumberPlateText(vehicle.vehicle)
                 local userid = args[1]
                 TriggerServerEvent("renzu_garage:transfercar", plate, userid)
             elseif args[1] == nil then
