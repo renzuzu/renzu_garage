@@ -163,9 +163,11 @@ end)
 
 ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate)
     if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):uppwer()
+    else
+        plate = plate:upper()
     end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE plate = @plate', {
+    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE UPPER(plate) = @plate', {
 		['@plate'] = plate
 	})
     local stored = result[1].stored
@@ -177,12 +179,14 @@ end)
 RegisterServerEvent('renzu_garage:changestate')
 AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model,props)
     if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):uppwer()
+    else
+        plate = plate:upper()
     end
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     if xPlayer then
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and plate = @plate LIMIT 1', {
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and UPPER(plate) = @plate LIMIT 1', {
             ['@owner'] = xPlayer.identifier,
             ['@plate'] = plate
         })
@@ -193,7 +197,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE plate = @plate and owner = @owner', {
                         ['vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
-                        ['@plate'] = plate,
+                        ['@plate'] = plate:upper(),
                         ['@owner'] = xPlayer.identifier,
                         ['@stored'] = state
                     })
@@ -209,13 +213,13 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                 garage_id = 'A'
                 chopstatus = os.time()
             end
-            local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE plate = @plate LIMIT 1', {
+            local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE UPPER(plate) = @plate LIMIT 1', {
                 ['@plate'] = plate
             })
             if #result > 0 then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
-                    MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle WHERE plate = @plate', {
+                    MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle WHERE UPPER(plate) = @plate', {
                         ['vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
                         ['@impound'] = state,
@@ -237,7 +241,9 @@ end)
 RegisterServerEvent('renzu_garage:transfercar')
 AddEventHandler('renzu_garage:transfercar', function(plate,id)
     if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
+    else
+        plate = plate:upper()
     end
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
@@ -246,7 +252,7 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
         xPlayer.showNotification("Invalid User ID! (Must be Digits only)", 1, 0)
     else
         if tonumber(plate) and transfer then
-            local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE plate = @plate and owner = @owner LIMIT 1', {
+            local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE UPPER(plate) = @plate and owner = @owner LIMIT 1', {
                 ['@plate'] = plate,
                 ['@owner'] = xPlayer.identifier
             })
