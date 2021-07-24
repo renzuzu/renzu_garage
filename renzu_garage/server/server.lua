@@ -5,9 +5,6 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
-    for k,v in pairs(parkedvehicles) do
-        print(k,v)
-    end
     Wait(100)
     if Config.UseRayZone then
         local garages = {} -- garage table
