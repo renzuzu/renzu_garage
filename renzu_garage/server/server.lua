@@ -284,15 +284,22 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
             ['@plate'] = plate
         })
         if #result > 0 and garage_id ~= 'impound' then
+            local updatepark = false
+            for k,park in pairs(parkedvehicles) do
+                if park.plate:upper() == plate:upper() then
+                    updatepark = true
+                end
+            end
             if result[1].vehicle ~= nil then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
-                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE UPPER(plate) = @plate and owner = @owner', {
+                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle, isparked = @isparked WHERE UPPER(plate) = @plate and owner = @owner', {
                         ['vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
                         ['@plate'] = plate:upper(),
                         ['@owner'] = xPlayer.identifier,
-                        ['@stored'] = state
+                        ['@stored'] = state,
+                        ['@isparked'] = 0
                     })
                 else
                     print('exploiting')
@@ -312,12 +319,13 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
             if #result > 0 then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
-                    MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle WHERE UPPER(plate) = @plate', {
+                    MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle, isparked = @isparked WHERE UPPER(plate) = @plate', {
                         ['vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
                         ['@impound'] = state,
                         ['@plate'] = plate:upper(),
-                        ['@stored'] = state
+                        ['@stored'] = state,
+                        ['@isparked'] = 0
                     })
                 else
                     print('exploiting')
