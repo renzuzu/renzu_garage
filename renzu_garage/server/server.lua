@@ -320,6 +320,12 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                 ['@plate'] = plate:upper()
             })
             if #result > 0 then
+                local updatepark = false
+                for k,park in pairs(parkedvehicles) do
+                    if park.plate:upper() == plate:upper() then
+                        updatepark = true
+                    end
+                end
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
                     MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle, isparked = @isparked WHERE UPPER(plate) = @plate', {
@@ -330,6 +336,12 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         ['@stored'] = state,
                         ['@isparked'] = 0
                     })
+                    if updatepark then
+                        Wait(300)
+                        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+                        Wait(200)
+                        TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
+                    end
                 else
                     print('exploiting')
                 end
