@@ -301,6 +301,12 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         ['@stored'] = state,
                         ['@isparked'] = 0
                     })
+                    if updatepark then
+                        Wait(300)
+                        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+                        Wait(200)
+                        TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
+                    end
                 else
                     print('exploiting')
                 end
