@@ -6,6 +6,7 @@ FIVEM - Garage HUD (WIP)
  # GARAGE FEATURE
 - Vehicle Management
 - Multiple Garage Location
+- Realistic Park (leave spawned)
 - Job Garages
 - Helicopter Garage per job
 - Property Garage
