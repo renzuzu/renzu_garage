@@ -174,6 +174,7 @@ CreateThread(function()
                         canpark = true
                         local speedvehicle = IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId()))
                         while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
+                            dist = #(vec - GetEntityCoords(PlayerPedId()))
                             if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) then
                                 ESX.ShowNotification("Vehicle can be parked here [E]")
                                 while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
@@ -228,6 +229,7 @@ CreateThread(function()
                 canpark = true
                 local mycoord = GetEntityCoords(PlayerPedId())
                 while dist < v.Dist do
+                    dist = #(vec - GetEntityCoords(PlayerPedId()))
                     --print("TIKOL ASO",parkedvehicles)
                     local parked = parkedvehicles
                     for k,park in pairs(parked) do
