@@ -175,7 +175,7 @@ CreateThread(function()
                         local speedvehicle = IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId()))
                         while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
                             if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) then
-                                ESX.ShowNotification("Vehicle can be parked here")
+                                ESX.ShowNotification("Vehicle can be parked here [E]")
                                 while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
                                     if IsControlPressed(0,38) then
                                         print("GAGO")
@@ -197,7 +197,7 @@ CreateThread(function()
                                         TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps)
                                         --DeleteEntity(vehicle)
                                         ReqAndDelete(car)
-                                        ESX.ShowNotification("Vehicle has been Parked [E]")
+                                        ESX.ShowNotification("Vehicle has been Parked")
                                         neargarage = false
                                     end
                                     Wait(0)
