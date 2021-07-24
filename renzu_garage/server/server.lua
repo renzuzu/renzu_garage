@@ -5,9 +5,6 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
-    for k,v in pairs(parkedvehicles) do
-        print(k,v)
-    end
     Wait(100)
     if Config.UseRayZone then
         local garages = {} -- garage table
@@ -301,6 +298,12 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         ['@stored'] = state,
                         ['@isparked'] = 0
                     })
+                    if updatepark then
+                        Wait(300)
+                        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+                        Wait(200)
+                        TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
+                    end
                 else
                     print('exploiting')
                 end
