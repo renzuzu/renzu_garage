@@ -165,53 +165,60 @@ CreateThread(function()
                     end
                 end
             end
-            if Config.Realistic_Parking then
-                for k,v in pairs(parking) do
-                    local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
-                    local dist = #(vec - GetEntityCoords(PlayerPedId()))
-                    if dist < v.Dist then
-                        neargarage = true
-                        canpark = true
-                        local speedvehicle = IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId()))
-                        while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
-                            dist = #(vec - GetEntityCoords(PlayerPedId()))
-                            if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) then
-                                ESX.ShowNotification("Vehicle can be parked here [E]")
-                                while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
-                                    if IsControlPressed(0,38) then
-                                        print("GAGO")
-                                        local vehicle = GetVehiclePedIsIn(PlayerPedId())
-                                        vehicleProps = GetVehicleProperties(vehicle)
-                                        local coord = {
-                                            heading = GetEntityHeading(vehicle),
-                                            x = GetEntityCoords(vehicle).x,
-                                            y = GetEntityCoords(vehicle).y,
-                                            z = GetEntityCoords(vehicle).z
-                                        }
-                                        car = vehicle
-                                        TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
-                                        Wait(2000)
-                                        print(vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps,spawned_cars[vehicleProps.plate])
-                                        if spawned_cars[vehicleProps.plate] ~= nil then
-                                            spawned_cars[vehicleProps.plate] = nil
-                                        end
-                                        TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps)
-                                        --DeleteEntity(vehicle)
-                                        ReqAndDelete(car)
-                                        ESX.ShowNotification("Vehicle has been Parked")
-                                        neargarage = false
-                                    end
-                                    Wait(0)
-                                end
-                            end
-                            Wait(1000)
-                        end
-                        canpark = false
-                    end
-                end
-            end
             Wait(1000)
         end
+    end
+end)
+
+CreateThread(function()
+    Wait(500)
+    while true do
+        if Config.Realistic_Parking then
+            for k,v in pairs(parking) do
+                local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+                local dist = #(vec - GetEntityCoords(PlayerPedId()))
+                if dist < v.Dist then
+                    neargarage = true
+                    canpark = true
+                    local speedvehicle = IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId()))
+                    while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
+                        dist = #(vec - GetEntityCoords(PlayerPedId()))
+                        if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) then
+                            ESX.ShowNotification("Vehicle can be parked here [E]")
+                            while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
+                                if IsControlPressed(0,38) then
+                                    print("GAGO")
+                                    local vehicle = GetVehiclePedIsIn(PlayerPedId())
+                                    vehicleProps = GetVehicleProperties(vehicle)
+                                    local coord = {
+                                        heading = GetEntityHeading(vehicle),
+                                        x = GetEntityCoords(vehicle).x,
+                                        y = GetEntityCoords(vehicle).y,
+                                        z = GetEntityCoords(vehicle).z
+                                    }
+                                    car = vehicle
+                                    TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
+                                    Wait(2000)
+                                    print(vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps,spawned_cars[vehicleProps.plate])
+                                    if spawned_cars[vehicleProps.plate] ~= nil then
+                                        spawned_cars[vehicleProps.plate] = nil
+                                    end
+                                    TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps)
+                                    --DeleteEntity(vehicle)
+                                    ReqAndDelete(car)
+                                    ESX.ShowNotification("Vehicle has been Parked")
+                                    neargarage = false
+                                end
+                                Wait(0)
+                            end
+                        end
+                        Wait(1000)
+                    end
+                    canpark = false
+                end
+            end
+        end
+        Wait(1000)
     end
 end)
 
