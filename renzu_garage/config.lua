@@ -8,6 +8,7 @@ Config.UniqueCarperGarage = false -- if false show all cars to all garage locati
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
 Config.PlateSpace = true -- enabkle / disable plate spaces (compatibility with esx 1.1?)
+Config.Realistic_Parking = true
 Config.ReturnPayment = 1000
 garagecoord = {
     {
@@ -291,4 +292,24 @@ helispawn = {
             distance = 15
         }
     }
+}
+
+parking = {
+    {
+        garage = "Public Park A", --LEGION
+        Dist = 60, -- location size
+        Blip = {color = 38, sprite = 289, scale = 0.9},
+        garage_x = 227.09092712402,
+        garage_y = -787.85180664062,
+        garage_z = 30.701454162598, -- coordinates for this garage
+    },
+
+    {
+        garage = "Public Park B",
+        Dist = 30, -- location size
+        Blip = {color = 38, sprite = 289, scale = 0.9},
+        garage_x = 1028.1433105469,
+        garage_y = -775.60241699219,
+        garage_z = 58.039398193359, -- coordinates for this garage
+    },
 }
