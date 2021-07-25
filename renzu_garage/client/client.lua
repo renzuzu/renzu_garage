@@ -185,7 +185,7 @@ CreateThread(function()
                     if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) then
                         ESX.ShowNotification("Vehicle can be parked here [E]")
                         while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
-                            if IsControlPressed(0,38) then
+                            if IsControlPressed(0,Config.ParkButton) then
                                 print("GAGO")
                                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
                                 vehicleProps = GetVehicleProperties(vehicle)

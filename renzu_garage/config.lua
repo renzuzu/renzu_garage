@@ -9,6 +9,7 @@ Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
 Config.PlateSpace = true -- enable / disable plate spaces (compatibility with esx 1.1?)
 Config.Realistic_Parking = true
+Config.ParkButton = 38 -- E
 Config.ReturnPayment = 1000
 garagecoord = {
     {
