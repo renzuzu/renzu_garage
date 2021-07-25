@@ -236,10 +236,8 @@ CreateThread(function()
                 local mycoord = GetEntityCoords(PlayerPedId())
                 while dist < v.Dist do
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
-                    --print("TIKOL ASO",parkedvehicles)
                     local parked = parkedvehicles
                     for k,park in pairs(parked) do
-                        --print(k,park.park_coord)
                         local coord = json.decode(park.park_coord)
                         local vehicle_coord = vector3(coord.x,coord.y,coord.z)
                         park.plate = park.plate:upper()
@@ -254,12 +252,15 @@ CreateThread(function()
                                         Citizen.Wait(10)
                                     end
                                 end
+                                local posZ = coord.z + 999.0
+                                _,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
                                 spawned_cars[park.plate] = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 0, 0)
                                 SetEntityHeading(spawned_cars[park.plate], coord.heading)
                                 SetVehicleProp(spawned_cars[park.plate], json.decode(park.vehicle))
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],2)
                                 NetworkFadeInEntity(spawned_cars[park.plate],1)
                                 SetVehicleOnGroundProperly(spawned_cars[park.plate])
+                                SetEntityCoordsNoOffset(spawned_cars[park.plate],coord.x,coord.y,posZ,false,false,false)
                                 Wait(111)
                                 FreezeEntityPosition(spawned_cars[park.plate], true)
                                 SetEntityCollision(spawned_cars[park.plate],false)
