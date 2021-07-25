@@ -252,18 +252,27 @@ CreateThread(function()
                                         Citizen.Wait(10)
                                     end
                                 end
-                                local posZ = coord.z + 999.0
-                                _,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
+                                --local posZ = coord.z + 999.0
+                                --_,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
                                 spawned_cars[park.plate] = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 0, 0)
                                 SetEntityHeading(spawned_cars[park.plate], coord.heading)
                                 SetVehicleProp(spawned_cars[park.plate], json.decode(park.vehicle))
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],2)
                                 NetworkFadeInEntity(spawned_cars[park.plate],1)
                                 SetVehicleOnGroundProperly(spawned_cars[park.plate])
-                                SetEntityCoordsNoOffset(spawned_cars[park.plate],coord.x,coord.y,posZ,false,false,false)
-                                Wait(111)
-                                FreezeEntityPosition(spawned_cars[park.plate], true)
-                                SetEntityCollision(spawned_cars[park.plate],false)
+                                --SetEntityCoordsNoOffset(spawned_cars[park.plate],coord.x,coord.y,posZ,false,false,false)
+                                CreateThread(function()
+                                    local count = 0
+                                    while count < 5000 do
+                                        count = count + 200
+                                        --print(count)
+                                        SetEntityCollision(spawned_cars[park.plate],true)
+                                        Wait(20)
+                                    end
+                                    FreezeEntityPosition(spawned_cars[park.plate], true)
+                                    SetEntityCollision(spawned_cars[park.plate],false)
+                                    return
+                                end)
                             elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < 5 then
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],0)
                                 SetEntityCollision(spawned_cars[park.plate],true)
