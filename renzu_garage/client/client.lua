@@ -11,6 +11,7 @@ local PlayerData = {}
 local playerLoaded = false
 local canpark = false
 local spawned_cars = {}
+local type = 'car'
 Citizen.CreateThread(function()
 	while ESX == nil do
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
@@ -29,11 +30,6 @@ Citizen.CreateThread(function()
         playerloaded = true
         TriggerServerEvent('renzu_garage:GetParkedVehicles')
     end
-end)
-
-RegisterNetEvent('esx:playerLoaded')
-AddEventHandler('esx:playerLoaded', function(xPlayer)
-    playerloaded = true
     for k, v in pairs (garagecoord) do
         local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
         SetBlipSprite (blip, v.Blip.sprite)
@@ -58,6 +54,11 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
             EndTextCommandSetBlipName(blip)
         end
     end
+end)
+
+RegisterNetEvent('esx:playerLoaded')
+AddEventHandler('esx:playerLoaded', function(xPlayer)
+    playerloaded = true
     if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
         for k, v in pairs (helispawn[PlayerData.job.name]) do
             local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
@@ -81,6 +82,19 @@ RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
 	PlayerData.job = job
 	playerjob = PlayerData.job.name
+    if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+        for k, v in pairs (helispawn[PlayerData.job.name]) do
+            local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
+            SetBlipSprite (blip, v.Blip.sprite)
+            SetBlipDisplay(blip, 4)
+            SetBlipScale  (blip, v.Blip.scale)
+            SetBlipColour (blip, v.Blip.color)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+            EndTextCommandSetBlipName(blip)
+        end
+    end
 end)
 
 local parkedvehicles = {}
@@ -113,7 +127,8 @@ function tostringplate(plate)
 end
 
 local neargarage = false
-function PopUI(name,v)
+function PopUI(name,v,reqdist)
+    if reqdist == nil then reqdist = 5 end
     local table = {
         ['event'] = 'opengarage',
         ['title'] = 'Garage '..name,
@@ -127,7 +142,7 @@ function PopUI(name,v)
     }
     TriggerEvent('renzu_popui:showui',table)
     local dist = #(v - GetEntityCoords(PlayerPedId()))
-    while dist < 5 and neargarage do
+    while dist < reqdist and neargarage do
         dist = #(v - GetEntityCoords(PlayerPedId()))
         Wait(100)
     end
@@ -139,10 +154,16 @@ CreateThread(function()
         while true do
             for k,v in pairs(garagecoord) do
                 local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+                local inveh = IsPedInAnyVehicle(PlayerPedId())
+                local req_dis = v.Dist
+                if inveh and v.store_x ~= nil then
+                    vec = vector3(v.store_x,v.store_y,v.store_z)
+                    req_dis = v.Store_dist
+                end
                 local dist = #(vec - GetEntityCoords(PlayerPedId()))
-                if dist < v.Dist then
+                if dist < req_dis then
                     neargarage = true
-                    PopUI(v.garage,vec)
+                    PopUI(v.garage,vec,req_dis)
                 end
             end
             if Config.EnableImpound then
@@ -186,7 +207,6 @@ CreateThread(function()
                         ESX.ShowNotification("Vehicle can be parked here [E]")
                         while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
                             if IsControlPressed(0,Config.ParkButton) then
-                                print("GAGO")
                                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
                                 vehicleProps = GetVehicleProperties(vehicle)
                                 local coord = {
@@ -198,7 +218,6 @@ CreateThread(function()
                                 car = vehicle
                                 TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
                                 Wait(2000)
-                                print(vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps,spawned_cars[vehicleProps.plate])
                                 if spawned_cars[vehicleProps.plate] ~= nil then
                                     spawned_cars[vehicleProps.plate] = nil
                                 end
@@ -328,6 +347,7 @@ AddEventHandler('opengarage', function()
         if not v.property then
             local actualShop = v
             local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
+            jobgarage = false
             if v.job ~= nil then
                 if v.garage == 'impound' then
                     jobgarage = false
@@ -336,7 +356,8 @@ AddEventHandler('opengarage', function()
                 end
             end
             if DoesEntityExist(vehiclenow) then
-                if dist <= v.Dist and not jobgarage and v.garage ~= 'impound' or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and v.garage ~= 'impound' then
+                local req_dist = v.Store_dist or v.Dist
+                if dist <= req_dist and not jobgarage and v.garage ~= 'impound' or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and v.garage ~= 'impound' then
                     id = v.garage
                     Storevehicle(vehiclenow)
                     break
@@ -350,7 +371,8 @@ AddEventHandler('opengarage', function()
                     while not fetchdone do
                         Wait(0)
                     end
-                    OpenGarage(v.garage)
+                    type = v.Type
+                    OpenGarage(v.garage,v.Type)
                     break
                 end
             end
@@ -690,15 +712,19 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         if props ~= nil and props.engineHealth ~= nil and props.engineHealth < 100 then
             props.engineHealth = 200
         end
+        local pmult, tmult, handling, brake = 1000,800,GetPerformanceStats(vehicleModel).handling,GetPerformanceStats(vehicleModel).brakes
+        if value.type == 'boat' or value.type == 'plane' then
+            pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
+        end
         local VTable = 
         {
             brand = GetVehicleClassnamemodel(tonumber(props.model)),
             name = vehname:upper(),
-            brake = GetPerformanceStats(vehicleModel).brakes,
-            handling = GetPerformanceStats(vehicleModel).handling,
+            brake = brake,
+            handling = handling,
             topspeed = math.ceil(GetVehicleModelEstimatedMaxSpeed(vehicleModel)*4.605936),
-            power = math.ceil(GetVehicleModelAcceleration(vehicleModel)*1000),
-            torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*800),
+            power = math.ceil(GetVehicleModelAcceleration(vehicleModel)*pmult),
+            torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*tmult),
             model = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model))),
             model2 = tonumber(props.model),
             plate = value.plate,
@@ -709,7 +735,8 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             garage_id = value.garage_id,
             impound = value.impound,
             stored = value.stored,
-            identifier = value.owner
+            identifier = value.owner,
+            type = value.type,
         }
         table.insert(OwnedVehicles['garage'], VTable)
     end
@@ -769,10 +796,10 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
     fetchdone = true
 end)
 
-function OpenGarage(id)
+function OpenGarage(id,garage_type)
     inGarage = true
     local ped = PlayerPedId()
-    if not Config.Quickpick then
+    if not Config.Quickpick and garage_type == 'car' then
         CreateGarageShell()
     end
     while not fetchdone do
@@ -783,8 +810,7 @@ function OpenGarage(id)
     local cars = 0
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            --if id == v.garage_id or v.garage_id == 'impound' then
-            if Config.UniqueCarperGarage and id == v.garage_id or not Config.UniqueCarperGarage and id ~= nil or v.garage_id == 'impound' then
+            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type or v.garage_id == 'impound' and garage_type == v.type then
                 cars = cars + 1
                 if v.garage_id == 'impound' then
                     v.garage_id = 'A'
@@ -826,7 +852,7 @@ function OpenGarage(id)
         )
 
         SetNuiFocus(true, true)
-        if not Config.Quickpick then
+        if not Config.Quickpick and garage_type == 'car' then
             RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
             for k,v in pairs(garagecoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
@@ -2020,7 +2046,7 @@ RegisterNUICallback("ownerinfo",function(data, cb)
 end)
 
 RegisterNUICallback("SpawnVehicle",function(data, cb)
-    if not Config.Quickpick then
+    if not Config.Quickpick and type == 'car' then
         SpawnVehicleLocal(data.modelcar, json.decode(data.props))
     end
 end)
@@ -2371,7 +2397,7 @@ function CheckWanderingVehicle(plate)
     for i = 1, #gameVehicles do
         local vehicle = gameVehicles[i]
         if DoesEntityExist(vehicle) then
-            if GetVehicleNumberPlateText(vehicle) == GetVehicleNumberPlateText(plate) then
+            if GetVehicleNumberPlateText(vehicle) == plate then
                 ReqAndDelete(vehicle)
                 break
             end
@@ -2463,7 +2489,7 @@ function Spawn_Vehicle_Forward(veh, coords)
     local move_coords = coords
     local vehicle = GerNearVehicle(move_coords, 3, veh)
     if vehicle then
-        move_coords = move_coords + GetEntityForwardVector(veh) * 6.0
+        move_coords = move_coords + GetEntityForwardVector(veh) * 9.0
         SetEntityCoords(veh, move_coords.x, move_coords.y, move_coords.z)
     else return end
     Spawn_Vehicle_Forward(veh, move_coords)

@@ -3,7 +3,7 @@ Config.Locale = "en"
 Config.Mysql = 'ghmattisql' -- "ghmattisql", "msyql-async"
 Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
-Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
+Config.Quickpick = false -- if false system will create a garage shell and spawn every vehicle you preview
 Config.UniqueCarperGarage = false -- if false show all cars to all garage location! else if true, Vehicles Saved in Garage A cannot be take out from Garage B for example.
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
@@ -15,6 +15,7 @@ garagecoord = {
     {
         garage = "A", --LEGION
         Dist = 7, -- distance (DEPRECATED)
+        Type = "car",
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 241.1,
         garage_y = -757.1,
@@ -174,7 +175,7 @@ garagecoord = {
         job = "police",
         Type = "car",
         Dist = 10,
-        Blip = {color = 38, sprite = 289, scale = 0.6},
+        Blip = {color = 38, sprite = 662, scale = 0.6},
         garage_x = 427.20556640625,
         garage_y = -1011.4292602539,
         garage_z = 28.954322814941,
@@ -238,13 +239,50 @@ garagecoord = {
         spawn_y = -1304.6813964844,
         spawn_z = 31.330451965332,
         heading = 80.139533996582
-    }
+    },
+
+    -- BOAT GARAGE
+    {
+        garage = "Boat Garage A", --YACHT CLUB
+        --job = "all", -- uncomment if job
+        Type = "boat",
+        Dist = 10,
+        Store_dist = 40,
+        Blip = {color = 38, sprite = 410, scale = 0.6},
+        garage_x = -828.34112548828,
+        garage_y = -1410.7623291016,
+        garage_z = 1.6053801774979, -- coordinates for this garage
+        spawn_x = -827.5205078125,
+        spawn_y = -1418.7016601562,
+        spawn_z = 0.11820656061172,
+        heading = 103.99516296387, -- Vehicle spawn location
+    },
+    -- PLANE HANGAR
+    {
+        garage = "Plane Hangar A", --Devin Westons Hangar
+        --job = "all", -- uncomment if job
+        Type = "plane",
+        Dist = 10,
+        Store_dist = 50,
+        Blip = {color = 38, sprite = 423, scale = 0.8},
+        garage_x = -1025.9724121094,
+        garage_y = -3018.4951171875,
+        garage_z = 13.945039749146, -- coordinates for this garage
+        spawn_x = -999.55120849609,
+        spawn_y = -2998.3647460938,
+        spawn_z = 14.783174514771,
+        store_x = -1002.9470214844,
+        store_y = -3009.9311523438,
+        store_z = 13.945080757141,
+        heading = 63.61706161499, -- Vehicle spawn location
+    },
 }
 
 impoundcoord = {
     {
         garage = "impound", --mrpd
         job = "police",
+        Type = "car",
         Dist = 10,
         Blip = {color = 2, sprite = 289, scale = 0.6},
         garage_x = 459.18936157227,

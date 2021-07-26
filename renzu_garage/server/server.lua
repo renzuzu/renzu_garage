@@ -198,7 +198,9 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
             ['@owner'] = xPlayer.identifier,
             ['@plate'] = plate
         })
+        print("GAGO")
         if #result > 0 then
+            print("ASO")
             if result[1].vehicle ~= nil then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
