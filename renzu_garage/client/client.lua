@@ -1274,7 +1274,7 @@ function GotoGarage(id, property, propertycoord, data)
     vehtable = {}
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if id ~= nil or v.garage_id == 'impound' then
+            if Config.UniqueCarperGarage and id == v.garage_id and type == v.type  or not Config.UniqueCarperGarage and id ~= nil and type == v.type then
                 if vehtable[v.garage_id] == nil and not property then
                     vehtable[v.garage_id] = {}
                 end
