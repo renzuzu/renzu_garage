@@ -2114,6 +2114,7 @@ RegisterNUICallback(
                 if dist <= 70.0 and id == v.garage or dist <= 70.0 and id == 'impound' then
                     DoScreenFadeOut(333)
                     Citizen.Wait(333)
+                    CheckWanderingVehicle(props.plate)
                     DeleteEntity(LastVehicleFromGarage)
                     Citizen.Wait(1000)
                     Citizen.Wait(333)
