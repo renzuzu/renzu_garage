@@ -1703,7 +1703,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                             plate = vp.plate
                             model = GetEntityModel(vehicle)
                             ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound)
-                                if stored and impound == 0 then
+                                if stored and impound == 0 or not Config.EnableReturnVehicle then
                                     DoScreenFadeOut(333)
                                     Citizen.Wait(333)
                                     if not property then
@@ -2107,7 +2107,7 @@ RegisterNUICallback(
         local props = json.decode(data.props)
         local veh = nil
     ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound)
-        if stored and impound == 0 or id == 'impound' then
+        if stored and impound == 0 or id == 'impound' or not Config.EnableReturnVehicle then
             for k,v in pairs(garagecoord) do
                 local actualShop = v
                 local dist = #(vector3(v.spawn_x,v.spawn_y,v.spawn_z) - GetEntityCoords(GetPlayerPed(-1)))
