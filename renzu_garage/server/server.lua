@@ -165,7 +165,7 @@ end)
 
 ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate)
     if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):uppwer()
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
         plate = plate:upper()
     end
