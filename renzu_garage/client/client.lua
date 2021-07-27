@@ -2397,9 +2397,8 @@ function CheckWanderingVehicle(plate)
     for i = 1, #gameVehicles do
         local vehicle = gameVehicles[i]
         if DoesEntityExist(vehicle) then
-            if GetVehicleNumberPlateText(vehicle) == plate then
+            if GetVehicleNumberPlateText(vehicle):upper() == plate:upper() then
                 ReqAndDelete(vehicle)
-                break
             end
         end
     end
