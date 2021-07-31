@@ -679,6 +679,9 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     tableVehicles = nil
     tableVehicles = tb
     local vehdata = vehdata
+    if vehdata == nil then
+        vehdata = {}
+    end
     local vehicle_data = {}
     for _,value in pairs(vehdata) do
         vehicle_data[value.model] = value.name
