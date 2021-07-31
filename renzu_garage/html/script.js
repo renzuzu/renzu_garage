@@ -123,10 +123,6 @@ $('#garage').append(app);
 
 function ShowVehicle(currentTarget) {
         var data = inGarageVehicle[currentTarget]
-        console.log(garage_id,data.plate)
-        console.log(garage_id,currentTarget)
-        console.log(garage_id,currentTarget)
-        console.log(garage_id,currentTarget)
         if (currentcar !== currentTarget) {
             currentcar = currentTarget
             var div = $(this).parent().find('.active');        

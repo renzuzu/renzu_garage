@@ -1,16 +1,16 @@
 Config = {}
 Config.Locale = "en"
-Config.Mysql = 'ghmattisql' -- "ghmattisql", "msyql-async"
+Config.Mysql = 'mysql-async' -- "ghmattisql", "msyql-async"
 Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
-Config.Quickpick = false -- if false system will create a garage shell and spawn every vehicle you preview
+Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
 Config.UniqueCarperGarage = false -- if false show all cars to all garage location! else if true, Vehicles Saved in Garage A cannot be take out from Garage B for example.
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
 Config.PlateSpace = true -- enable / disable plate spaces (compatibility with esx 1.1?)
 Config.Realistic_Parking = true
 Config.ParkButton = 38 -- E
-Config.EnableReturnVehicle = true -- enable / disable return vehicle feature
+Config.EnableReturnVehicle = false -- enable / disable return vehicle feature
 Config.ReturnPayment = 1000
 garagecoord = {
     {
