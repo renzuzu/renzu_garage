@@ -337,12 +337,15 @@ CreateThread(function()
     end
 end)
 
+local jobgarage = false
+local garagejob = nil
 RegisterNetEvent('opengarage')
 AddEventHandler('opengarage', function()
     local sleep = 2000
     local ped = PlayerPedId()
     local vehiclenow = GetVehiclePedIsIn(GetPlayerPed(-1), false)
-    local jobgarage = false
+    jobgarage = false
+    garagejob = nil
     for k,v in pairs(garagecoord) do
         if not v.property then
             local actualShop = v
@@ -372,7 +375,10 @@ AddEventHandler('opengarage', function()
                         Wait(0)
                     end
                     type = v.Type
-                    OpenGarage(v.garage,v.Type)
+                    if jobgarage then
+                        garagejob = v.job
+                    end
+                    OpenGarage(v.garage,v.Type,garagejob or false)
                     break
                 end
             end
@@ -719,6 +725,9 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         if value.type == 'boat' or value.type == 'plane' then
             pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
         end
+        if value.job == '' then
+            value.job = nil
+        end
         local VTable = 
         {
             brand = GetVehicleClassnamemodel(tonumber(props.model)),
@@ -740,6 +749,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             stored = value.stored,
             identifier = value.owner,
             type = value.type,
+            job = value.job ~= nil,
         }
         table.insert(OwnedVehicles['garage'], VTable)
     end
@@ -799,7 +809,7 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
     fetchdone = true
 end)
 
-function OpenGarage(id,garage_type)
+function OpenGarage(id,garage_type,jobonly)
     inGarage = true
     local ped = PlayerPedId()
     if not Config.Quickpick and garage_type == 'car' then
@@ -813,7 +823,7 @@ function OpenGarage(id,garage_type)
     local cars = 0
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type or v.garage_id == 'impound' and garage_type == v.type then
+            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and v.garage_id ~= 'impound' or id == 'impound' and v.garage_id == 'impound' and garage_type == v.type then
                 cars = cars + 1
                 if v.garage_id == 'impound' then
                     v.garage_id = 'A'
@@ -2110,7 +2120,7 @@ RegisterNUICallback(
         local props = json.decode(data.props)
         local veh = nil
     ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound)
-        if stored and impound == 0 or id == 'impound' or not Config.EnableReturnVehicle then
+        if stored and impound == 0 or id == 'impound' or not Config.EnableReturnVehicle and impound ~= 1 or impound == 1 and not Config.EnableImpound then
             for k,v in pairs(garagecoord) do
                 local actualShop = v
                 local dist = #(vector3(v.spawn_x,v.spawn_y,v.spawn_z) - GetEntityCoords(GetPlayerPed(-1)))
@@ -2169,31 +2179,31 @@ RegisterNUICallback(
             {
             type = "cleanup"
             })
-            elseif impound == 1 then
-                SendNUIMessage(
-                {
-                    type = "notify",
-                    typenotify = "display",
-                    message = 'Vehicle is Impounded',
-                })
-                Citizen.Wait(1000)
-                SendNUIMessage(
-                {
-                    type = "onimpound"
-                })
-            else
-                SendNUIMessage(
-                {
-                    type = "notify",
-                    typenotify = "display",
-                    message = 'Vehicle is Outside of Garage',
-                })
-                Citizen.Wait(1000)
-                SendNUIMessage(
-                {
-                    type = "returnveh"
-                }) 
-            end
+        elseif impound == 1 then
+            SendNUIMessage(
+            {
+                type = "notify",
+                typenotify = "display",
+                message = 'Vehicle is Impounded',
+            })
+            Citizen.Wait(1000)
+            SendNUIMessage(
+            {
+                type = "onimpound"
+            })
+        else
+            SendNUIMessage(
+            {
+                type = "notify",
+                typenotify = "display",
+                message = 'Vehicle is Outside of Garage',
+            })
+            Citizen.Wait(1000)
+            SendNUIMessage(
+            {
+                type = "returnveh"
+            }) 
+        end
     end, props.plate)
     end
 )
