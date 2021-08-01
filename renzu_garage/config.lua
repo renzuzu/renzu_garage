@@ -10,7 +10,7 @@ Config.EnableHeliGarage = true -- enable/disable Helis
 Config.PlateSpace = true -- enabkle / disable plate spaces (compatibility with esx 1.1?)
 Config.Realistic_Parking = true
 Config.ParkButton = 38 -- E
-Config.EnableReturnVehicle = false -- enable / disable return vehicle feature
+Config.EnableReturnVehicle = true -- enable / disable return vehicle feature
 Config.ReturnPayment = 1000
 garagecoord = {
     {
