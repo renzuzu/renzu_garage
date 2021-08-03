@@ -370,7 +370,7 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
     if id == nil then
         xPlayer.showNotification("Invalid User ID! (Must be Digits only)", 1, 0)
     else
-        if tonumber(plate) and transfer then
+        if plate and transfer then
             local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE UPPER(plate) = @plate and owner = @owner LIMIT 1', {
                 ['@plate'] = plate:upper(),
                 ['@owner'] = xPlayer.identifier
