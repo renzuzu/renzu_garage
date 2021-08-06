@@ -1,6 +1,6 @@
 Config = {}
 Config.Locale = "en"
-Config.Mysql = 'mysql-async' -- "ghmattisql", "msyql-async"
+Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async"
 Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
 Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
