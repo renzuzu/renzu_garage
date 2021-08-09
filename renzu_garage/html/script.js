@@ -27,8 +27,8 @@ window.addEventListener('message', function(event) {
         document.getElementById("dateissue").innerHTML = humanDateFormat;
         for(var [key,value] of Object.entries(data.info)){
             for(var [k,v] of Object.entries(value)){
-                if (k == 'name') {
-                    document.getElementById("ownerinfo").innerHTML = v;
+                if (k == 'firstname') {
+                    document.getElementById("ownerinfo").innerHTML = ''+v+' '+value.lastname+'';
                 }
                 if (k == 'phone_number') {
                     document.getElementById("contact").innerHTML = v;
