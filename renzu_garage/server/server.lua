@@ -170,13 +170,18 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
     else
         plate = plate:upper()
     end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE UPPER(plate) = @plate', {
-		['@plate'] = plate
-	})
-    local stored = result[1].stored
-    local impound = result[1].impound
-    print(stored,impound)
-    cb(stored,impound)
+    if plate == Config.DefaultPlate then
+        cb(true,0)
+    else
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE UPPER(plate) = @plate', {
+            ['@plate'] = plate
+        })
+        if result and result[1].stored ~= nil then
+            local stored = result[1].stored
+            local impound = result[1].impound
+            cb(stored,impound)
+        end
+    end
 end)
 
 RegisterServerEvent('renzu_garage:GetParkedVehicles')
