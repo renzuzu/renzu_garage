@@ -12,6 +12,7 @@ Config.Realistic_Parking = true
 Config.ParkButton = 38 -- E
 Config.EnableReturnVehicle = true -- enable / disable return vehicle feature
 Config.ReturnPayment = 1000
+Config.DefaultPlate = 'ROLEPLAY' -- default plate being used to default_vehicles args
 garagecoord = {
     {
         garage = "A", --LEGION
@@ -183,7 +184,12 @@ garagecoord = {
         spawn_x = 432.20071411133,
         spawn_y = -1015.4301757813,
         spawn_z = 28.840564727783,
-        heading = 85.93824005127
+        heading = 85.93824005127,
+        default_vehicle = { -- the vehicle listed here is like a goverment property and can be used for patrol etc.
+            [1] = {model = 'police', name = 'Police', type = 'car', grade = 1}, -- minimum grade
+            [2] = {model = 'police2', name = 'Police 2', type = 'car', grade = 1}, -- minimum grade
+            [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1}, -- minimum grade
+        },
     },
     {
         garage = "Sheriff Garage", --PALETO

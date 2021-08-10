@@ -378,7 +378,7 @@ AddEventHandler('opengarage', function()
                     if jobgarage then
                         garagejob = v.job
                     end
-                    OpenGarage(v.garage,v.Type,garagejob or false)
+                    OpenGarage(v.garage,v.Type,garagejob or false,v.default_vehicle or {})
                     break
                 end
             end
@@ -809,7 +809,42 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
     fetchdone = true
 end)
 
-function OpenGarage(id,garage_type,jobonly)
+function CreateDefault(default,jobonly,garage_type,id)
+    for k,v in pairs(default) do
+        if v.grade <= PlayerData.job.grade then
+            local vehicleModel = GetHashKey(v.model)
+            local pmult, tmult, handling, brake = 1000,800,GetPerformanceStats(vehicleModel).handling,GetPerformanceStats(vehicleModel).brakes
+            if v.type == 'boat' or v.type == 'plane' then
+                pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
+            end
+            local VTable = {
+                brand = GetVehicleClassnamemodel(tonumber(vehicleModel)),
+                name = v.name:upper(),
+                brake = brake,
+                handling = handling,
+                topspeed = math.ceil(GetVehicleModelEstimatedMaxSpeed(vehicleModel)*4.605936),
+                power = math.ceil(GetVehicleModelAcceleration(vehicleModel)*pmult),
+                torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*tmult),
+                model = v.model,
+                model2 = tonumber(vehicleModel),
+                plate = Config.DefaultPlate,
+                props = json.encode({model = vehicleModel, plate = Config.DefaultPlate}),
+                fuel = 100,
+                bodyhealth = 1000,
+                enginehealth = 1000,
+                garage_id = id,
+                impound = 0,
+                stored = 1,
+                identifier = jobonly,
+                type = garage_type,
+                job = jobonly,
+            }
+            table.insert(OwnedVehicles['garage'], VTable)
+        end
+    end
+end
+
+function OpenGarage(id,garage_type,jobonly,default)
     inGarage = true
     local ped = PlayerPedId()
     if not Config.Quickpick and garage_type == 'car' then
@@ -821,6 +856,7 @@ function OpenGarage(id,garage_type,jobonly)
     local vehtable = {}
     vehtable[id] = {}
     local cars = 0
+    CreateDefault(default,jobonly,garage_type,id)
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and v.garage_id ~= 'impound' or id == 'impound' and v.garage_id == 'impound' and garage_type == v.type then
