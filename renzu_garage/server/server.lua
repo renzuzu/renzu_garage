@@ -5,7 +5,7 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
-    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
     Wait(100)
     if Config.UseRayZone then
         local garages = {} -- garage table
@@ -221,7 +221,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
                         ['@isparked'] = state
                     })
                     Wait(800)
-                    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+                    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                     Wait(200)
                     TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles)
                 else
@@ -261,7 +261,7 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
                         ['@isparked'] = 0
                     })
                     Wait(300)
-                    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+                    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                     Wait(200)
                     TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
                 else
