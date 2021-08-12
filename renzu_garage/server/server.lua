@@ -100,7 +100,8 @@ end)
 
 function MysqlGarage(plugin,type,query,var)
     if type == 'fetchAll' and plugin == 'mysql-async' then
-        return MySQL.Sync.fetchAll(query, var)
+        local res = MySQL.Sync.fetchAll(query, var)
+        return res
     end
     if type == 'execute' and plugin == 'mysql-async' then
         MySQL.Sync.execute(query,var) 
