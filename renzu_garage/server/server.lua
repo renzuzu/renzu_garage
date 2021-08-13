@@ -309,7 +309,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     })
                     if updatepark then
                         Wait(300)
-                        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+                        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                         Wait(200)
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
                     end
@@ -347,7 +347,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     })
                     if updatepark then
                         Wait(300)
-                        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {})
+                        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                         Wait(200)
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
                     end
