@@ -2166,6 +2166,7 @@ RegisterNUICallback(
                     CheckWanderingVehicle(props.plate)
                     DeleteEntity(LastVehicleFromGarage)
                     Citizen.Wait(1000)
+                    CheckWanderingVehicle(props.plate)
                     Citizen.Wait(333)
                     SetEntityCoords(PlayerPedId(), v.garage_x,v.garage_y,v.garage_z, false, false, false, true)
                     local hash = tonumber(props.model)
@@ -2321,6 +2322,8 @@ RegisterNUICallback(
                         Citizen.Wait(555)
                         SetEntityCoords(PlayerPedId(), v.garage_x,v.garage_y,v.garage_z, false, false, false, true)
                         Citizen.Wait(555)
+                        CheckWanderingVehicle(props.plate)
+                        Citizen.Wait(555)
                         local hash = tonumber(data.modelcar)
                         local count = 0
                         if not HasModelLoaded(hash) then
@@ -2447,7 +2450,7 @@ function CheckWanderingVehicle(plate)
     for i = 1, #gameVehicles do
         local vehicle = gameVehicles[i]
         if DoesEntityExist(vehicle) then
-            if GetVehicleNumberPlateText(vehicle):upper() == plate:upper() then
+            if tostring(GetVehicleNumberPlateText(vehicle)):upper() == tostring(plate):upper() then
                 ReqAndDelete(vehicle)
             end
         end
