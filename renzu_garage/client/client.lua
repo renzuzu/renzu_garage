@@ -2450,7 +2450,15 @@ function CheckWanderingVehicle(plate)
     for i = 1, #gameVehicles do
         local vehicle = gameVehicles[i]
         if DoesEntityExist(vehicle) then
-            if tostring(GetVehicleNumberPlateText(vehicle)):upper() == tostring(plate):upper() then
+            local otherplate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1'):upper()
+            local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
+            if otherplate:len() > 8 then
+                otherplate = otherplate:sub(1, -2)
+            end
+            if plate:len() > 8 then
+                plate = plate:sub(1, -2)
+            end
+            if plate == otherplate then
                 ReqAndDelete(vehicle)
             end
         end
