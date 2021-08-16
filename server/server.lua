@@ -401,9 +401,8 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
         current_routing[routing] = source
     end
     Wait(100)
-    SetEntityCoords(GetPlayerPed(source),private_garage[id].coords.x,private_garage[id].coords.y,private_garage[id].coords.z,true)
-    SetEntityHeading(GetPlayerPed(source),private_garage[id].coords.w)
-    Wait(1000)
+    -- SetEntityCoords(GetPlayerPed(source),private_garage[id].coords.x,private_garage[id].coords.y,private_garage[id].coords.z,true)
+    -- SetEntityHeading(GetPlayerPed(source),private_garage[id].coords.w)
     for k,v in pairs(json.decode(result[1].vehicles)) do
         if v.vehicle == nil then v.taken = false end
     end
@@ -426,7 +425,8 @@ AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
     local xPlayer = ESX.GetPlayerFromId(source)
     local id = id
     if not choose then
-        SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
+        --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
+        TriggerClientEvent('renzu_garage:exitgarage',source, table, true)
         SetPlayerRoutingBucket(source,default_routing[source])
         --current_routing[default_routing[source]] = nil
     else
@@ -462,7 +462,9 @@ AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
             ['@identifier'] = identifier,
         })
         TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Successfully Take out the vehicle')
-        SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
+        --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
+        TriggerClientEvent('renzu_garage:exitgarage',source, table, true)
+        Wait(500)
         SetPlayerRoutingBucket(source,default_routing[source])
         --current_routing[default_routing[source]] = nil
         TriggerClientEvent('renzu_garage:choose',source,prop,table)
