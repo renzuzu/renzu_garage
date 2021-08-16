@@ -287,6 +287,11 @@ local tostore = {}
 local vehicleinarea = {}
 RegisterNetEvent('renzu_garage:ingarage')
 AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id)
+    DoScreenFadeOut(1)
+    SetEntityCoords(PlayerPedId(),garage.coords.x,garage.coords.y,garage.coords.z,true)
+    SetEntityHeading(PlayerPedId(),garage.coords.w)
+    Wait(1000)
+    DoScreenFadeIn(200)
     currentprivate = garage_id
     local table = json.decode(table.vehicles)
     for k,vehicle in pairs(GetGamePool('CVehicle')) do
@@ -750,7 +755,8 @@ function GetClosestPlayer()
 end
 
 RegisterNetEvent('renzu_garage:exitgarage')
-AddEventHandler('renzu_garage:exitgarage', function(table)
+AddEventHandler('renzu_garage:exitgarage', function(table,exit)
+    if not exit then
     insidegarage = false
     local closestplayer, dis = GetClosestPlayer()
     if closestplayer == -1 and dis < 100 then
@@ -768,6 +774,12 @@ AddEventHandler('renzu_garage:exitgarage', function(table)
         private_garages = {}
     end
     TriggerServerEvent('renzu_garage:exitgarage',table)
+    else
+        DoScreenFadeOut(1)
+        SetEntityCoords(PlayerPedId(),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
+        Wait(500)
+        DoScreenFadeIn(100)
+    end
 end)
 
 local opened = false
