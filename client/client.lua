@@ -773,14 +773,13 @@ end)
 local opened = false
 RegisterNetEvent('renzu_garage:opengaragemenu')
 AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
-    opened = true
     local garage,table = id,v
     ESX.TriggerServerCallback("renzu_garage:isgarageowned",function(owned,share)
         local multimenu = {}
         if not owned then
             firstmenu = {
                 ['Buy Garage'] = {
-                    ['title'] = 'Buy Garage',
+                    ['title'] = 'Buy Garage - $'..v.cost..'',
                     ['fa'] = '<i class="fad fa-question-square"></i>',
                     ['type'] = 'event', -- event / export
                     ['content'] = 'renzu_garage:buygarage',
@@ -805,10 +804,12 @@ AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
             TriggerEvent('renzu_contextmenu:show')
         elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
             TriggerEvent('renzu_notify:Notify', 'error','Garage', 'You dont owned this garage')
+            opened = true
         elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
             local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
             ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
             TriggerServerEvent('renzu_garage:storeprivate',id,v, prop)
+            opened = true
         elseif owned then
             secondmenu = {
                 ['Go to Garage'] = {

@@ -797,7 +797,7 @@ private_garage = {
     },
     ['large2'] = { -- garage id
         name = 'Vespucci Garage', -- custom name
-        cost = 1, -- cost for purchase
+        cost = 10000, -- cost for purchase
         max = 15, -- max vehicles available for this garage
         buycoords = vector4(-1009.1658935547,-782.21197509766,15.69953918457,226.37933349609),
         coords = vector4(239.85778808594,-1004.7095947266,-98.999862670898,88.549873352051),
@@ -824,7 +824,7 @@ private_garage = {
     },
     ['large3'] = { -- garage id
         name = 'West Vinewood Garage', -- custom name
-        cost = 1, -- cost for purchase
+        cost = 10000, -- cost for purchase
         max = 15, -- max vehicles available for this garage
         buycoords = vector4(-271.14663696289,286.91583251953,89.948661804199,178.25668334961),
         coords = vector4(239.85778808594,-1004.7095947266,-98.999862670898,88.549873352051),
@@ -851,7 +851,7 @@ private_garage = {
     },
     ['large4'] = { -- garage id
     name = 'Crustenburg Garage', -- custom name
-    cost = 1, -- cost for purchase
+    cost = 10000, -- cost for purchase
     max = 15, -- max vehicles available for this garage
     buycoords = vector4(-1819.3909912109,-331.56829833984,42.809921264648,322.92663574219),
     coords = vector4(239.85778808594,-1004.7095947266,-98.999862670898,88.549873352051),
@@ -879,7 +879,7 @@ private_garage = {
 
     ['small'] = { -- garage id
         name = 'PillBox Garage', -- custom name
-        cost = 1, -- cost for purchase
+        cost = 10000, -- cost for purchase
         max = 2, -- max vehicles available for this garage
         buycoords = vector4(54.288684844971,-1047.7552490234,29.026540756226,170.9740447998),
         coords = vector4(178.95022583008,-1000.0469970703,-98.999862670898,184.86791992188),
@@ -895,7 +895,7 @@ private_garage = {
     },
     ['small2'] = { -- garage id
         name = 'Sandy Garage', -- custom name
-        cost = 1, -- cost for purchase
+        cost = 10000, -- cost for purchase
         max = 2, -- max vehicles available for this garage
         buycoords = vector4(1410.3173828125,3620.0886230469,34.331230163574,288.8303527832),
         coords = vector4(178.95022583008,-1000.0469970703,-98.999862670898,184.86791992188),
