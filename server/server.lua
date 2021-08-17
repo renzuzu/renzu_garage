@@ -400,14 +400,15 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
     if not share and not haveworld then
         current_routing[routing] = source
     end
-    Wait(100)
+    Wait(1000)
     -- SetEntityCoords(GetPlayerPed(source),private_garage[id].coords.x,private_garage[id].coords.y,private_garage[id].coords.z,true)
     -- SetEntityHeading(GetPlayerPed(source),private_garage[id].coords.w)
-    for k,v in pairs(json.decode(result[1].vehicles)) do
-        if v.vehicle == nil then v.taken = false end
-    end
     lastgarage[source] = id
-    TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],id)
+	local vehicle_ = {}
+	for k,v in pairs(json.decode(result[1].vehicles)) do
+		vehicle_[k] = v
+	end
+    TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],id, vehicle_)
     -- for k,v in pairs(json.decode(result[1].vehicles)) do
     --     print(k,v.vehicle)
     --     if v.vehicle ~= nil and v.taken then
