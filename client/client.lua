@@ -286,17 +286,15 @@ local carrymod = false
 local tostore = {}
 local vehicleinarea = {}
 
-function AntiDupe(veh, coords)
+function AntiDupe(coords, hash,x,y,z,w,prop)
     Wait(10)
     local move_coords = coords
-    local vehicle = GerNearVehicle(move_coords, 1, veh)
-	if vehicle then DeleteEntity(veh) end
-	SetEntityCollision(vehicle,true)
-	FreezeEntityPosition(vehicle, false)
+    local vehicle = IsAnyVehicleNearPoint(coords.x,coords.y,coords.z,1.1)
+	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,true) private_garages[v] = vehicle SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) end
 end
 
 RegisterNetEvent('renzu_garage:ingarage')
-AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id)
+AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id, vehicle_)
     DoScreenFadeOut(1)
     SetEntityCoords(PlayerPedId(),garage.coords.x,garage.coords.y,garage.coords.z,true)
     SetEntityHeading(PlayerPedId(),garage.coords.w)
@@ -305,12 +303,19 @@ AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id)
     currentprivate = garage_id
     local table = json.decode(table.vehicles)
 	Wait(500)
-    for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
-        vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
-    end
-    for k,v in pairs(table) do
+	for i = 0, 49 do
+		if DoesEntityExist(GetGamePool('CVehicle')[i]) then
+			vehicleinarea[GetVehicleNumberPlateText(GetGamePool('CVehicle')[i])] = true
+		end
+	end
+    -- for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
+        -- vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
+		-- print(GetVehicleNumberPlateText(vehicle))
+    -- end
+    for k,v in pairs(vehicle_) do
         if v.vehicle ~= nil and v.taken and vehicleinarea[v.vehicle.plate] == nil then
-            local hash = tonumber(v.vehicle.model)
+			local ve = v.vehicle
+            local hash = tonumber(ve.model)
             local count = 0
             if not HasModelLoaded(hash) then
                 RequestModel(hash)
@@ -319,12 +324,11 @@ AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id)
                     Citizen.Wait(10)
                 end
             end
-            local vehicle = CreateVehicle(v.vehicle.model,v.coord.x,v.coord.y,v.coord.z,v.coord.w,true,true)
-			SetEntityCollision(vehicle,false)
-			FreezeEntityPosition(vehicle, true)
-			AntiDupe(vehicle, GetEntityCoords(vehicle)) -- if gamepool does not return accurate vehicles in area, we will use this to remove dupe spawn since the spawned is a network to sync the mods instantly
-            private_garages[vehicle] = vehicle
-            SetVehicleProp(vehicle, v.vehicle)
+            --local vehicle = CreateVehicle(hash,v.coord.x,v.coord.y,v.coord.z,v.coord.w,true,true)
+			-- SetEntityCollision(vehicle,false)
+			-- FreezeEntityPosition(vehicle, true)
+			Wait(10)
+			AntiDupe(vector3(v.coord.x,v.coord.y,v.coord.z),hash,v.coord.x,v.coord.y,v.coord.z,v.coord.w,v.vehicle)
         end
     end
     local garage = garage
