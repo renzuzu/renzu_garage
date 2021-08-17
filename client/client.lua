@@ -285,6 +285,16 @@ local carrymode = false
 local carrymod = false
 local tostore = {}
 local vehicleinarea = {}
+
+function AntiDupe(veh, coords)
+    Wait(10)
+    local move_coords = coords
+    local vehicle = GerNearVehicle(move_coords, 1, veh)
+	if vehicle then DeleteEntity(veh) end
+	SetEntityCollision(vehicle,true)
+	FreezeEntityPosition(vehicle, false)
+end
+
 RegisterNetEvent('renzu_garage:ingarage')
 AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id)
     DoScreenFadeOut(1)
@@ -294,11 +304,11 @@ AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id)
     DoScreenFadeIn(200)
     currentprivate = garage_id
     local table = json.decode(table.vehicles)
-    for k,vehicle in pairs(GetGamePool('CVehicle')) do
+	Wait(500)
+    for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
         vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
     end
     for k,v in pairs(table) do
-        --print(k,v.vehicle,v.vehicle.model,v.coord.x,v.coord.y,v.coord.z,v.coord.w)
         if v.vehicle ~= nil and v.taken and vehicleinarea[v.vehicle.plate] == nil then
             local hash = tonumber(v.vehicle.model)
             local count = 0
@@ -310,6 +320,9 @@ AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id)
                 end
             end
             local vehicle = CreateVehicle(v.vehicle.model,v.coord.x,v.coord.y,v.coord.z,v.coord.w,true,true)
+			SetEntityCollision(vehicle,false)
+			FreezeEntityPosition(vehicle, true)
+			AntiDupe(vehicle, GetEntityCoords(vehicle)) -- if gamepool does not return accurate vehicles in area, we will use this to remove dupe spawn since the spawned is a network to sync the mods instantly
             private_garages[vehicle] = vehicle
             SetVehicleProp(vehicle, v.vehicle)
         end
