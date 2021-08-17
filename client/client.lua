@@ -290,7 +290,7 @@ function AntiDupe(coords, hash,x,y,z,w,prop)
     Wait(10)
     local move_coords = coords
     local vehicle = IsAnyVehicleNearPoint(coords.x,coords.y,coords.z,1.1)
-	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,true) private_garages[v] = vehicle SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) end
+	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,true) private_garages[v] = v SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) end
 end
 
 RegisterNetEvent('renzu_garage:ingarage')
@@ -303,15 +303,15 @@ AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id, vehicl
     currentprivate = garage_id
     local table = json.decode(table.vehicles)
 	Wait(500)
-	for i = 0, 49 do
-		if DoesEntityExist(GetGamePool('CVehicle')[i]) then
-			vehicleinarea[GetVehicleNumberPlateText(GetGamePool('CVehicle')[i])] = true
-		end
-	end
-    -- for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
-        -- vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
-		-- print(GetVehicleNumberPlateText(vehicle))
-    -- end
+	-- for i = 0, 49 do
+		-- if DoesEntityExist(GetGamePool('CVehicle')[i]) then
+			-- vehicleinarea[GetVehicleNumberPlateText(GetGamePool('CVehicle')[i])] = true
+			-- print(GetVehicleNumberPlateText(GetGamePool('CVehicle')[i]))
+		-- end
+	-- end
+    for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
+        vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
+    end
     for k,v in pairs(vehicle_) do
         if v.vehicle ~= nil and v.taken and vehicleinarea[v.vehicle.plate] == nil then
 			local ve = v.vehicle
@@ -541,7 +541,7 @@ AddEventHandler('renzu_garage:openinventory', function(current)
                     multimenu[firstToUpper(t.type)][k] = {
                         ['title'] = firstToUpper(t.label)..' : LVL '..lvl..' x'..v,
                         --['fa'] = '<i class="fad fa-question-square"></i>',
-                        ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_customs/html/img/'..index..'.png">',
+                        ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_garage/html/img/'..index..'.png">',
                         ['type'] = 'event', -- event / export
                         ['content'] = 'renzu_garage:getmod',
                         ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {index,lvl,k}, arg_unpack = true},
@@ -670,11 +670,34 @@ AddEventHandler('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
     end
 end)
 
+function SetModable(vehicle)
+    local attempt = 0
+    SetEntityAsMissionEntity(vehicle,true,true)
+    NetworkRequestControlOfEntity(vehicle)
+    while not NetworkHasControlOfEntity(vehicle) and attempt < 500 and DoesEntityExist(vehicle) do
+        NetworkRequestControlOfEntity(vehicle)
+        Citizen.Wait(0)
+        attempt = attempt + 1
+    end
+    attempt = 0
+    -- TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
+    -- print(NetworkHasControlOfEntity(vehicle))
+    -- Wait(500)
+    -- SetEntityCoords(PlayerPedId(),oldcoord)
+    SetVehicleModKit(vehicle, 0)
+    while GetVehicleModKit(vehicle) ~= 0 and DoesEntityExist(vehicle) and attempt < 40 do
+        Wait(0)
+        attempt = attempt + 1
+        SetVehicleModKit(vehicle, 0)
+    end
+end
+
 RegisterNetEvent('renzu_garage:vehiclemod')
 AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
     if DoesEntityExist(vehicle) and IsEntityAVehicle(vehicle) then
         local multimenu = {}
         local firstmenu = {}
+		SetModable(vehicle)
         local openmenu = false
         for i = 0, 49 do
             local modType = i
@@ -685,7 +708,7 @@ AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
                     multimenu[firstToUpper(mod.type)].main_fa = '<img style="height: auto;margin-left: -70px;margin-top: -7px;position: absolute;max-width: 40px;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">'
                     multimenu[firstToUpper(mod.type)][mod.label:upper()..' '..GetVehicleMod(vehicle,i) + 1] = {
                         ['title'] = firstToUpper(mod.label)..' '..GetVehicleMod(vehicle,i) + 1,
-                        ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_customs/html/img/'..mod.index..'.png">',
+                        ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">',
                         ['type'] = 'event', -- event / export
                         ['content'] = 'renzu_garage:removevehiclemod',
                         ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {mod,GetVehicleMod(vehicle,mod.index) + 1,vehicle}, arg_unpack = true},
@@ -717,9 +740,10 @@ end)
 
 RegisterNetEvent('renzu_garage:choose')
 AddEventHandler('renzu_garage:choose', function(table,garage)
+	DoScreenFadeOut(1)
     insidegarage = false
     local closestplayer, dis = GetClosestPlayer()
-    if closestplayer == -1 and dis < 100 then
+    if closestplayer == -1 and dis < 30 then
         local empty = true
         for k,v in pairs(private_garages) do
             empty = false
@@ -733,6 +757,7 @@ AddEventHandler('renzu_garage:choose', function(table,garage)
         vehicleinarea = {}
         private_garages = {}
     end
+	Wait(2000)
     local hash = tonumber(table.model)
     local count = 0
     if not HasModelLoaded(hash) then
@@ -747,6 +772,7 @@ AddEventHandler('renzu_garage:choose', function(table,garage)
     NetworkFadeInEntity(vehicle,1)
     Wait(10)
     TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
+	DoScreenFadeIn(333)
 end)
 
 function GetClosestPlayer()
@@ -776,7 +802,7 @@ AddEventHandler('renzu_garage:exitgarage', function(table,exit)
     if not exit then
     insidegarage = false
     local closestplayer, dis = GetClosestPlayer()
-    if closestplayer == -1 and dis < 100 then
+    if closestplayer == -1 and dis < 33 then
         local empty = true
         for k,v in pairs(private_garages) do
             empty = false

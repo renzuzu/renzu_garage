@@ -221,9 +221,13 @@ end)
 
 RegisterServerEvent('renzu_garage:storemod')
 AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,savepartsonly)
+	print(savepartsonly)
+	local savepartsonly = savepartsonly
     local src = source  
     local xPlayer = ESX.GetPlayerFromId(src)
     local identifier = xPlayer.identifier
+	local save = save
+	local share = share
     if share then
         identifier = share.owner
     end
@@ -466,9 +470,10 @@ AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
         --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
         TriggerClientEvent('renzu_garage:exitgarage',source, table, true)
         Wait(500)
-        SetPlayerRoutingBucket(source,default_routing[source])
         --current_routing[default_routing[source]] = nil
         TriggerClientEvent('renzu_garage:choose',source,prop,table)
+		Wait(1000)
+		SetPlayerRoutingBucket(source,default_routing[source])
         TriggerClientEvent('renzu_garage:syncstate',-1,string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),source)
     end
     lastgarage[source] = nil
