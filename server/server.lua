@@ -1,11 +1,13 @@
 ESX = nil
 local vehicles = {}
 local parkedvehicles = {}
+local parkmeter = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
+    parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
     Wait(100)
     if Config.UseRayZone then
         local garages = {} -- garage table
@@ -522,6 +524,69 @@ RegisterCommand(Config.GiveAccessCommand, function(source, args, rawCommand)
     end
 end)
 
+ESX.RegisterServerCallback('renzu_garage:parkingmeter', function (source, cb, coord, coord2,prop)
+    local src = source  
+    local xPlayer = ESX.GetPlayerFromId(src)
+    local identifier = xPlayer.identifier
+    local coord = coord
+    local coord2 = coord2
+    local prop = prop
+    if xPlayer.getMoney() >= Config.MeterPayment then
+        local canpark = true
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT coord FROM parking_meter', {})
+        if result then
+            for k,v in pairs(result) do
+                local c = json.decode(v.coord)
+                if v.coord ~= nil and #(vector3(c.x,c.y,c.z) - coord) < 7 then
+                    canpark = false
+                end
+            end
+        end
+        if canpark then
+            MysqlGarage(Config.Mysql,'execute','INSERT INTO parking_meter (identifier, coord, park_coord, vehicle, plate) VALUES (@identifier, @coord, @park_coord, @vehicle, @plate)', {
+                ['@identifier']   = xPlayer.identifier,
+                ['@coord']   = json.encode(coord),
+                ['@park_coord']   = json.encode(coord2),
+                ['@vehicle'] = prop,
+                ['@plate'] = json.decode(prop).plate
+            })
+            xPlayer.removeMoney(Config.MeterPayment)
+            TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Park the vehicle')
+            Wait(300)
+            parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+            Wait(200)
+            TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,json.decode(prop).plate,parkmeter)
+            cb(true)
+        else
+            TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'Parking is occupied')
+            cb(false)
+        end
+    end
+end)
+
+RegisterServerEvent('renzu_garage:getparkmeter')
+AddEventHandler('renzu_garage:getparkmeter', function(plate,state,model)
+    if not Config.PlateSpace then
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
+    else
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
+    end
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if xPlayer then
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter WHERE TRIM(UPPER(plate)) = @plate', {['@plate'] = plate})
+        if #result > 0 then
+            MysqlGarage(Config.Mysql,'execute','DELETE FROM parking_meter WHERE TRIM(UPPER(plate)) = @plate', {['@plate'] = plate})
+            Wait(300)
+            parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+            Wait(200)
+            TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
+        else
+            xPlayer.showNotification("This Vehicle is not your property", 1, 0)
+        end
+    end
+end)
+
 ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate, id, ispolice)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
@@ -555,7 +620,8 @@ end)
 
 RegisterServerEvent('renzu_garage:GetParkedVehicles')
 AddEventHandler('renzu_garage:GetParkedVehicles', function()
-    TriggerClientEvent('renzu_garage:update_parked',source,parkedvehicles)
+    print("sending")
+    TriggerClientEvent('renzu_garage:update_parked',source,parkedvehicles, false, parkmeter)
 end)
 
 RegisterServerEvent('renzu_garage:park')
@@ -588,7 +654,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
                     Wait(800)
                     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                     Wait(200)
-                    TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles)
+                    TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles, false, parkmeter)
                 else
                     print('exploiting')
                 end
@@ -628,7 +694,7 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
                     Wait(300)
                     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                     Wait(200)
-                    TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
+                    TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                 else
                     print('exploiting')
                 end
@@ -675,7 +741,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         Wait(300)
                         parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                         Wait(200)
-                        TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
+                        TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     if state == 1 then
                         TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Successfully Store the vehicle')
@@ -718,7 +784,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         Wait(300)
                         parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                         Wait(200)
-                        TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper())
+                        TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Take out the Vehicle')
                 else

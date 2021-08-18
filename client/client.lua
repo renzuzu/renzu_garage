@@ -15,6 +15,7 @@ local type = 'car'
 local vehiclesdb = {}
 local tid = 0
 local propertygarage = false
+local parkmeter = {}
 Citizen.CreateThread(function()
 	while ESX == nil do
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
@@ -28,7 +29,7 @@ Citizen.CreateThread(function()
 	end
 
 	PlayerData = ESX.GetPlayerData()
-    Wait(2000)
+    Wait(3000)
     if Config.Realistic_Parking then
         playerloaded = true
         TriggerServerEvent('renzu_garage:GetParkedVehicles')
@@ -129,7 +130,13 @@ end)
 
 local parkedvehicles = {}
 RegisterNetEvent('renzu_garage:update_parked')
-AddEventHandler('renzu_garage:update_parked', function(table,plate)
+AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
+    Wait(2000)
+    parkmeter = p
+    print(parkmeter)
+    for k,v in pairs(parkmeter) do
+        print(k,v)
+    end
 	parkedvehicles = table
     Wait(100)
     if plate ~= nil then
@@ -3337,3 +3344,116 @@ function Spawn_Vehicle_Forward(veh, coords)
     else return end
     Spawn_Vehicle_Forward(veh, move_coords)
 end
+
+meter_cars = {}
+RegisterCommand('parkingmeter', function(source, args, rawCommand)
+    local closestparkingmeter = nil
+    local vehicle = GetVehiclePedIsIn(PlayerPedId())
+    local loc = GetEntityCoords(vehicle)
+    local coord = vector4(loc.x,loc.y,loc.z,GetEntityHeading(vehicle))
+    for k,v in pairs(Config.MeterProp) do
+        closestparkingmeter = GetClosestObjectOfType(loc, 7.0, GetHashKey(v), false)
+        if closestparkingmeter ~= 0 then break end
+    end
+    print(closestparkingmeter)
+    if closestparkingmeter ~= 0 then
+        local vehicle_prop = GetVehicleProperties(vehicle)
+        print(json.encode(vehicle_prop))
+        ESX.TriggerServerCallback("renzu_garage:parkingmeter",function(res)
+            if res then
+                veh = GetVehiclePedIsIn(PlayerPedId())
+                TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
+                Wait(2000)
+                v = GetVehiclePedIsIn(PlayerPedId(),true)
+                FreezeEntityPosition(v,true)
+                SetEntityCollision(v,false)
+                ReqAndDelete(veh)
+                if meter_cars[vehicle_prop.plate] ~= nil then
+                    meter_cars[vehicle_prop.plate] = nil
+                end
+            end
+        end,GetEntityCoords(closestparkingmeter),coord,json.encode(vehicle_prop))
+        print(closestparkingmeter)
+    end
+end)
+
+CreateThread(function()
+    Wait(2500)
+    while Config.ParkingMeter do
+        for k,v in pairs(parkmeter) do
+            local parkcoord = json.decode(v.park_coord)
+            local coord = GetEntityCoords(PlayerPedId())
+            local vehicle = json.decode(v.vehicle)
+            if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 50 then
+                if meter_cars[vehicle.plate] == nil then
+                    local hash = tonumber(vehicle.model)
+                    local count = 0
+                    if not HasModelLoaded(hash) then
+                        RequestModel(hash)
+                        while not HasModelLoaded(hash) and count < 2000 do
+                            count = count + 101
+                            Citizen.Wait(10)
+                        end
+                    end
+                    --local posZ = coord.z + 999.0
+                    --_,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
+                    meter_cars[vehicle.plate] = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 0, 0)
+                    SetEntityHeading(meter_cars[vehicle.plate], parkcoord.w)
+                    SetVehicleProp(meter_cars[vehicle.plate], vehicle)
+                    SetVehicleDoorsLocked(meter_cars[vehicle.plate],2)
+                    NetworkFadeInEntity(meter_cars[vehicle.plate],1)
+                    SetVehicleOnGroundProperly(meter_cars[vehicle.plate])
+                    --SetEntityCoordsNoOffset(spawned_cars[park.plate],coord.x,coord.y,posZ,false,false,false)
+                    CreateThread(function()
+                        local count = 0
+                        while count < 1000 do
+                            count = count + 200
+                            SetEntityCollision(meter_cars[vehicle.plate],true)
+                            Wait(20)
+                        end
+                        FreezeEntityPosition(meter_cars[vehicle.plate], true)
+                        SetEntityCollision(meter_cars[vehicle.plate],false)
+                        return
+                    end)
+                end
+                if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and PlayerData.identifier == v.identifier then
+                    SetVehicleDoorsLocked(meter_cars[vehicle.plate],0)
+                    while #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and meter_cars[vehicle.plate] ~= nil do
+                        coord = GetEntityCoords(PlayerPedId())
+                        FreezeEntityPosition(meter_cars[vehicle.plate], false)
+                        SetEntityCollision(meter_cars[vehicle.plate],true)
+                        if GetVehiclePedIsIn(PlayerPedId()) == meter_cars[vehicle.plate] then
+                            ReqAndDelete(meter_cars[vehicle.plate])
+                            TriggerServerEvent("renzu_garage:getparkmeter", vehicle.plate, 0, tonumber(vehicle.model))
+                            Wait(100)
+                            --spawned_cars[park.plate] = nil
+                            local hash = tonumber(vehicle.model)
+                            local count = 0
+                            if not HasModelLoaded(hash) then
+                                RequestModel(hash)
+                                while not HasModelLoaded(hash) and count < 111 do
+                                    count = count + 1
+                                    Citizen.Wait(1)
+                                end
+                            end
+                            myveh = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 1, 1)
+                            SetEntityHeading(myveh, parkcoord.w)
+                            --FreezeEntityPosition(myveh, true)
+                            -- SetEntityCollision(spawned_cars[park.plate],false)
+                            FreezeEntityPosition(meter_cars[vehicle.plate], false)
+                            SetEntityCollision(meter_cars[vehicle.plate],true)
+                            SetVehicleProp(myveh, vehicle)
+                            NetworkFadeInEntity(myveh,1)
+                            TaskWarpPedIntoVehicle(PlayerPedId(), myveh, -1)
+                            TriggerEvent('renzu_notify:Notify', 'info','Garage', 'Vehicle Unparked')
+                            Wait(2500)
+                            meter_cars[vehicle.plate] = nil
+                        end
+                        Wait(1000)
+                    end
+                end
+            end
+        end
+        Wait(1000)
+    end
+end)
