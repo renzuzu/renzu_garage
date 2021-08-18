@@ -483,14 +483,22 @@ end)
 ESX.RegisterServerCallback('renzu_garage:isgarageowned', function (source, cb, id, v)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
+    local id = id
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT identifier FROM private_garage WHERE identifier = @identifier and garage = @garage', {
         ['@identifier'] = xPlayer.identifier,
         ['@garage'] = id
     })
+    local garage_share = {}
     if result and result[1] ~= nil then
-        cb(true,garageshare[tonumber(source)] or false)
+        if garageshare[tonumber(source)] ~= nil then
+            garage_share = garageshare[tonumber(source)]
+        end
+        cb(true,garage_share)
     else
-        cb(false,garageshare[tonumber(source)] or false)
+        if garageshare[tonumber(source)] ~= nil then
+            garage_share = garageshare[tonumber(source)]
+        end
+        cb(false,garage_share)
     end
 end)
 
