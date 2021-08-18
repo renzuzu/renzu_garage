@@ -1644,8 +1644,8 @@ function OpenGarage(id,garage_type,jobonly,default)
             for k,v in pairs(garagecoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
                 if dist <= 40.0 and id == v.garage then
-                cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z-28.0, 360.00, 0.00, 0.00, 60.00, false, 0)
-                PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z-30.0)
+                cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z+22.0, 360.00, 0.00, 0.00, 60.00, false, 0)
+                PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z+20.0)
                 SetCamActive(cam, true)
                 RenderScriptCams(true, true, 1, true, true)
                 SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
@@ -2717,7 +2717,7 @@ function SpawnVehicleLocal(model, props)
                     end
                 end
             end
-            LastVehicleFromGarage = CreateVehicle(hash, actualShop.garage_x,actualShop.garage_y,zaxis - 30, 42.0, 0, 1)
+            LastVehicleFromGarage = CreateVehicle(hash, actualShop.garage_x,actualShop.garage_y,zaxis + 20, 42.0, 0, 1)
             SetEntityHeading(LastVehicleFromGarage, 50.117)
             FreezeEntityPosition(LastVehicleFromGarage, true)
             SetEntityCollision(LastVehicleFromGarage,false)
