@@ -304,6 +304,8 @@ AddEventHandler('renzu_garage:buygarage', function(id,v)
         })
         xPlayer.removeMoney(v.cost)
         TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Purchase this Garage ('..id..')')
+    else
+        TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'not enough money')
     end
 end)
 
