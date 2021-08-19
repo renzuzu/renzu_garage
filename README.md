@@ -16,9 +16,10 @@
 - Parking Meter Park mode
 # Sample Image:
 - Quick Pick
+
 ![alt text](https://i.imgur.com/b9M8hVX.png)
 # Inside garage
-https://forum.cfx.re/uploads/default/optimized/4X/f/6/3/f634a48d9ae55987a7bff7384104a5b049ef35d7_2_690x485.jpeg
+![image](https://user-images.githubusercontent.com/82306584/130008886-b8bf10b1-5d37-4eb8-929a-694b077a1654.png)
 # Private Garage
 ![image](https://user-images.githubusercontent.com/82306584/130008710-9238ccda-98e4-4590-996e-6ec413458582.png)
 # Housing Garage
@@ -146,9 +147,6 @@ any nearest vehicle will be impound (distance 2-3 radius)
 
 # Dependency for now
 - ESX
-- POPUI
-- What is this?
-- This is a replacement for Drawtext or controlpressed native in loop.
-- UI will POP once the player is on the target coords
 https://github.com/renzuzu/renzu_popui
-
+https://github.com/renzuzu/renzu_contextmenu
+https://github.com/renzuzu/renzu_notify
