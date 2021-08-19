@@ -1,12 +1,8 @@
 # renzu_garage
-FIVEM - Garage HUD (WIP)
- - This is currently in development mode.
- - PR is welcome
- - Supporting multiple Framework is a goal
+FIVEM - Garage HUD
 ![image](https://user-images.githubusercontent.com/82306584/130008515-a26797b7-601d-4157-accd-2c954713faf1.png)
 
 # Feature
-
 - Vehicle Public Garage (Multi Location)
 - Private Garage (player owned, player can purchase)
 - Garage Inventory (Install and store Vehicle Mods inside private garage)
