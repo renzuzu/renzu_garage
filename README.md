@@ -33,9 +33,6 @@
 # VIDEO DEMO
 https://streamable.com/rfdv82
 
-- Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
-- Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
-- Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
 - SAMPLE CONFIG
 ```
     {
@@ -133,7 +130,10 @@ any nearest vehicle will be impound (distance 2-3 radius)
     eg. /transfer 5
     userid = 5
 ```
-
+```
+Giveaccess to player owned garage
+- /giveaccess PLAYERID
+```
 # TODO
  - Fix some bug
  - change fonts
@@ -142,8 +142,6 @@ any nearest vehicle will be impound (distance 2-3 radius)
  - code clean up as this is my old written garage
  - Add Exports from functions
  - Add Fake Plate System
- - Garage Inventory (upgrades)
- - Support Other Vehicle Class Garage like Boat.
 
 # Dependency for now
 - ESX
