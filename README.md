@@ -22,6 +22,10 @@
 ![image](https://user-images.githubusercontent.com/82306584/130008886-b8bf10b1-5d37-4eb8-929a-694b077a1654.png)
 # Private Garage
 ![image](https://user-images.githubusercontent.com/82306584/130008710-9238ccda-98e4-4590-996e-6ec413458582.png)
+- Garage Inventory
+![image](https://user-images.githubusercontent.com/82306584/130009158-75890a19-ee5f-4952-a617-576d1f678e02.png)
+![image](https://user-images.githubusercontent.com/82306584/130009178-99992cb0-824f-4d4b-88b1-9e967fbb980f.png)
+
 # Housing Garage
 ![image](https://user-images.githubusercontent.com/82306584/130008809-b8fb3cb3-2077-4c55-b695-3cfddb09bc33.png)
 
