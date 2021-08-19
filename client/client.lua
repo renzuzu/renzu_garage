@@ -3452,6 +3452,10 @@ CreateThread(function()
                         Wait(1000)
                     end
                 end
+            elseif meter_cars[vehicle.plate] then
+                NetworkFadeInEntity(meter_cars[vehicle.plate],1)
+                ReqAndDelete(meter_cars[vehicle.plate])
+                meter_cars[vehicle.plate] = nil
             end
         end
         Wait(1000)
