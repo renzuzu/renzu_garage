@@ -3,14 +3,20 @@ FIVEM - Garage HUD (WIP)
  - This is currently in development mode.
  - PR is welcome
  - Supporting multiple Framework is a goal
- # GARAGE FEATURE
-- Vehicle Management
-- Multiple Garage Location
-- Realistic Park (leave spawned)
-- Job Garages
+![image](https://user-images.githubusercontent.com/82306584/130008515-a26797b7-601d-4157-accd-2c954713faf1.png)
+
+# Feature
+
+- Vehicle Public Garage (Multi Location)
+- Private Garage (player owned, player can purchase)
+- Garage Inventory (Install and store Vehicle Mods inside private garage)
+- Realistic Parking mod ( park anywhere )
+- Housing Garages (preconfigured and optional)
+- Job Garages (police garage for example) (support default vehicles for patrol)
 - Helicopter Garage per job
-- Property Garage
-- IMPOUND GARAGE (support multiple location)
+- IMPOUND GARAGE (with owners infos) (Player Impounds or Job Owned Impound)
+- Restore damage based on vehicle health
+- Parking Meter Park mode
 # Sample Image:
 - Quick Pick
 ![alt text](https://i.imgur.com/1hIA5Qr.png)
