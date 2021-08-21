@@ -752,7 +752,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     print('exploiting')
                 end
             end
-        elseif xPlayer.job.name == 'police' and garage_id == 'impound' then
+        elseif Config.JobImpounder[xPlayer.job.name] ~= nil and garage_id == 'impound' then
             if state == 1 then
                 garage_id = 'impound'
                 chopstatus = os.time()
