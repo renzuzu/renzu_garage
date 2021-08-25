@@ -1330,6 +1330,10 @@ function GetVehicleProperties(vehicle)
             if not Config.PlateSpace then
                 plate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1')
             end
+            local modlivery = GetVehicleLivery(vehicle)
+            if modlivery == -1 then
+                modlivery = GetVehicleMod(vehicle, 48)
+            end
             return {
                 model             = GetEntityModel(vehicle),
                 plate             = plate,
@@ -1411,7 +1415,7 @@ function GetVehicleProperties(vehicle)
                 modTrimB          = GetVehicleMod(vehicle, 44),
                 modTank           = GetVehicleMod(vehicle, 45),
                 modWindows        = GetVehicleMod(vehicle, 46),
-                modLivery         = GetVehicleLivery(vehicle)
+                modLivery         = modlivery
             }
         else
             return
@@ -2699,7 +2703,7 @@ function SpawnVehicle(vehicle, plate ,coord)
 end
 
 function SpawnVehicleLocal(model, props)
-    local ped = GetPlayerPed(-1)
+    local ped = PlayerPedId()
 
     SetNuiFocus(true, true)
     if LastVehicleFromGarage ~= nil then
@@ -2714,6 +2718,7 @@ function SpawnVehicleLocal(model, props)
             local zaxis = actualShop.garage_z
             local hash = tonumber(model)
             local count = 0
+            FreezeEntityPosition(PlayerPedId(),true)
             if not HasModelLoaded(hash) then
                 RequestModel(hash)
                 while not HasModelLoaded(hash) and count < 1111 do
@@ -2725,16 +2730,12 @@ function SpawnVehicleLocal(model, props)
                 end
             end
             LastVehicleFromGarage = CreateVehicle(hash, actualShop.garage_x,actualShop.garage_y,zaxis + 20, 42.0, 0, 1)
+            while not DoesEntityExist(LastVehicleFromGarage) do Wait(1) end
             SetEntityHeading(LastVehicleFromGarage, 50.117)
             FreezeEntityPosition(LastVehicleFromGarage, true)
             SetEntityCollision(LastVehicleFromGarage,false)
             SetVehicleProp(LastVehicleFromGarage, props)
-            currentcar = LastVehicleFromGarage
-            if currentcar ~= LastVehicleFromGarage then
-                DeleteEntity(LastVehicleFromGarage)
-                SetModelAsNoLongerNeeded(hash)
-            end
-            TaskWarpPedIntoVehicle(GetPlayerPed(-1), LastVehicleFromGarage, -1)
+            TaskWarpPedIntoVehicle(PlayerPedId(), LastVehicleFromGarage, -1)
             InGarageShell('enter')
         end
     end
@@ -3193,6 +3194,7 @@ function CloseNui()
     if neargarage then
         neargarage = false
     end
+    FreezeEntityPosition(PlayerPedId(),false)
     SetNuiFocus(false, false)
     InGarageShell('exit')
     if inGarage then
