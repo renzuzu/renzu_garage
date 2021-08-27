@@ -298,7 +298,7 @@ impoundcoord = {
         garage = "impound", --mrpd
         job = "police",
         Type = "car",
-        Dist = 10,
+        Dist = 5,
         Blip = {color = 2, sprite = 289, scale = 0.6},
         garage_x = 459.18936157227,
         garage_y = -1008.4532470703,
