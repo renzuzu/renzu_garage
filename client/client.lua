@@ -16,7 +16,17 @@ local vehiclesdb = {}
 local tid = 0
 local propertygarage = false
 local parkmeter = {}
+local jobgarages = {}
 Citizen.CreateThread(function()
+    Wait(1000)
+    for k,v in pairs(garagecoord) do -- create job garage
+        if v.job ~= nil and jobgarages[v.job] == nil then
+            jobgarages[v.job] = {}
+            jobgarages[v.job].coord = vector3(v.garage_x,v.garage_y,v.garage_z)
+            jobgarages[v.job].id = v.garage
+            jobgarages[v.job].job = v.job
+        end
+    end
 	while ESX == nil do
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 		Citizen.Wait(100)
@@ -85,6 +95,7 @@ Citizen.CreateThread(function()
             EndTextCommandSetBlipName(blip)
         end
     end
+    
 end)
 
 RegisterNetEvent('esx:playerLoaded')
@@ -1477,6 +1488,17 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         if value.job == '' then
             value.job = nil
         end
+        if value.job ~= nil and jobgarages[value.job] == nil then -- fix incompatibility with vehicles with job column as a default from sql eg. civ fck!
+            value.job = nil
+        end
+        if value.garage_id ~= nil then -- fix blank job column, seperate the car to other non job garages
+            for k,v in pairs(jobgarages) do 
+                if v.id == value.garage_id then
+                    value.job = v.job
+                end
+            end
+            --value.garage_id = jobgarages[value.job].id
+        end
         local VTable = 
         {
             brand = GetVehicleClassnamemodel(tonumber(props.model)),
@@ -1500,7 +1522,9 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             type = value.type,
             job = value.job ~= nil,
         }
-        table.insert(OwnedVehicles['garage'], VTable)
+        if jobgarages[value.job] ~= nil and #(GetEntityCoords(PlayerPedId()) - jobgarages[value.job].coord) < 50 or jobgarages[value.job] == nil then -- import only if jobgarage is not nil with coordinates checking or if jobgarage is nil
+            table.insert(OwnedVehicles['garage'], VTable)
+        end
     end
     fetchdone = true
 end)
@@ -1608,7 +1632,10 @@ function OpenGarage(id,garage_type,jobonly,default)
     CreateDefault(default,jobonly,garage_type,id)
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and v.garage_id ~= 'impound' and v.garage_id ~= 'private' or id == 'impound' and v.garage_id == 'impound' and garage_type == v.type then
+            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' 
+            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' 
+            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and v.garage_id ~= 'impound' and v.garage_id ~= 'private' 
+            or id == 'impound' and v.garage_id == 'impound' and garage_type == v.type then
                 cars = cars + 1
                 if v.garage_id == 'impound' then
                     v.garage_id = 'A'
