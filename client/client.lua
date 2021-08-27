@@ -1895,6 +1895,7 @@ function CreateGarageShell()
     print('creating')
     local ped = PlayerPedId()
     garage_coords = GetEntityCoords(ped)+vector3(0,0,20)
+    local count = 0
     local model = GetHashKey('garage')
     RequestModel(model)
     while not HasModelLoaded(model) and count < 2000 do
@@ -2073,6 +2074,7 @@ function GotoGarage(id, property, propertycoord, data)
     end
     if shell == nil then
         local model = GetHashKey('garage')
+        local count = 0
         RequestModel(model)
         while not HasModelLoaded(model) and count < 2000 do
             count = count + 101
