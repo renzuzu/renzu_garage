@@ -1651,17 +1651,17 @@ function OpenGarage(id,garage_type,jobonly,default)
 
         SetNuiFocus(true, true)
         if not Config.Quickpick and garage_type == 'car' then
-            RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
+            --RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
             for k,v in pairs(garagecoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
                 if dist <= 40.0 and id == v.garage then
-                cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z+22.0, 360.00, 0.00, 0.00, 60.00, false, 0)
-                PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z+20.0)
-                SetCamActive(cam, true)
-                RenderScriptCams(true, true, 1, true, true)
-                SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
-                DisplayHud(false)
-                DisplayRadar(false)
+                    cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z+22.0, 360.00, 0.00, 0.00, 60.00, false, 0)
+                    PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z+20.0)
+                    SetCamActive(cam, true)
+                    RenderScriptCams(true, true, 1, true, true)
+                    SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
+                    DisplayHud(false)
+                    DisplayRadar(false)
                 end
             end
             while inGarage do
@@ -1865,9 +1865,15 @@ end
 
 local shell = nil
 function CreateGarageShell()
+    print('creating')
     local ped = PlayerPedId()
     garage_coords = GetEntityCoords(ped)+vector3(0,0,20)
     local model = GetHashKey('garage')
+    RequestModel(model)
+    while not HasModelLoaded(model) and count < 2000 do
+        count = count + 101
+        Citizen.Wait(10)
+    end
     shell = CreateObject(model, garage_coords.x, garage_coords.y, garage_coords.z, false, false, false)
     while not DoesEntityExist(shell) do Wait(0) end
     FreezeEntityPosition(shell, true)
@@ -1977,6 +1983,7 @@ local i = 0
 local vehtable = {}
 local garage_id = 'A'
 function GotoGarage(id, property, propertycoord, data)
+    FreezeEntityPosition(PlayerPedId(),true)
     vehtable = {}
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
@@ -2024,28 +2031,35 @@ function GotoGarage(id, property, propertycoord, data)
         end
     end
     garage_id = id
-    local ped = GetPlayerPed(-1)
+    local ped = PlayerPedId()
+    local garage_coords = {}
     if not property then
         for k,v in pairs(garagecoord) do
             local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-            local actualShop = v
-            if dist <= 70.0 and id == v.garage then
-                garage_coords =vector3(actualShop.garage_x,actualShop.garage_y-9.0,actualShop.garage_z)-vector3(0,0,30)
+            if dist <= 100.0 and id == v.garage then
+                garage_coords =vector3(v.garage_x,v.garage_y-9.0,v.garage_z + 30.0)
             end
         end
     else
-        local property_shell = GetEntityCoords(ped)
-        garage_coords =vector3(property_shell.x,property_shell.y,property_shell.z)+vector3(0,0,20)
+        property_shell = GetEntityCoords(ped)
+        garage_coords =vector3(property_shell.x,property_shell.y,property_shell.z + 20.0)
     end
     if shell == nil then
-    local model = GetHashKey('garage')
-    shell = CreateObject(model, garage_coords.x, garage_coords.y-7.0, garage_coords.z, false, false, false)
-    while not DoesEntityExist(shell) do Wait(0) print("Creating Shell") end
-    FreezeEntityPosition(shell, true)
-    SetModelAsNoLongerNeeded(model)
-    shell_door_coords = vector3(garage_coords.x+7, garage_coords.y-25, garage_coords.z)
-    SetCoords(ped, shell_door_coords.x, shell_door_coords.y, shell_door_coords.z, 82.0, true)
+        local model = GetHashKey('garage')
+        RequestModel(model)
+        while not HasModelLoaded(model) and count < 2000 do
+            count = count + 101
+            Citizen.Wait(10)
+        end
+        shell = CreateObject(model, garage_coords.x, garage_coords.y-7.0, garage_coords.z, false, false, false)
+        while not DoesEntityExist(shell) do Wait(0) print("Creating Shell") end
+        FreezeEntityPosition(shell, true)
+        SetModelAsNoLongerNeeded(model)
+        shell_door_coords = vector3(garage_coords.x+7, garage_coords.y-25, garage_coords.z)
+        SetCoords(ped, shell_door_coords.x, shell_door_coords.y, shell_door_coords.z, 82.0, true)
+        Wait(100)
     end
+    FreezeEntityPosition(PlayerPedId(),false)
     local leftx = 4.0
     local lefty = 4.0
     local rightx = 4.0
@@ -2714,7 +2728,7 @@ function SpawnVehicleLocal(model, props)
     for k,v in pairs(garagecoord) do
         local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
         local actualShop = v
-        if dist <= 40.0 and id == v.garage then
+        if dist <= 80.0 and id == v.garage then
             local zaxis = actualShop.garage_z
             local hash = tonumber(model)
             local count = 0
@@ -2826,6 +2840,7 @@ RegisterNUICallback(
         DeleteEntity(LastVehicleFromGarage)
         LastVehicleFromGarage = nil
         CloseNui()
+        DoScreenFadeOut(0)
         GotoGarage(data.id)
     end
 )
