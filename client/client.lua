@@ -554,7 +554,7 @@ AddEventHandler('renzu_garage:openinventory', function(current)
             for index,t in pairs(Config.VehicleMod) do
                 if t.name:lower() == mod:lower() then
                     if multimenu[firstToUpper(t.type)] == nil then multimenu[firstToUpper(t.type)] = {} end
-                    multimenu[firstToUpper(t.type)].main_fa = '<img style="height: auto;margin-left: -70px;margin-top: -7px;position: absolute;max-width: 40px;" src="https://cfx-nui-renzu_garage/html/img/'..index..'.png">'
+                    multimenu[firstToUpper(t.type)].main_fa = '<img style="height: auto;margin-left: -20px;margin-top: -10px;position: relative;max-width: 35px;float: left;" src="https://cfx-nui-renzu_garage/html/img/'..index..'.png">'
                     multimenu[firstToUpper(t.type)][k] = {
                         ['title'] = firstToUpper(t.label)..' : LVL '..lvl..' x'..v,
                         --['fa'] = '<i class="fad fa-question-square"></i>',
@@ -568,8 +568,10 @@ AddEventHandler('renzu_garage:openinventory', function(current)
             end
         end
         if openmenu then
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Vehicle Parts",false,true)
+            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Vehicle Parts",false,'<i class="fas fa-warehouse-alt"></i> Garage Inventory')
             TriggerEvent('renzu_contextmenu:show')
+        else
+            TriggerEvent('renzu_notify:Notify', 'error','Garage', 'Inventory is Empty')
         end
     end,current,activeshare)
 end)
@@ -722,7 +724,7 @@ AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
                 local mod = Config.VehicleMod[i]
                 if GetVehicleMod(vehicle,mod.index) + 1 > 0 then
                     if multimenu[firstToUpper(mod.type)] == nil then multimenu[firstToUpper(mod.type)] = {} end
-                    multimenu[firstToUpper(mod.type)].main_fa = '<img style="height: auto;margin-left: -70px;margin-top: -7px;position: absolute;max-width: 40px;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">'
+                    multimenu[firstToUpper(mod.type)].main_fa = '<img style="height: auto;margin-left: -20px;margin-top: -10px;position: relative;max-width: 35px;float: left;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">'
                     multimenu[firstToUpper(mod.type)][mod.label:upper()..' '..GetVehicleMod(vehicle,i) + 1] = {
                         ['title'] = firstToUpper(mod.label)..' '..GetVehicleMod(vehicle,i) + 1,
                         ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">',
@@ -739,8 +741,10 @@ AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
         end
         --ToggleVehicleMod(vehicle, 18, true) -- Turbo
         if openmenu then
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Vehicle Parts",false,true)
+            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Vehicle Parts",false,'<i class="fad fa-starfighter-alt"></i> Vehicle Parts')
             TriggerEvent('renzu_contextmenu:show')
+        else
+            TriggerEvent('renzu_notify:Notify', 'error','Garage', 'You dont have vehicle mod installed yet')
         end
     end
 end)
@@ -872,7 +876,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
                 }
                 multimenu['Garage Share'] = sharing
             end
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Garage Menu",false,true)
+            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Garage Menu",false,'Garage Menu')
             TriggerEvent('renzu_contextmenu:show')
         elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
             TriggerEvent('renzu_notify:Notify', 'error','Garage', 'You dont owned this garage')
@@ -906,7 +910,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
                 }
                 multimenu['Garage Share'] = sharing
             end
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Garage Menu",false,true)
+            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Garage Menu",false,'Garage Menu')
             TriggerEvent('renzu_contextmenu:show')
         end
     end,id,v)
