@@ -211,6 +211,7 @@ function DrawZuckerburg(name,v,reqdist)
 end
 
 CreateThread(function()
+    Wait(500)
     if Config.UsePopUI then
         while true do
             local mycoord = GetEntityCoords(PlayerPedId())
@@ -1706,10 +1707,10 @@ function OpenGarage(id,garage_type,jobonly,default)
                 end
             end
             ingarage = true
-            while inGarage do
-                SetNuiFocus(true, true)
-                Citizen.Wait(111)
-            end
+        end
+        while inGarage do
+            SetNuiFocus(true, true)
+            Citizen.Wait(111)
         end
 
         if LastVehicleFromGarage ~= nil then
@@ -1781,10 +1782,10 @@ function OpenHeli(id)
                 DisplayRadar(false)
             end
         end
-        while inGarage do
-            Citizen.Wait(111)
-            SetNuiFocus(true, true)
-        end
+    end
+    while inGarage do
+        Citizen.Wait(111)
+        SetNuiFocus(true, true)
     end
     if LastVehicleFromGarage ~= nil then
         DeleteEntity(LastVehicleFromGarage)
@@ -1858,10 +1859,10 @@ function OpenImpound(id)
                 DisplayRadar(false)
             end
         end
-        while inGarage do
-            SetNuiFocus(true, true)
-            Citizen.Wait(111)
-        end
+    end
+    while inGarage do
+        SetNuiFocus(true, true)
+        Citizen.Wait(111)
     end
 
     if LastVehicleFromGarage ~= nil then
