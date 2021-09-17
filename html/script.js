@@ -127,12 +127,12 @@ $(document).ready(function() {
       </div>\
       <div class="column" id="nameBrand">\
       </div>\
-      <div class="column menu-modifications" style="right:50px; position:absolute;">\
+      <div class="column menu-modifications" style="right:50px; position:absolute;top:-20px;">\
           <div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE;color:#fff !important; border-radius: 10px;" onclick="garage()"> <i class="fad fa-garage"></i> Go to Garage </button> </div>\
       </div>\
   </div>\
   <div class="middle-left2-container">\
-      <div class="column" id="contentVehicle" style="width:300px !important;">\
+      <div class="column" id="contentVehicle">\
       </div>\
   </div>\
   <div id="messagePopup">\
@@ -433,7 +433,7 @@ $(document).on('keydown', function(event) {
         for(i = 0; i < (data.length); i++) {
             var modelUper = data[i].model;
             inGarageVehicle[i] = data[i]
-            $(".app_inner").append('<label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:7px;color:#919191;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:8px;color:#919191;">Garage: '+ data[i].garage_id +'</span><h2 style="font-size:11px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="height:80px;" onerror="this.src=`https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png`;" src="../imgs/uploads/' + modelUper +'.jpg"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> </div> </div> </label></input></label>');    
+            $(".app_inner").append('<label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:7px;color: #e2e2e2;;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:8px;color:#75ffb9;">Garage: '+ data[i].garage_id +'</span><h2 style="font-size:11px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="min-width: 120px;height: 70px;border-radius: 10px;max-width: 120px;border-color: #c7c7c7;;" onerror="this.src=`https://i.imgur.com/Jdz2ZMK.png`;" src="../imgs/uploads/' + modelUper +'.jpg"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> </div> </div> </label></input></label>');    
         }     
     }
     Renzu_Garage.Open(VehicleArr)
