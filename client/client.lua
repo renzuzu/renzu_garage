@@ -1187,7 +1187,7 @@ AddEventHandler('opengarage', function()
         for k,v in pairs(helispawn[PlayerData.job.name]) do
             local coord = v.coords
             local v = v.coords
-            local dist = #(vector3(coord.x,coord.y,coord.z) - GetEntityCoords(ped))
+            local dist = GetDistanceBetweenCoords(vector3(coord.x,coord.y,coord.z) , GetEntityCoords(ped), true)
             if DoesEntityExist(vehiclenow) then
                 if dist <= 7.0 then
                     helidel(vehiclenow)
