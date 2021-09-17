@@ -1187,7 +1187,7 @@ AddEventHandler('opengarage', function()
         for k,v in pairs(helispawn[PlayerData.job.name]) do
             local coord = v.coords
             local v = v.coords
-            local dist = GetDistanceBetweenCoords(vector3(coord.x,coord.y,coord.z) , GetEntityCoords(ped), true)
+            local dist = #(vector3(coord.x,coord.y,coord.z) - GetEntityCoords(ped))
             if DoesEntityExist(vehiclenow) then
                 if dist <= 7.0 then
                     helidel(vehiclenow)
@@ -1694,17 +1694,20 @@ function OpenGarage(id,garage_type,jobonly,default)
             for k,v in pairs(garagecoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
                 if dist <= 40.0 and id == v.garage then
-                    cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z+22.0, 360.00, 0.00, 0.00, 60.00, false, 0)
-                    PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z+20.0)
+                    cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-4.0, v.garage_y, v.garage_z+21.0, 360.00, 0.00, 0.00, 60.00, false, 0)
+                    PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z+21.0)
                     SetCamActive(cam, true)
                     RenderScriptCams(true, true, 1, true, true)
                     SetFocusPosAndVel(v.garage_x, v.garage_y, v.garage_z-30.0, 0.0, 0.0, 0.0)
+                    SetCamFov(cam, 48.0)
+                    SetCamRot(cam, -15.0, 0.0, 252.063)
                     DisplayHud(false)
                     DisplayRadar(false)
                 end
             end
             ingarage = true
             while inGarage do
+                SetNuiFocus(true, true)
                 Citizen.Wait(111)
             end
         end
@@ -1780,6 +1783,7 @@ function OpenHeli(id)
         end
         while inGarage do
             Citizen.Wait(111)
+            SetNuiFocus(true, true)
         end
     end
     if LastVehicleFromGarage ~= nil then
@@ -1855,6 +1859,7 @@ function OpenImpound(id)
             end
         end
         while inGarage do
+            SetNuiFocus(true, true)
             Citizen.Wait(111)
         end
     end
@@ -2816,9 +2821,11 @@ function SpawnVehicleLocal(model, props)
 
     SetNuiFocus(true, true)
     if LastVehicleFromGarage ~= nil then
-        DeleteEntity(LastVehicleFromGarage)
+        ReqAndDelete(LastVehicleFromGarage)
         SetModelAsNoLongerNeeded(hash)
     end
+    local nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
+    ReqAndDelete(nearveh)
 
     if id == 'impound' then
         for k,v in pairs(impoundcoord) do
