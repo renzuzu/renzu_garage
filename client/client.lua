@@ -1710,6 +1710,7 @@ function OpenGarage(id,garage_type,jobonly,default)
         end
         while inGarage do
             SetNuiFocus(true, true)
+            SetNuiFocusKeepInput(false)
             Citizen.Wait(111)
         end
 
@@ -1785,6 +1786,7 @@ function OpenHeli(id)
     end
     while inGarage do
         Citizen.Wait(111)
+        SetNuiFocusKeepInput(false)
         SetNuiFocus(true, true)
     end
     if LastVehicleFromGarage ~= nil then
@@ -1861,6 +1863,7 @@ function OpenImpound(id)
         end
     end
     while inGarage do
+        SetNuiFocusKeepInput(false)
         SetNuiFocus(true, true)
         Citizen.Wait(111)
     end
