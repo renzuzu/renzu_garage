@@ -3379,6 +3379,8 @@ function CloseNui()
             RenderScriptCams(false)
             DestroyAllCams(true)
             ClearFocus()
+             DisplayHud(true)
+             DisplayRadar(true)
         end
     end
     garagejob = false
