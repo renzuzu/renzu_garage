@@ -237,13 +237,17 @@ function ShowVehicle(currentTarget) {
                           
                 document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/optimized/3X/0/3/0301f645963889531fb4870e8d47f2f7da7f1c45_2_1024x1024.gif">';
 
-                $('#nameBrand').append(`
-                    <span id="vehicle_class">`+data.brand+`</span> 
-                    <span id="vehicle_name">`+data.name+`</span> 
-                `);
+                if (data !== undefined && data.brand !== undefined && data.name !== undefined) {
+                    $('#nameBrand').append(`
+                        <span id="vehicle_class">`+data.brand+`</span> 
+                        <span id="vehicle_name">`+data.name+`</span> 
+                    `);
+                }
 
                 $(".menu-modifications").css("display","block");
-
+                if (data.brand == undefined) {
+                    data.brand = 'Unknown'
+                }
                 CurrentVehicle = {brand: data.brand, modelcar: data.model2, sale: 1, name: data.name, props: data.props }
                 $('#contentVehicle').append(`
                     <div class="handling-container">
@@ -276,7 +280,7 @@ function ShowVehicle(currentTarget) {
                         <span id="dateissue">1/11/1111</span>
                     </div>
                 `);
-                $.post("https://renzu_garage/ownerinfo", JSON.stringify({ plate: data.plate, identifier: data.identifier, chopstatus: data.chopstatus }));
+                $.post("https://renzu_garage/ownerinfo", JSON.stringify({ plate: data.plate, identifier: data.identifier, chopstatus: 1 }));
                 $.post("https://renzu_garage/SpawnVehicle", JSON.stringify({ modelcar: data.model2, price: 1, props: data.props }));
             }
         }
