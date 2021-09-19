@@ -1,22 +1,37 @@
 # renzu_garage
-FIVEM - Garage HUD (WIP)
- - This is currently in development mode.
- - PR is welcome
- - Supporting multiple Framework is a goal
- # GARAGE FEATURE
-- Vehicle Management
-- Multiple Garage Location
-- Job Garages
+- FIVEM - Garage HUD Advanced Vehicle Garage
+
+![image](https://user-images.githubusercontent.com/82306584/133791914-ebea10e0-f31a-4fdc-bfb0-34c11049559e.png)
+
+
+# Feature
+- Vehicle Public Garage (Multi Location)
+- Private Garage (player owned, player can purchase)
+- Garage Inventory (Install and store Vehicle Mods inside private garage)
+- Realistic Parking mod ( park anywhere )
+- Housing Garages (preconfigured and optional)
+- Job Garages (police garage for example) (support default vehicles for patrol)
 - Helicopter Garage per job
-- Property Garage
-- IMPOUND GARAGE (support multiple location)
+- IMPOUND GARAGE (with owners infos) (Player Impounds or Job Owned Impound)
+- Restore damage based on vehicle health
+- Parking Meter Park mode
 # Sample Image:
 - Quick Pick
-![alt text](https://i.imgur.com/1hIA5Qr.png)
+
 ![alt text](https://i.imgur.com/b9M8hVX.png)
+
 # Inside garage
-- Scaleform Type UI - Showing Performance of Vehicles
-![alt text](https://i.imgur.com/e1IHVDB.png)
+![image](https://user-images.githubusercontent.com/82306584/130008886-b8bf10b1-5d37-4eb8-929a-694b077a1654.png)
+# Private Garage
+![image](https://user-images.githubusercontent.com/82306584/130008710-9238ccda-98e4-4590-996e-6ec413458582.png)
+- Garage Inventory
+
+![image](https://user-images.githubusercontent.com/82306584/130009158-75890a19-ee5f-4952-a617-576d1f678e02.png)
+![image](https://user-images.githubusercontent.com/82306584/130009178-99992cb0-824f-4d4b-88b1-9e967fbb980f.png)
+
+# Housing Garage
+![image](https://user-images.githubusercontent.com/82306584/130008809-b8fb3cb3-2077-4c55-b695-3cfddb09bc33.png)
+
 # scaleform from negbook is being used
 - https://forum.cfx.re/t/release-utility-scaleforms-utilities-for-fxserver/2166362
 # IMPOUND
@@ -25,9 +40,6 @@ FIVEM - Garage HUD (WIP)
 # VIDEO DEMO
 https://streamable.com/rfdv82
 
-- Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
-- Config.UsePopUI = true -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
-- Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
 - SAMPLE CONFIG
 ```
     {
@@ -125,7 +137,10 @@ any nearest vehicle will be impound (distance 2-3 radius)
     eg. /transfer 5
     userid = 5
 ```
-
+```
+Giveaccess to player owned garage
+- /giveaccess PLAYERID
+```
 # TODO
  - Fix some bug
  - change fonts
@@ -134,14 +149,9 @@ any nearest vehicle will be impound (distance 2-3 radius)
  - code clean up as this is my old written garage
  - Add Exports from functions
  - Add Fake Plate System
- - Garage Inventory (upgrades)
- - Support Other Vehicle Class Garage like Boat.
 
 # Dependency for now
 - ESX
-- POPUI
-- What is this?
-- This is a replacement for Drawtext or controlpressed native in loop.
-- UI will POP once the player is on the target coords
 https://github.com/renzuzu/renzu_popui
-
+https://github.com/renzuzu/renzu_contextmenu
+https://github.com/renzuzu/renzu_notify
