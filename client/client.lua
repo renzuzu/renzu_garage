@@ -83,21 +83,21 @@ Citizen.CreateThread(function()
         EndTextCommandSetBlipName(blip)
     end
 
-    if Config.EnablePropertyCoordGarageCoord then
-        for k,v in pairs(Config.Property) do
-            local vec = v.coord
-            local name = v.name
-            local blip = AddBlipForCoord(v.coord.x, v.coord.y, v.coord.z)
-            SetBlipSprite (blip, 357)
-            SetBlipDisplay(blip, 5)
-            SetBlipScale  (blip, 0.4)
-            SetBlipColour (blip, 2)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName(""..v.name.."")
-            EndTextCommandSetBlipName(blip)
-        end
-    end
+    -- if Config.EnablePropertyCoordGarageCoord then
+    --     for k,v in pairs(Config.Property) do
+    --         local vec = v.coord
+    --         local name = v.name
+    --         local blip = AddBlipForCoord(v.coord.x, v.coord.y, v.coord.z)
+    --         SetBlipSprite (blip, 357)
+    --         SetBlipDisplay(blip, 5)
+    --         SetBlipScale  (blip, 0.4)
+    --         SetBlipColour (blip, 2)
+    --         SetBlipAsShortRange(blip, true)
+    --         BeginTextCommandSetBlipName('STRING')
+    --         AddTextComponentSubstringPlayerName(""..v.name.."")
+    --         EndTextCommandSetBlipName(blip)
+    --     end
+    -- end
     
 end)
 
@@ -257,41 +257,41 @@ CreateThread(function()
                     end
                 end
             end
-            if Config.EnablePropertyCoordGarageCoord then
-                print('property')
-                for k,v in pairs(Config.Property) do
-                    local vec = v.coord
-                    local req_dis = 3
-                    local dist = #(vec - mycoord)
-                    if Config.UseMarker and dist < Config.MarkerDistance then
-                        Config.UseMarker = false
-                        DrawZuckerburg(v.name,vec,Config.MarkerDistance)
-                    end
-                    if dist < req_dis then
-                        neargarage = true
-                        local table = {
-                            ['event'] = 'renzu_garage:property',
-                            ['title'] = 'Garage '..v.name,
-                            ['server_event'] = false,
-                            ['unpack_arg'] = true,
-                            ['invehicle_title'] = 'Store Vehicle',
-                            ['confirm'] = '[ENTER]',
-                            ['reject'] = '[CLOSE]',
-                            ['custom_arg'] = {v.name,vec,k}, -- example: {1,2,3,4}
-                            ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
-                        }
-                        TriggerEvent('renzu_popui:showui',table)
-                        local dist = #(v.coord - mycoord)
-                        tid = k
-                        id = k
-                        while dist < 3 and neargarage do
-                            dist = #(vec - GetEntityCoords(PlayerPedId()))
-                            Wait(100)
-                        end
-                        TriggerEvent('renzu_popui:closeui')
-                    end
-                end
-            end
+            -- if Config.EnablePropertyCoordGarageCoord then
+            --     print('property')
+            --     for k,v in pairs(Config.Property) do
+            --         local vec = v.coord
+            --         local req_dis = 3
+            --         local dist = #(vec - mycoord)
+            --         if Config.UseMarker and dist < Config.MarkerDistance then
+            --             Config.UseMarker = false
+            --             DrawZuckerburg(v.name,vec,Config.MarkerDistance)
+            --         end
+            --         if dist < req_dis then
+            --             neargarage = true
+            --             local table = {
+            --                 ['event'] = 'renzu_garage:property',
+            --                 ['title'] = 'Garage '..v.name,
+            --                 ['server_event'] = false,
+            --                 ['unpack_arg'] = true,
+            --                 ['invehicle_title'] = 'Store Vehicle',
+            --                 ['confirm'] = '[ENTER]',
+            --                 ['reject'] = '[CLOSE]',
+            --                 ['custom_arg'] = {v.name,vec,k}, -- example: {1,2,3,4}
+            --                 ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
+            --             }
+            --             TriggerEvent('renzu_popui:showui',table)
+            --             local dist = #(v.coord - mycoord)
+            --             tid = k
+            --             id = k
+            --             while dist < 3 and neargarage do
+            --                 dist = #(vec - GetEntityCoords(PlayerPedId()))
+            --                 Wait(100)
+            --             end
+            --             TriggerEvent('renzu_popui:closeui')
+            --         end
+            --     end
+            -- end
             Wait(1000)
         end
     end
@@ -1647,10 +1647,12 @@ function OpenGarage(id,garage_type,jobonly,default)
     CreateDefault(default,jobonly,garage_type,id)
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' 
-            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' 
-            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and v.garage_id ~= 'impound' and v.garage_id ~= 'private' 
-            or id == 'impound' and v.garage_id == 'impound' and garage_type == v.type then
+            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and v.garage_id ~= 'impound' and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or id == 'impound' and v.garage_id == 'impound' and garage_type == v.type and propertyspawn.x == nil
+            or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == id
+            or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
                 cars = cars + 1
                 if v.garage_id == 'impound' or v.garage_id == nil then
                     v.garage_id = 'A'
