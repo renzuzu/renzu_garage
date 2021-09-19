@@ -196,6 +196,27 @@ garagecoord = {
             [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1}, -- minimum grade
         },
     },
+    --JOB GARAGE
+    {
+      garage = "Police Garage 2", --PALETO
+      job = "police",
+      Type = "car",
+      Dist = 10,
+      Blip = {color = 38, sprite = 662, scale = 0.6},
+      --413.64483642578,-1029.7556152344,29.349027633667,108.4100189209
+      garage_x = 413.20556640625,
+      garage_y = -1029.4292602539,
+      garage_z = 29.954322814941,
+      spawn_x = 432.20071411133,
+      spawn_y = -1015.4301757813,
+      spawn_z = 28.840564727783,
+      heading = 85.93824005127,
+      default_vehicle = { -- the vehicle listed here is like a goverment property and can be used for patrol etc. (this can be used in other garage, public or other job garage)
+          [1] = {model = 'police', name = 'Police', type = 'car', grade = 1}, -- minimum grade
+          [2] = {model = 'police2', name = 'Police 2', type = 'car', grade = 1}, -- minimum grade
+          [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1}, -- minimum grade
+      },
+  },
     {
         garage = "Sheriff Garage", --PALETO
         job = "sheriff",
@@ -917,7 +938,7 @@ private_garage = {
 }
 
 -- ALTERNATIVE COORDINATES FOR PROPERTY / HOUSING
-Config.EnablePropertyCoordGarageCoord = true -- Enable / Disable Property Coordinates, Disable this if you already using a property and you want to trigger this manually example. from your housing script
+Config.EnablePropertyCoordGarageCoord = false -- Enable / Disable Property Coordinates, Disable this if you already using a property and you want to trigger this manually example. from your housing script
 -- TriggerEvent('renzu_garage:property',"Forum Drive 11/Apt13", vector3(-1053.82, -933.09, 3.36)) -- example manual trigger
 Config.PropertyQuickPick = true -- quickpick
 Config.Property = {

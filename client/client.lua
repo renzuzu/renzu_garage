@@ -18,6 +18,7 @@ local propertygarage = false
 local parkmeter = {}
 local jobgarages = {}
 local coordcache = {}
+local propertyspawn = {}
 Citizen.CreateThread(function()
     Wait(1000)
     coordcache = garagecoord
@@ -257,6 +258,7 @@ CreateThread(function()
                 end
             end
             if Config.EnablePropertyCoordGarageCoord then
+                print('property')
                 for k,v in pairs(Config.Property) do
                     local vec = v.coord
                     local req_dis = 3
@@ -1633,7 +1635,7 @@ end
 function OpenGarage(id,garage_type,jobonly,default)
     inGarage = true
     local ped = PlayerPedId()
-    if not Config.Quickpick and garage_type == 'car' then
+    if not Config.Quickpick and garage_type == 'car' and propertyspawn.x == nil then
         CreateGarageShell()
     end
     while not fetchdone do
@@ -2937,11 +2939,12 @@ end
 
 myoldcoords = nil
 RegisterNetEvent('renzu_garage:property')
-AddEventHandler('renzu_garage:property', function(id, propertycoord, index)
+AddEventHandler('renzu_garage:property', function(id, propertycoord, index, spawncoord)
     DeleteEntity(LastVehicleFromGarage)
     LastVehicleFromGarage = nil
     --CloseNui()
     myoldcoords = propertycoord
+    propertyspawn = spawncoord
     TriggerServerEvent("renzu_garage:GetVehiclesTable")
     while not fetchdone do
         Wait(0)
@@ -2974,6 +2977,7 @@ end)
 RegisterNUICallback(
     "gotogarage",
     function(data, cb)
+        if propertyspawn.x ~= nil then return end
         DeleteEntity(LastVehicleFromGarage)
         LastVehicleFromGarage = nil
         DoScreenFadeOut(0)
@@ -2997,7 +3001,7 @@ RegisterNUICallback("ownerinfo",function(data, cb)
 end)
 
 RegisterNUICallback("SpawnVehicle",function(data, cb)
-    if not Config.Quickpick and type == 'car' then
+    if not Config.Quickpick and type == 'car' or propertyspawn.x ~= nil and not Config.PropertyQuickPick then
         SpawnVehicleLocal(data.modelcar, json.decode(data.props))
     end
 end)
@@ -3070,6 +3074,10 @@ RegisterNUICallback(
                 --table.insert(garagecoord, {spawn_x = spawnPos.x, spawn_y = spawnPos.y, spawn_z = spawnPos.z, garage = gid, property = true})
                 tid = propertygarage
                 id = propertygarage
+                if propertyspawn.x ~= nil then
+                    spawnPos = vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)
+                    spawnHeading = propertyspawn.w
+                end
                 tempcoord[tid] = {garage_x = myoldcoords.x, garage_y = myoldcoords.y, garage_z = myoldcoords.z, spawn_x = spawnPos.x*1.0, spawn_y = spawnPos.y*1.0, spawn_z = spawnPos.z*1.0, garage = propertygarage, property = true, Dist = 4, heading = spawnHeading*1.0}
                 dist2 = #(vector3(spawnPos.x,spawnPos.y,spawnPos.z) - GetEntityCoords(PlayerPedId()))
             elseif id == 'impound' then
@@ -3379,6 +3387,8 @@ function CloseNui()
             RenderScriptCams(false)
             DestroyAllCams(true)
             ClearFocus()
+            DisplayHud(true)
+            DisplayRadar(true)
         end
     end
     garagejob = false
@@ -3387,6 +3397,7 @@ function CloseNui()
     DeleteGarage()
     drawtext = false
     indist = false
+    propertyspawn = {}
 end
 
 function ReqAndDelete(object, detach)
