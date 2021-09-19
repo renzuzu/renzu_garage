@@ -3067,11 +3067,7 @@ RegisterNUICallback(
         if stored and impound == 0 or id == 'impound' or not Config.EnableReturnVehicle and impound ~= 1 or impound == 1 and not Config.EnableImpound then
             local tempcoord = {}
             if propertygarage then
-                if Config.Property[propertygarage] == nil then
-                    Config.Property[propertygarage] = {}
-                    Config.Property[propertygarage].coord = myoldcoords
-                end
-                spawn = Config.Property[propertygarage].coord
+                spawn = GetEntityCoords(PlayerPedId())
                 found, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(spawn.x + math.random(1, 2), spawn.y + math.random(1, 2), spawn.z, 0, 3, 0)
                 --table.insert(garagecoord, {spawn_x = spawnPos.x, spawn_y = spawnPos.y, spawn_z = spawnPos.z, garage = gid, property = true})
                 tid = propertygarage
@@ -3249,15 +3245,15 @@ RegisterNUICallback(
         ESX.TriggerServerCallback("renzu_garage:returnpayment",function(canreturn)
             if canreturn then
                 if propertygarage then
-                    if Config.Property[propertygarage] == nil then
-                        Config.Property[propertygarage] = {}
-                        Config.Property[propertygarage].coord = myoldcoords
-                    end
-                    spawn = Config.Property[propertygarage].coord
+                    spawn = GetEntityCoords(PlayerPedId())
                     found, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(spawn.x + math.random(1, 2), spawn.y + math.random(1, 2), spawn.z, 0, 3, 0)
                     --table.insert(garagecoord, {spawn_x = spawnPos.x, spawn_y = spawnPos.y, spawn_z = spawnPos.z, garage = gid, property = true})
                     tid = propertygarage
                     id = propertygarage
+                    if propertyspawn.x ~= nil then
+                        spawnPos = vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)
+                        spawnHeading = propertyspawn.w
+                    end
                     garagecoord[tid] = {garage_x = myoldcoords.x, garage_y = myoldcoords.y, garage_z = myoldcoords.z, spawn_x = spawnPos.x*1.0, spawn_y = spawnPos.y*1.0, spawn_z = spawnPos.z*1.0, garage = propertygarage, property = true, Dist = 4, heading = spawnHeading*1.0}
                     dist2 = #(vector3(spawnPos.x,spawnPos.y,spawnPos.z) - GetEntityCoords(PlayerPedId()))
                 end
