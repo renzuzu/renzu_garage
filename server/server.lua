@@ -184,7 +184,7 @@ ESX.RegisterServerCallback('renzu_garage:getinventory', function (source, cb, id
         ['@identifier'] = identifier,
         ['@garage'] = id
     })
-    local inventory = false
+    local inventory = {}
     if json.decode(result[1].inventory) then
         inventory = json.decode(result[1].inventory)
     end
@@ -712,6 +712,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
     else
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     end
+    local state = tonumber(state)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     if xPlayer then
