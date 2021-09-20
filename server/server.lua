@@ -186,7 +186,7 @@ ESX.RegisterServerCallback('renzu_garage:getinventory', function (source, cb, id
     })
     local inventory = {}
     if json.decode(result[1].inventory) then
-        inventory = json.decode(result[1].inventory)
+        inventory = json.decode(result[1].inventory) or {}
     end
     cb(inventory)
 end)
@@ -204,7 +204,7 @@ ESX.RegisterServerCallback('renzu_garage:itemavailable', function (source, cb, i
     })
     local inventory = false
     if json.decode(result[1].inventory) then
-        inventory = json.decode(result[1].inventory)
+        inventory = json.decode(result[1].inventory) or {}
         if inventory[item] ~= nil and inventory[item] > 0 then
             inventory[item] = inventory[item] - 1
             MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET inventory = @inventory WHERE garage = @garage and identifier = @identifier', {
@@ -264,7 +264,7 @@ AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,
             ['@identifier'] = identifier,
             ['@garage'] = id
         })
-        local inventory = json.decode(result[1].inventory)
+        local inventory = json.decode(result[1].inventory) or {}
         if not save then
             local modname = mod.name..'-'..lvl
             if inventory[modname] == nil then
