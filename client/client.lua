@@ -23,11 +23,11 @@ Citizen.CreateThread(function()
     Wait(1000)
     coordcache = garagecoord
     for k,v in pairs(garagecoord) do -- create job garage
-        if v.job ~= nil and jobgarages[v.job] == nil then
-            jobgarages[v.job] = {}
-            jobgarages[v.job].coord = vector3(v.garage_x,v.garage_y,v.garage_z)
-            jobgarages[v.job].id = v.garage
-            jobgarages[v.job].job = v.job
+        if v.job ~= nil and jobgarages[v.garage] == nil then
+            jobgarages[v.garage] = {}
+            jobgarages[v.garage].coord = vector3(v.garage_x,v.garage_y,v.garage_z)
+            jobgarages[v.garage].id = v.garage
+            jobgarages[v.garage].job = v.job
         end
     end
 	while ESX == nil do
@@ -1503,12 +1503,18 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         if value.job == '' then
             value.job = nil
         end
-        if value.job ~= nil and jobgarages[value.job] == nil then -- fix incompatibility with vehicles with job column as a default from sql eg. civ fck!
+        local havejob = false
+        for k,v in pairs(jobgarages) do
+            if value.job ~= nil and v.job == value.job then
+                havejob = true
+            end
+        end
+        if value.job ~= nil and not havejob then -- fix incompatibility with vehicles with job column as a default from sql eg. civ fck!
             value.job = nil
         end
         if value.garage_id ~= nil then -- fix blank job column, seperate the car to other non job garages
             for k,v in pairs(jobgarages) do 
-                if v.id == value.garage_id then
+                if v.job ~= nil and value.job ~= nil and v.job == value.job and v.id == value.garage_id and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
                     value.job = v.job
                 end
             end
@@ -1537,9 +1543,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             type = value.type,
             job = value.job ~= nil,
         }
-        if jobgarages[value.job] ~= nil and #(GetEntityCoords(PlayerPedId()) - jobgarages[value.job].coord) < 50 or jobgarages[value.job] == nil then -- import only if jobgarage is not nil with coordinates checking or if jobgarage is nil
-            table.insert(OwnedVehicles['garage'], VTable)
-        end
+        table.insert(OwnedVehicles['garage'], VTable)
     end
     fetchdone = true
 end)
