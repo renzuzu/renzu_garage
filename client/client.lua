@@ -2799,6 +2799,7 @@ function Storevehicle(vehicle,impound)
     if impound then
     id = 'impound'
     end
+    Wait(100)
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
     Wait(2000)
     TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, id, vehicleProps.model, vehicleProps)
