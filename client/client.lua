@@ -2146,7 +2146,7 @@ function GotoGarage(id, property, propertycoord, job)
     Citizen.Wait(500)
     for k2,v2 in pairs(vehtable) do
         for k,v in pairs(v2) do
-            if i < 10 then
+            if i < 10 and v.stored then
                 i = i + 1
                 local props = json.decode(v.props)
                 local leftplus = (-4.1 * i)
