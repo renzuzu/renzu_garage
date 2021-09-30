@@ -2,6 +2,9 @@ ESX = nil
 local vehicles = {}
 local parkedvehicles = {}
 local parkmeter = {}
+local default_routing = {}
+local current_routing = {}
+local lastgarage = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
@@ -173,11 +176,21 @@ end)
 
 local garageshare = {}
 
+function DoiOwnthis(xPlayer,id)
+    local owned = false
+    for k,v in pairs(current_routing) do
+        if tonumber(v) == tonumber(xPlayer.source) and GetPlayerRoutingBucket(xPlayer.source) == tonumber(k) then
+            owned = true
+        end
+    end
+    return owned
+end
+
 ESX.RegisterServerCallback('renzu_garage:getinventory', function (source, cb, id, share)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
-    if share then
+    if share and not DoiOwnthis(xPlayer,id) then
         identifier = share.owner
     end
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT inventory FROM private_garage WHERE identifier = @identifier and garage = @garage', {
@@ -195,7 +208,7 @@ ESX.RegisterServerCallback('renzu_garage:itemavailable', function (source, cb, i
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
-    if share then
+    if share and not DoiOwnthis(xPlayer,id) then
         identifier = share.owner
     end
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT inventory FROM private_garage WHERE identifier = @identifier and garage = @garage', {
@@ -230,7 +243,7 @@ AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,
     local identifier = xPlayer.identifier
 	local save = save
 	local share = share
-    if share then
+    if share and not DoiOwnthis(xPlayer,id) then
         identifier = share.owner
     end
     local success = false
@@ -368,15 +381,12 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
     end
 end)
 
-local default_routing = {}
-local current_routing = {}
-local lastgarage = {}
 RegisterServerEvent('renzu_garage:gotogarage')
 AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
-    if share then
+    if share and not DoiOwnthis(xPlayer,id) then
         identifier = v.owner
     end
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
@@ -440,7 +450,7 @@ AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
         --current_routing[default_routing[source]] = nil
     else
         local identifier = xPlayer.identifier
-        if share then
+        if share and not DoiOwnthis(xPlayer,id) then
             identifier = share.owner
         end
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
