@@ -146,14 +146,23 @@ local parkedvehicles = {}
 RegisterNetEvent('renzu_garage:update_parked')
 AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
     Wait(2000)
-    parkmeter = p
+    if p then
+        parkmeter = p
+        for k,v in pairs(meter_cars) do
+            if tostring(k, '^%s*(.-)%s*$', '%1'):upper() == plate then
+                ent = v
+                meter_cars[k] = nil
+                ReqAndDelete(ent)
+            end
+        end
+    end
 	parkedvehicles = table
     Wait(100)
     if plate ~= nil then
         for k,v in pairs(spawned_cars) do
             if tostring(k, '^%s*(.-)%s*$', '%1'):upper() == plate then
                 ent = v
-                v = nil
+                spawned_cars[k] = nil
                 ReqAndDelete(ent)
             end
         end
@@ -1840,7 +1849,8 @@ function OpenImpound(id)
                 ingarage = v.ingarage,
                 impound = v.impound,
                 stored = v.stored,
-                identifier = v.identifier
+                identifier = v.identifier,
+                impound_date = v.impound_date
                 }
                 table.insert(vehtable[v.impound], veh)
             end
