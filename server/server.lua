@@ -104,6 +104,10 @@ Citizen.CreateThread(function()
 end)
 
 function MysqlGarage(plugin,type,query,var)
+    local plugin = plugin
+    local type = type
+    local query = query
+    local var = var
     if type == 'fetchAll' and plugin == 'mysql-async' then
         local data = nil
         local res = MySQL.Async.fetchAll(query, var, function(result)
@@ -190,6 +194,8 @@ ESX.RegisterServerCallback('renzu_garage:getinventory', function (source, cb, id
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
+    local share = share
+    local id = id
     if share and not DoiOwnthis(xPlayer,id) then
         identifier = share.owner
     end
@@ -201,6 +207,8 @@ ESX.RegisterServerCallback('renzu_garage:getinventory', function (source, cb, id
     if json.decode(result[1].inventory) then
         inventory = json.decode(result[1].inventory) or {}
     end
+    id = nil
+    share = nil
     cb(inventory)
 end)
 
@@ -208,6 +216,9 @@ ESX.RegisterServerCallback('renzu_garage:itemavailable', function (source, cb, i
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
+    local share = share
+    local id = id
+    local item = item
     if share and not DoiOwnthis(xPlayer,id) then
         identifier = share.owner
     end
@@ -232,14 +243,19 @@ ESX.RegisterServerCallback('renzu_garage:itemavailable', function (source, cb, i
     else
         cb(false)
     end
+    share = nil
+    id = nil
+    item = nil
 end)
 
 RegisterServerEvent('renzu_garage:storemod')
 AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,savepartsonly)
 	print(savepartsonly)
+    local newprop = newprop
 	local savepartsonly = savepartsonly
     local src = source  
     local xPlayer = ESX.GetPlayerFromId(src)
+    local id = id
     local identifier = xPlayer.identifier
 	local save = save
 	local share = share
@@ -300,6 +316,10 @@ AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,
                 ['@identifier'] = identifier,
             })
         end
+        newprop = {}
+        share = false
+        save = nil
+        savepartsonly = nil
         TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully store the parts ('..mod.name..')')
     else
         TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'this vehicle mod does not exist in your garage')
@@ -324,8 +344,25 @@ AddEventHandler('renzu_garage:buygarage', function(id,v)
     end
 end)
 
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
 RegisterServerEvent('renzu_garage:storeprivate')
 AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
+    local id = id
+    local prop = prop
     local src = source  
     local xPlayer = ESX.GetPlayerFromId(src)
     local identifier = xPlayer.identifier
@@ -334,48 +371,55 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
         ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1')
     })
     if not Config.Allowednotowned and result[1] == nil then TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'You dont owned the vehicle') return end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
+    local garage = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
         ['@identifier'] = xPlayer.identifier,
         ['@garage'] = id
     })
-    local vehicles = json.decode(result[1].vehicles)
+    local vehiclesgarage = {}
+    vehiclesgarage = json.decode(garage[1].vehicles) or {}
     local success = false
     local newgarage = true
-    for k,v in pairs(vehicles) do
+    for k,v in pairs(vehiclesgarage) do
         newgarage = false
         if v.vehicle == nil then v.taken = false end
         if not v.taken then
             v.taken = true
             v.vehicle = prop
+            print(prop.plate)
             success = true
             break
         end
     end
     if newgarage then
-        for k,v in pairs(private_garage[id].park) do
-            vehicles[k] = v
-            if v.vehicle == nil then vehicles[k].taken = false end
-            if not vehicles[k].taken and k == #private_garage[id].park then
-                vehicles[k].taken = true
-                vehicles[k].vehicle = prop
+        local pgarage = deepcopy(private_garage[id].park)
+        for k,v in pairs(pgarage) do
+            vehiclesgarage[k] = v
+            if v.vehicle == nil then vehiclesgarage[k].taken = false end
+            if not vehiclesgarage[k].taken and k == #pgarage then
+                vehiclesgarage[k].taken = true
+                vehiclesgarage[k].vehicle = prop
+                print(prop.plate)
                 break
             end
         end
     end
     if success and not newgarage or newgarage then
-        local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE TRIM(UPPER(plate)) = @plate and owner = @owner', {
+        MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE TRIM(UPPER(plate)) = @plate and owner = @owner', {
             ['@vehicle'] = json.encode(prop),
             ['@garage_id'] = 'private',
             ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),
             ['@owner'] = xPlayer.identifier,
             ['@stored'] = 0
         })
-        local result = MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles WHERE garage = @garage and identifier = @identifier', {
-            ['@vehicles'] = json.encode(vehicles),
+        MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles WHERE garage = @garage and identifier = @identifier', {
+            ['@vehicles'] = json.encode(vehiclesgarage),
             ['@garage'] = id,
             ['@identifier'] = xPlayer.identifier,
         })
         TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Stored this vehicle')
+        vehiclesgarage = {}
+        pgarage = {}
+        --ever wonder why need to declare this? i dont know too, but without this, it cause a data duplicate, must be fx version bug! happens only on > recommended like 4680 or > 4680
     else
         TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'There is not enough space in this garage')
     end
