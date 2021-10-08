@@ -207,11 +207,56 @@ function PopUI(name,v,reqdist,event)
     TriggerEvent('renzu_popui:closeui')
 end
 
+function ShowFloatingHelpNotification(msg, coords, disablemarker, i)
+    AddTextEntry('FloatingHelpNotificationsc'..i, msg)
+    SetFloatingHelpTextWorldPosition(1, coords+vector3(0,0,0.3))
+    SetFloatingHelpTextStyle(1, 1, 2, -1, 3, 0)
+    BeginTextCommandDisplayHelp('FloatingHelpNotificationsc'..i)
+    EndTextCommandDisplayHelp(2,0, 0, -1)
+end
+
+local markers = {}
+local drawsleep = 1
+function DrawInteraction(i,v,reqdist,msg,event,server,var,disablemarker)
+    local i = i
+    if not markers[i] and i ~= nil and not inGarage then
+        Citizen.CreateThread(function()
+            markers[i] = true
+            --local reqdist = reqdist[2]
+            local coord = v
+            local dist = #(GetEntityCoords(PlayerPedId()) - coord)
+            while dist < reqdist[2] do
+                drawsleep = 1
+                dist = #(GetEntityCoords(PlayerPedId()) - coord)
+                if not disablemarker then
+                    DrawMarker(27, coord.x,coord.y,coord.z-0.8, 0, 0, 0, 0, 0, 0, 0.7, 0.7, 0.7, 200, 255, 255, 255, 0, 0, 1, 1, 0, 0, 0)
+                end
+                --print(i)
+                if dist < reqdist[1] then ShowFloatingHelpNotification(msg, coord, disablemarker , i) end
+                if dist < reqdist[1] and IsControlJustReleased(1, 51) then
+                    ShowFloatingHelpNotification(msg, coord, disablemarker , i)
+                    if not server then
+                        TriggerEvent(event,i,var)
+                    elseif server then
+                        TriggerServerEvent(event,i,var)
+                    end
+                    Wait(1000)
+                    break
+                end
+                Wait(drawsleep)
+            end
+            ClearAllHelpMessages()
+            markers[i] = false
+        end)
+    end
+end
+
 function DrawZuckerburg(name,v,reqdist)
+    if inGarage then Config.UseMarker = true return end
     CreateThread(function()
         local reqdist = reqdist
         dist = #(v - GetEntityCoords(PlayerPedId()))
-        while dist < reqdist and neargarage do
+        while dist < reqdist and neargarage and not inGarage do
             dist = #(v - GetEntityCoords(PlayerPedId()))
             DrawMarker(36, v.x,v.y,v.z+0.5, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7, 200, 10, 10, 100, 0, 0, 1, 1, 0, 0, 0)
             Wait(1)
@@ -222,7 +267,107 @@ end
 
 CreateThread(function()
     Wait(500)
-    if Config.UsePopUI then
+    if not Config.UsePopUI and Config.floatingtext then
+        while true do
+            local mycoord = GetEntityCoords(PlayerPedId())
+            local inveh = IsPedInAnyVehicle(PlayerPedId())
+            for k,v in pairs(garagecoord) do
+                local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+                local req_dis = v.Dist
+                if inveh and v.store_x ~= nil then
+                    vec = vector3(v.store_x,v.store_y,v.store_z)
+                    req_dis = v.Store_dist
+                end
+                local dist = #(vec - mycoord)
+                if Config.UseMarker and dist < Config.MarkerDistance then
+                    Config.UseMarker = false
+                    DrawZuckerburg(v.garage,vec,Config.MarkerDistance)
+                end
+                if dist < req_dis then
+                    tid = k
+                    neargarage = true
+                    --PopUI(v.garage,vec,req_dis)
+                    if IsPedInAnyVehicle(PlayerPedId()) then
+                        msg = 'Press [E] Store Vehicle'
+                    else
+                        msg = 'Press [E] 🏚️ Garage '..v.garage
+                    end
+                    DrawInteraction(v.garage,vec,{req_dis,req_dis*3},msg,'opengarage',false,false,false)
+                end
+            end
+            if Config.EnableImpound then
+                for k,v in pairs(impoundcoord) do
+                    local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+                    local dist = #(vec - mycoord)
+                    if dist < v.Dist then
+                        tid = k
+                        neargarage = true
+                        --PopUI(v.garage,vec)
+                        if IsPedInAnyVehicle(PlayerPedId()) then
+                            msg = 'Press [E] Store Vehicle'
+                        else
+                            msg = 'Press [E] ⛍ Garage '..v.garage
+                        end
+                        DrawInteraction(v.garage,vec,{v.Dist,v.Dist*3},msg,'opengarage',false,false,false)
+                    end
+                end
+            end
+            if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+                for k,v in pairs(helispawn[PlayerData.job.name]) do
+                    local vec = vector3(v.coords.x,v.coords.y,v.coords.z)
+                    local dist = #(vec - mycoord)
+                    if dist < 10 then
+                        tid = k
+                        neargarage = true
+                        if IsPedInAnyVehicle(PlayerPedId()) then
+                            msg = 'Press [E] Store Helicopter'
+                        else
+                            msg = 'Press [E] 🛸 Garage '..v.garage
+                        end
+                        DrawInteraction(v.garage,vec,{10,15},msg,'opengarage',false,false,false)
+                        --PopUI(v.garage,vec)
+                    end
+                end
+            end
+            -- if Config.EnablePropertyCoordGarageCoord then
+            --     print('property')
+            --     for k,v in pairs(Config.Property) do
+            --         local vec = v.coord
+            --         local req_dis = 3
+            --         local dist = #(vec - mycoord)
+            --         if Config.UseMarker and dist < Config.MarkerDistance then
+            --             Config.UseMarker = false
+            --             DrawZuckerburg(v.name,vec,Config.MarkerDistance)
+            --         end
+            --         if dist < req_dis then
+            --             neargarage = true
+            --             local table = {
+            --                 ['event'] = 'renzu_garage:property',
+            --                 ['title'] = 'Garage '..v.name,
+            --                 ['server_event'] = false,
+            --                 ['unpack_arg'] = true,
+            --                 ['invehicle_title'] = 'Store Vehicle',
+            --                 ['confirm'] = '[ENTER]',
+            --                 ['reject'] = '[CLOSE]',
+            --                 ['custom_arg'] = {v.name,vec,k}, -- example: {1,2,3,4}
+            --                 ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
+            --             }
+            --             TriggerEvent('renzu_popui:showui',table)
+            --             local dist = #(v.coord - mycoord)
+            --             tid = k
+            --             id = k
+            --             while dist < 3 and neargarage do
+            --                 dist = #(vec - GetEntityCoords(PlayerPedId()))
+            --                 Wait(100)
+            --             end
+            --             TriggerEvent('renzu_popui:closeui')
+            --         end
+            --     end
+            -- end
+            Wait(1000)
+        end
+    end
+    if Config.UsePopUI and Config.floatingtext then
         while true do
             local mycoord = GetEntityCoords(PlayerPedId())
             local inveh = IsPedInAnyVehicle(PlayerPedId())
