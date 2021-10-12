@@ -11,7 +11,7 @@ ALTER TABLE owned_vehicles
 ADD `type` varchar(32) NOT NULL DEFAULT 'car';
 
 ALTER TABLE owned_vehicles
-ADD `job` varchar(32) NOT NULL;
+ADD `job` varchar(32) NOT NULL DEFAULT 'civ';
 
 ALTER TABLE owned_vehicles
 ADD park_coord LONGTEXT NULL;

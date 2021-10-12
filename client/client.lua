@@ -149,9 +149,9 @@ AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
     if p then
         parkmeter = p
         for k,v in pairs(meter_cars) do
-            if tostring(k, '^%s*(.-)%s*$', '%1'):upper() == plate then
+            if tostring(k, '^%s*(.-)%s*$', '%1'):upper() == tostring(plate, '^%s*(.-)%s*$', '%1'):upper() then
                 ent = v
-                meter_cars[k] = nil
+                meter_cars[tostring(k, '^%s*(.-)%s*$', '%1'):upper()] = nil
                 ReqAndDelete(ent)
             end
         end
@@ -3575,6 +3575,9 @@ function ReqAndDelete(object, detach)
 		SetEntityAsMissionEntity(object, true, true)
 		SetEntityAsNoLongerNeeded(object)
 		DeleteEntity(object)
+        if DoesEntityExist(object) then
+            SetEntityCoords(object, 0.0,0.0,0.0)
+        end
 	end
 end
 
@@ -3690,14 +3693,19 @@ function Spawn_Vehicle_Forward(veh, coords)
 end
 
 meter_cars = {}
-RegisterCommand('parkingmeter', function(source, args, rawCommand)
+
+function Park()
     local closestparkingmeter = nil
     local vehicle = GetVehiclePedIsIn(PlayerPedId())
     local loc = GetEntityCoords(vehicle)
     local coord = vector4(loc.x,loc.y,loc.z,GetEntityHeading(vehicle))
-    for k,v in pairs(Config.MeterProp) do
-        closestparkingmeter = GetClosestObjectOfType(loc, 7.0, GetHashKey(v), false)
-        if closestparkingmeter ~= 0 then break end
+    if Config.ParkingAnywhere then
+        closestparkingmeter = GetVehiclePedIsIn(PlayerPedId())
+    else
+        for k,v in pairs(Config.MeterProp) do
+            closestparkingmeter = GetClosestObjectOfType(loc, 7.0, GetHashKey(v), false)
+            if closestparkingmeter ~= 0 then break end
+        end
     end
     if closestparkingmeter ~= 0 then
         local vehicle_prop = GetVehicleProperties(vehicle)
@@ -3716,6 +3724,14 @@ RegisterCommand('parkingmeter', function(source, args, rawCommand)
             end
         end,GetEntityCoords(closestparkingmeter),coord,json.encode(vehicle_prop))
     end
+end
+
+RegisterCommand('parkingmeter', function(source, args, rawCommand)
+    Park()
+end)
+
+RegisterCommand('park', function(source, args, rawCommand)
+    Park()
 end)
 
 CreateThread(function()
