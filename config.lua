@@ -946,7 +946,10 @@ Config.EnablePropertyCoordGarageCoord = false -- Enable / Disable Property Coord
 Config.PropertyQuickPick = true -- quickpick
 Config.UniqueProperty = true -- if enable , only stored vehicles in this Property ID will be show
 
-Config.ParkingMeter = true
+Config.ParkingMeter = true -- use configure parking props and park near by them
+Config.ParkingAnywhere = true -- if this is true ParkingMeter Prop Feature will be replaced
+-- ParkingAnywhere is like a realistic parking but by using /park command or /parkingmater
+-- you can park anywhere using /park
 Config.MeterProp = {
   [1] = 'prop_parknmeter_01',
   [2] = 'prop_parknmeter_02',
