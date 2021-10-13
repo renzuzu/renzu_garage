@@ -367,7 +367,7 @@ CreateThread(function()
             Wait(1000)
         end
     end
-    if Config.UsePopUI and Config.floatingtext then
+    if Config.UsePopUI and not Config.floatingtext then
         while true do
             local mycoord = GetEntityCoords(PlayerPedId())
             local inveh = IsPedInAnyVehicle(PlayerPedId())
