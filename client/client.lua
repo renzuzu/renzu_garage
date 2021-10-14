@@ -1390,10 +1390,35 @@ function GetPerformanceStats(vehicle)
     return data
 end
 
-function SetVehicleProp(vehicle, props)
+function SetVehicleProp(vehicle, mods)
+    local mods = mods
+    if Config.ReturnDamage then
+        if mods.wheel_tires then
+            for tireid = 1, 7 do
+                if mods.wheel_tires[tireid] ~= false then
+                    SetVehicleTyreBurst(vehicle, tireid, true, 1000)
+                end
+            end
+        end
+        if mods.vehicle_window then
+            for windowid = 0, 5, 1 do
+                if mods.vehicle_window[windowid] ~= false then
+                    RemoveVehicleWindow(vehicle, windowid)
+                end
+            end
+        end
+        if mods.vehicle_doors then
+            for doorid = 0, 5, 1 do
+                if mods.vehicle_doors[doorid] ~= false then
+                    SetVehicleDoorBroken(vehicle, doorid-1, true)
+                end
+            end
+        end
+    end
     if Config.use_RenzuCustoms then
-        return exports.renzu_customs:SetVehicleProp(vehicle,props)
+        exports.renzu_customs:SetVehicleProp(vehicle,mods)
     else
+        props = mods
         -- https://github.com/esx-framework/es_extended/tree/v1-final COPYRIGHT
         if DoesEntityExist(vehicle) then
             local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
@@ -1491,7 +1516,31 @@ end
 
 function GetVehicleProperties(vehicle)
     if Config.use_RenzuCustoms then
-        return exports.renzu_customs:GetVehicleProperties(vehicle)
+        local mods = exports.renzu_customs:GetVehicleProperties(vehicle)
+        if not Config.ReturnDamage then
+            return mods
+        end
+        mods.wheel_tires = {}
+        mods.vehicle_doors = {}
+        mods.vehicle_window = {}
+        for tireid = 1, 7 do
+            local normal = IsVehicleTyreBurst(vehicle, tireid, true)
+            local completely = IsVehicleTyreBurst(vehicle, tireid, false)
+            if normal or completely then
+                mods.wheel_tires[tireid] = true
+            else
+                mods.wheel_tires[tireid] = false
+            end
+        end
+        Wait(100)
+        for doorid = 0, 5 do
+            mods.vehicle_doors[#mods.vehicle_doors+1] = IsVehicleDoorDamaged(vehicle, doorid)
+        end
+        Wait(500)
+        for windowid = 0, 7 do
+            mods.vehicle_window[#mods.vehicle_window+1] = IsVehicleWindowIntact(vehicle, windowid)
+        end
+        return mods
     else
         if DoesEntityExist(vehicle) then
             -- https://github.com/esx-framework/es_extended/tree/v1-final COPYRIGHT
@@ -1513,7 +1562,7 @@ function GetVehicleProperties(vehicle)
                 if modlivery == -1 then
                     modlivery = GetVehicleMod(vehicle, 48)
                 end
-                return {
+                local mods = {
                     model             = GetEntityModel(vehicle),
                     plate             = plate,
                     plateIndex        = GetVehicleNumberPlateTextIndex(vehicle),
@@ -1596,6 +1645,29 @@ function GetVehicleProperties(vehicle)
                     modWindows        = GetVehicleMod(vehicle, 46),
                     modLivery         = modlivery
                 }
+                if Config.ReturnDamage then
+                    mods.wheel_tires = {}
+                    mods.vehicle_doors = {}
+                    mods.vehicle_window = {}
+                    for tireid = 1, 7 do
+                        local normal = IsVehicleTyreBurst(vehicle, tireid, true)
+                        local completely = IsVehicleTyreBurst(vehicle, tireid, false)
+                        if normal or completely then
+                            mods.wheel_tires[tireid] = true
+                        else
+                            mods.wheel_tires[tireid] = false
+                        end
+                    end
+                    Wait(100)
+                    for doorid = 0, 5 do
+                        mods.vehicle_doors[#mods.vehicle_doors+1] = IsVehicleDoorDamaged(vehicle, doorid)
+                    end
+                    Wait(100)
+                    for windowid = 0, 7 do
+                        mods.vehicle_window[#mods.vehicle_window+1] = IsVehicleWindowIntact(vehicle, windowid)
+                    end
+                end
+                return mods
             else
                 return
             end
@@ -3176,47 +3248,6 @@ end)
 
 local vhealth = 1000
 
-function SetVehicleStatus(curVehicle)
-    myvehlife = GetVehicleEngineHealth(curVehicle)
-    if myvehlife < 600 then
-        SetVehicleDoorBroken(curVehicle, 0, true)
-        SetVehicleDoorBroken(curVehicle, 1, true)
-    end
-    if myvehlife < 500 then
-        SetVehicleDoorBroken(curVehicle, 3, true)
-        SetVehicleDoorBroken(curVehicle, 4, true)
-        SmashVehicleWindow(curVehicle, 0)
-        SmashVehicleWindow(curVehicle, 1)
-        SmashVehicleWindow(curVehicle, 2)
-        SmashVehicleWindow(curVehicle, 3)
-        SmashVehicleWindow(curVehicle, 4)
-        SmashVehicleWindow(curVehicle, 7)
-    end
-    if myvehlife < 400 then
-        SetVehicleDoorBroken(curVehicle, 4, true)
-        SetVehicleDoorBroken(curVehicle, 5, true)
-        SmashVehicleWindow(curVehicle, 8)
-        DetachVehicleWindscreen(curVehicle)
-        SmashVehicleWindow(curVehicle, 0)
-        SetVehicleEnveffScale(curVehicle, 1.0)
-        SetVehicleDirtLevel(curVehicle,15.0)
-    else
-    --SetVehicleDirtLevel(curVehicle,0.0)
-    end
-    if myvehlife < 300 then
-        SetVehicleDoorBroken(curVehicle, 0, true)
-        DetachVehicleWindscreen(curVehicle)
-        SetVehicleReduceGrip(curVehicle, true)
-        SetVehicleReduceTraction(curVehicle, true)
-    else
-        SetVehicleReduceGrip(curVehicle, false)
-        SetVehicleReduceTraction(curVehicle, false)
-    end
-    if myvehlife < 200 then
-        SetVehicleDoorBroken(curVehicle, 0, true)
-    end
-end
-
 RegisterNUICallback(
     "GetVehicleFromGarage",
     function(data, cb)
@@ -3293,7 +3324,6 @@ RegisterNUICallback(
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
             SetVehicleEngineHealth(v,props.engineHealth)
             Wait(100)
-            SetVehicleStatus(GetVehiclePedIsIn(PlayerPedId()))
             i = 0
             min = 0
             max = 10
@@ -3448,7 +3478,6 @@ RegisterNUICallback(
                         veh = vehicle
                         SetVehicleEngineHealth(v,props.engineHealth)
                         Wait(100)
-                        SetVehicleStatus(veh)
                         DoScreenFadeIn(333)
                     end
                 --end
