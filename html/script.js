@@ -65,6 +65,50 @@ window.addEventListener('message', function(event) {
             document.getElementById("seemod").style.display = 'none';
         }
     }
+    if (event.data.type == "cats") {
+        var cats = event.data.cats
+        for (const i in cats) {
+            var img = i
+            if (img == 'SPORTS CLASSIC') {
+                img = 'SPORTSCLASSIC'
+            }
+            var gago = `<div class="uk-visible-toggle" tabindex="-1">
+            <div class="uk-margin uk-card uk-card-default uk-card-hover">
+            <!-- UIkit CARD BODY -->
+            <div class="uk-card-body">
+            <a class="uk-link-reset uk-position-cover" href="#"></a>
+            <div class="uk-flex uk-flex-center">
+            <span class="uk-icon default" style="background: url(img/CAR_`+img+`.png);
+            background-size: cover;
+            width: 100px;
+            height: 100px;"></span>
+            <span class="uk-icon hover" style="background: url(img/CAR_`+img+`.png);
+            background-size: cover;
+            width: 100px;
+            height: 100px;"></span>
+            </div>
+            <h3 class="uk-card-title uk-margin">`+ i +`</h3>
+            </div>
+            <!-- UIkit CARD FOOTER DEFAULT -->
+            <div class="uk-card-footer default">
+            <p>`+cats[i]+` Vehicles</p>
+            </div>
+            <!-- UIkit CARD FOOTER HOVER -->
+            <div class="uk-card-footer uk-hidden-hover">
+            <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar>
+            <div class="uk-navbar-center uk-navbar-item">
+            <ul class="uk-navbar-nav">
+            <li><a onclick="choosecat('`+i+`')" class="tooltip-top" href="#" data-tooltip="Select this"><span class="uk-icon uk-margin-small-right"><i class="far fa-eye"></i></span>Select</a></li>
+            <li><a class="tooltip-top" href="#" data-tooltip="Total: `+cats[i]+`"><span class="uk-icon uk-margin-small-right"><i class="fas fa-archive"></i></span>Vehicles</a></li>
+            </ul>
+            </div>
+            </nav>
+            </div>
+            </div>
+            </div>`
+            $("#vehicle_cat").append(gago)
+        }
+    }
     if (event.data.type == "display") {
         chopper = false
         if (event.data.chopper) {
@@ -106,6 +150,12 @@ window.addEventListener('message', function(event) {
     }
 
 });
+
+function choosecat(i) {
+    console.log(i)
+    $("#vehicle_cat").html('')
+    $.post("https://renzu_garage/choosecat", JSON.stringify({ cat: i }));
+}
 
 $(document).ready(function() {
     $('.upper-bottom-container').on('afterChange', function(event, slick, currentSlide) {
@@ -292,6 +342,7 @@ function garage() {
 
 function ShowConfirm(){
     document.getElementById("closemenu").innerHTML = '';
+    $("#vehicle_cat").html('')
 
     $('.modal').css("display","flex");
 
@@ -322,6 +373,7 @@ function ShowConfirm(){
 
 function returnveh(){    
     document.getElementById("closemenu").innerHTML = '';
+    $("#vehicle_cat").html('')
 
     $('.modal').css("display","flex");
 
@@ -348,6 +400,7 @@ function returnveh(){
 
 function onimpound(){    
     document.getElementById("closemenu").innerHTML = '';
+    $("#vehicle_cat").html('')
 
     $('.modal').css("display","flex");
 
@@ -415,6 +468,7 @@ $(document).on('keydown', function(event) {
         case 27: // ESC
             VehicleArr = []
             CurrentVehicle = {}
+            $("#vehicle_cat").html('')
             $.post('https://renzu_garage/Close');  
             break;
         case 9: // TAB
