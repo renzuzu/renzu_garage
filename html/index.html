@@ -10,6 +10,10 @@
       <link rel="stylesheet" href="design.css">
       <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css'>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+      <!-- UIkit CSS -->
+      <link rel="stylesheet" href="uikit.css" />
+      <!-- UIkit JS -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.3/js/uikit.min.js"></script>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
   </head>
 
@@ -83,6 +87,14 @@
         </article>
         <div style="text-align: center;position: absolute;bottom: 4%;right: 40%; display: none;" id="seemod">Press [E] to See Vehicle Mods</div>
       </div>
+
+    <!-- UIkit SECTION -->
+    <div class="uk-section uk-section-default">
+        <div class="uk-container">
+        <div id="vehicle_cat" class="uk-margin uk-grid-match uk-grid-collapse uk-child-width-1-4@l uk-text-center" uk-grid>
+        </div>
+      </div>
+    </div>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
       <script src="script.js"></script>
   </body>

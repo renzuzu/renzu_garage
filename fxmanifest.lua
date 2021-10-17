@@ -15,11 +15,12 @@ client_scripts {
 
 files {
 	'html/design.css',
+	'html/uikit.css',
 	'html/index.html',
 	'html/img/*.png',
 	'html/script.js',
 	'html/fonts/*',	
-	'imgs/*.png',
+	'imgs/**.png',
 	'imgs/uploads/*.jpg',
 }
 
