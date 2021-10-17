@@ -1726,6 +1726,31 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
     fetchdone = true
 end)
 
+local Charset = {}
+for i = 65,  90 do table.insert(Charset, string.char(i)) end
+for i = 97, 122 do table.insert(Charset, string.char(i)) end
+
+function GetRandomLetter(length)
+	math.randomseed(GetGameTimer())
+	if length > 0 then
+		return GetRandomLetter(length - 1) .. Charset[math.random(1, #Charset)]
+	else
+		return ''
+	end
+end
+
+function LetterRand()
+    local emptyString = {}
+    local randomLetter;
+    while (#emptyString < 6) do
+        randomLetter = GetRandomLetter(1)
+        table.insert(emptyString,randomLetter)
+        Wait(0)
+    end
+    local a = string.format("%s%s%s", table.unpack(emptyString)):upper()  -- "2 words"
+    return a
+end
+
 function CreateDefault(default,jobonly,garage_type,id)
     for k,v in pairs(default) do
         if v.grade <= PlayerData.job.grade then
@@ -1734,6 +1759,7 @@ function CreateDefault(default,jobonly,garage_type,id)
             if v.type == 'boat' or v.type == 'plane' then
                 pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
             end
+            local genplate = LetterRand()..' '..math.random(100,999)
             local VTable = {
                 brand = GetVehicleClassnamemodel(tonumber(vehicleModel)),
                 name = v.name:upper(),
@@ -1744,8 +1770,8 @@ function CreateDefault(default,jobonly,garage_type,id)
                 torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*tmult),
                 model = v.model,
                 model2 = tonumber(vehicleModel),
-                plate = Config.DefaultPlate,
-                props = json.encode({model = vehicleModel, plate = Config.DefaultPlate}),
+                plate = genplate,
+                props = json.encode({model = vehicleModel, plate = genplate}),
                 fuel = 100,
                 bodyhealth = 1000,
                 enginehealth = 1000,
