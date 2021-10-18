@@ -278,7 +278,7 @@
     
     .container .middle-left2-container .title {
         font-family: "azonixregular";
-        font-size: 14px;
+        font-size: 11px;
         font-weight: 55 !important;
     }
     
@@ -291,7 +291,7 @@
     .container .middle-left2-container .spacebetween span:nth-child(2) {
         font-family: "azonixregular";
         color: white;
-        font-size: 14px;
+        font-size: 10px;
         font-weight: 100;
         float: right;
     }
@@ -1262,4 +1262,32 @@ li {
 
 [data-tooltip].tooltip-top:hover:before, [data-tooltip].tooltip-top:hover:after {
 	transform: translateX(-50%) translateY(-5px);
+}
+
+#clockdiv{
+  font-family: sans-serif;
+  color: #fff;
+  display: inline-block;
+  font-weight: 100;
+  text-align: center;
+  font-size: 30px;
+}
+
+#clockdiv > div{
+  padding: 1px;
+  border-radius: 3px;
+  background: #1e2225;
+  display: inline-block;
+}
+
+#clockdiv div > span{
+  padding: 4px;
+  border-radius: 3px;
+  background: #222b2e;
+  display: inline-block;
+}
+
+.smalltext{
+  padding-top: 5px;
+  font-size: 11px;
 }

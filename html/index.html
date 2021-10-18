@@ -15,6 +15,8 @@
       <!-- UIkit JS -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.3/js/uikit.min.js"></script>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
+      <link rel='stylesheet' href='forms.css'>
+      
   </head>
 
   <body>
@@ -95,6 +97,70 @@
         </div>
       </div>
     </div>
+    <!-- impound form -->
+
+     
+    <div class="smart-wrap" id="impoundform" style="display: none;">
+    	<div class="smart-forms smart-container wrap-2">
+       <div class="form-header header-primary"><h4><i class="fa fa-pencil-square"></i>Impound Form</h4></div><!-- end .form-header section -->            
+                <form method="post" id="new_post" name="new_post"  action="" class="wpcf7-form" enctype="mu ltipart/form-data">
+                  <div class="form-body">
+                    <div class="spacer-b30">
+                    <div class="tagline"><span>Impound Data</span></div><!-- .tagline -->
+                    </div>
+                    <div class="section">
+                        <label class="field select">
+                            <select id="impounds" name="impounds">
+                                <option value="">Select Impound Location...</option>
+                            </select>
+                            <i class="arrow double"></i>                    
+                        </label>  
+                    </div><!-- end section -->            
+                    
+                    <div class="section">
+                      <label class="field select">
+                          <select id="impound_duration" name="impound_duration">
+                              <option value="">Select Duration</option>
+                          </select>
+                          <i class="arrow double"></i>                    
+                      </label>  
+                  </div><!-- end section -->      
+
+                	<div class="section">
+                    	<label for="reason" class="field prepend-icon">
+                        	<textarea class="gui-textarea" id="reason" name="reason" placeholder="Your Reason"></textarea>
+                            <label for="reason" class="field-icon"><i class="fa fa-comments"></i></label>
+                            <span class="input-hint"> 
+                            	<strong>Extra Info:</strong> Reason of impound... 
+                            </span>   
+                        </label>
+                    </div><!-- end section --> 
+                    
+                    <div class="spacer-t20 spacer-b30">
+                    	<div class="tagline"><span> Custom Fine </span></div><!-- .tagline -->
+                    </div>
+                    
+                    <div class="section">
+                        <div class="smart-widget sm-left sml-120">
+                            <label for="fine" class="field prepend-icon">
+                                <input type="text" name="fine" id="fine" class="gui-input" placeholder="Amount">
+                                <label for="fine" class="field-icon"><i class="fa fa-shield"></i></label>  
+                            </label>
+                            <label for="fine" class="button">Fine </label>
+                        </div><!-- end .smart-widget section --> 
+                    </div><!-- end section -->
+                    
+                  </div><!-- end .form-body section -->
+                  <div class="form-footer">
+                	  <button type="submit" class="button btn-primary" id="confirm_impound"> Confirm </button>
+                    <button type="reset" class="button" id="cancel_impound"> Cancel </button>
+                  </div><!-- end .form-footer section -->
+                </form>
+            
+        </div><!-- end .smart-forms section -->
+    </div><!-- end .smart-wrap section -->
+      
+ 
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
       <script src="script.js"></script>
   </body>
