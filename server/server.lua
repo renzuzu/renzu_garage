@@ -5,12 +5,23 @@ local parkmeter = {}
 local default_routing = {}
 local current_routing = {}
 local lastgarage = {}
+local impound_G = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
     parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+    impoundget = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM impound_garage', {})
+    for k,v in pairs(impoundget) do
+        impound_G[v.garage] = json.decode(v.data) or {}
+    end
+    for k,v in pairs(impoundcoord) do
+        MysqlGarage(Config.Mysql,'execute','INSERT IGNORE INTO impound_garage (garage, data) VALUES (@garage, @data)', {
+            ['@garage']   = v.garage,
+            ['@data']   = '[]'
+        })
+    end
     Wait(100)
     if Config.UseRayZone then
         local garages = {} -- garage table
@@ -104,32 +115,38 @@ Citizen.CreateThread(function()
 end)
 
 function MysqlGarage(plugin,type,query,var)
-    local plugin = plugin
-    local type = type
-    local query = query
-    local var = var
+	local wait = promise.new()
     if type == 'fetchAll' and plugin == 'mysql-async' then
-        local data = nil
-        local res = MySQL.Async.fetchAll(query, var, function(result)
-            data = result
+		MySQL.Async.fetchAll(query, var, function(result)
+            wait:resolve(result)
         end)
-        while data == nil do Wait(1) end
-        return data
     end
     if type == 'execute' and plugin == 'mysql-async' then
-        MySQL.Sync.execute(query,var) 
+        MySQL.Async.execute(query, var, function(result)
+            wait:resolve(result)
+        end)
     end
     if type == 'execute' and plugin == 'ghmattisql' then
-        exports['ghmattimysql']:execute(query, var)
+        exports['ghmattimysql']:execute(query, var, function(result)
+            wait:resolve(result)
+        end)
     end
     if type == 'fetchAll' and plugin == 'ghmattisql' then
-        local data = nil
         exports.ghmattimysql:execute(query, var, function(result)
-            data = result
+            wait:resolve(result)
         end)
-        while data == nil do Wait(0) end
-        return data
     end
+    if type == 'execute' and plugin == 'oxmysql' then
+        exports.oxmysql:execute(query, var, function(result)
+            wait:resolve(result)
+        end)
+    end
+    if type == 'fetchAll' and plugin == 'oxmysql' then
+		exports['oxmysql']:fetch(query, var, function(result)
+			wait:resolve(result)
+		end)
+    end
+	return Citizen.Await(wait)
 end
 
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
@@ -148,15 +165,24 @@ AddEventHandler('renzu_garage:GetVehiclesTableImpound', function()
     local xPlayer = ESX.GetPlayerFromId(src)
     local identifier = xPlayer.identifier
     --local Impounds = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE impound = 1', {})
-    local Impounds = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE impound = 1', {})
+    local q = 'SELECT * FROM owned_vehicles WHERE stored = 0 OR impound = 1'
+    if not ImpoundedLostVehicle then
+        q = 'SELECT * FROM owned_vehicles WHERE impound = 1'
+    end
+    local Impounds = MysqlGarage(Config.Mysql,'fetchAll',q, {})
     TriggerClientEvent("renzu_garage:receive_vehicles", src , Impounds,vehicles)
 end)
 
-ESX.RegisterServerCallback('renzu_garage:getowner',function(source, cb, identifier)
+ESX.RegisterServerCallback('renzu_garage:getowner',function(source, cb, identifier, plate, garage)
     local owner = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM users WHERE identifier = @identifier', {
 		['@identifier'] = identifier
 	})
-	cb(owner)
+    if impound_G[garage][plate] == nil then
+        -- create data from default
+        impound_G[garage][plate] = {fine = ImpoundPayment, reason = 'no specified', impounder = 'Renzuzu', duration = -1, date = os.time()}
+    end
+    local res = impound_G[garage][plate] ~= nil and impound_G[garage][plate] or {}
+	cb(owner,res)
 end)
 
 function bool_to_number(value)
@@ -250,7 +276,6 @@ end)
 
 RegisterServerEvent('renzu_garage:storemod')
 AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,savepartsonly)
-	print(savepartsonly)
     local newprop = newprop
 	local savepartsonly = savepartsonly
     local src = source  
@@ -385,7 +410,6 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
         if not v.taken then
             v.taken = true
             v.vehicle = prop
-            print(prop.plate)
             success = true
             break
         end
@@ -398,7 +422,6 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
             if not vehiclesgarage[k].taken and k == #pgarage then
                 vehiclesgarage[k].taken = true
                 vehiclesgarage[k].vehicle = prop
-                print(prop.plate)
                 break
             end
         end
@@ -463,22 +486,12 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
         current_routing[routing] = source
     end
     Wait(1000)
-    -- SetEntityCoords(GetPlayerPed(source),private_garage[id].coords.x,private_garage[id].coords.y,private_garage[id].coords.z,true)
-    -- SetEntityHeading(GetPlayerPed(source),private_garage[id].coords.w)
     lastgarage[source] = id
 	local vehicle_ = {}
 	for k,v in pairs(json.decode(result[1].vehicles)) do
 		vehicle_[k] = v
 	end
     TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],id, vehicle_)
-    -- for k,v in pairs(json.decode(result[1].vehicles)) do
-    --     print(k,v.vehicle)
-    --     if v.vehicle ~= nil and v.taken then
-    --         CreateVehicle(v.vehicle.model,v.coord.x,v.coord.y,v.coord.z,v.coord.w,false,false)
-    --     end
-    -- end
-    --SetEntityCoords(GetPlayerPed(source),private_garage[id].coords.x,private_garage[id].coords.y,private_garage[id].coords.z,true)
-    --SetEntityHeading(GetPlayerPed(source),private_garage[id].coords.w)
 
 end)
 
@@ -658,26 +671,39 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate', {
             ['@plate'] = plate
         })
-        if id == 'impound' and Config.Impoundforall and not ispolice then
-            if xPlayer.getMoney() >= Config.ImpoundPayment then
-                xPlayer.removeMoney(Config.ImpoundPayment)
+        local garage_impound = impoundcoord[1].garage
+        local impound_fee = ImpoundPayment
+        if result[1] and result[1].impound then
+            for k,v in pairs(impound_G) do
+                for k2,v2 in pairs(v) do
+                    if k2 == plate then
+                        garage_impound = k
+                        impound_fee = v2.fine or ImpoundPayment
+                        break
+                    end
+                end
+            end
+        end
+        if string.find(id, "impound") and Impoundforall and not ispolice then
+            local money = impound_G[garage] ~= nil and impound_G[garage][plate] ~= nil and impound_G[garage][plate].fine or ImpoundPayment
+            if xPlayer.getMoney() >= money then
+                xPlayer.removeMoney(money)
                 TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'Successfully Retrieve Owned vehicle')
-                cb(1,1)
+                cb(1,0)
             else
                 TriggerClientEvent('renzu_notify:Notify', source, 'error','Garage', 'Fail to retrieve vehicle, not enough money cabron')
-                cb(false)
+                cb(false,1,garage_impound,impound_fee)
             end
         elseif result and result[1].stored ~= nil then
             local stored = result[1].stored
             local impound = result[1].impound
-            cb(stored,impound)
+            cb(stored,impound,garage_impound,impound_fee)
         end
     end
 end)
 
 RegisterServerEvent('renzu_garage:GetParkedVehicles')
 AddEventHandler('renzu_garage:GetParkedVehicles', function()
-    print("sending")
     TriggerClientEvent('renzu_garage:update_parked',source,parkedvehicles, false, parkmeter)
 end)
 
@@ -765,7 +791,7 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
 end)
 
 RegisterServerEvent('renzu_garage:changestate')
-AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model,props)
+AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model,props,impound_cdata)
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -779,7 +805,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
             ['@owner'] = xPlayer.identifier,
             ['@plate'] = plate
         })
-        if #result > 0 and garage_id ~= 'impound' then
+        if #result > 0 and not string.find(garage_id, "impound") then
             local updatepark = false
             for k,park in pairs(parkedvehicles) do
                 if string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1'):upper() == plate:upper() then
@@ -813,14 +839,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     print('exploiting')
                 end
             end
-        elseif Config.JobImpounder[xPlayer.job.name] ~= nil and garage_id == 'impound' then
-            if state == 1 then
-                garage_id = 'impound'
-                chopstatus = os.time()
-            else
-                garage_id = 'A'
-                chopstatus = os.time()
-            end
+        elseif JobImpounder[xPlayer.job.name] ~= nil and string.find(garage_id, "impound") or state ~= 1 and string.find(garage_id, "impound") and Impoundforall and JobImpounder[xPlayer.job.name] == nil then
             local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
                 ['@plate'] = plate:upper()
             })
@@ -832,15 +851,50 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     end
                 end
                 local veh = json.decode(result[1].vehicle)
+                local impoundid = nil
                 if veh.model == model then
-                    MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate', {
-                        ['vehicle'] = json.encode(props),
-                        ['@garage_id'] = garage_id,
-                        ['@impound'] = state,
-                        ['@plate'] = plate:upper(),
-                        ['@stored'] = state,
-                        ['@isparked'] = 0
+                    local impound_data = {}
+                    local res = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM impound_garage WHERE garage = @garage', {['@garage'] = state == 1 and impound_cdata['impounds'] or garage_id})
+                    impoundid = state == 1 and impound_cdata['impounds'] or garage_id
+                    if res[1] and res[1].data then
+                        impound_data = json.decode(res[1].data or '[]') or {}
+                    end
+                    local addimpound = false
+                    if state == 1 then
+                        chopstatus = os.time()
+                        addimpound = true
+                    else
+                        garage_id = 'A'
+                        chopstatus = os.time()
+                    end
+                    if not addimpound and impound_data[plate:upper()] then
+                        impound_data[plate:upper()] = nil
+                        MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate', {
+                            ['vehicle'] = json.encode(props),
+                            ['@garage_id'] = garage_id,
+                            ['@impound'] = state,
+                            ['@plate'] = plate:upper(),
+                            ['@stored'] = state,
+                            ['@isparked'] = 0
+                        })
+                    elseif addimpound then
+                        impound_data[plate:upper()] = {reason = impound_cdata['reason'] or 'no reason', fine = impound_cdata['fine'] or ImpoundPayment, duration = impound_cdata['impound_duration'] or DefaultDuration, impounder = xPlayer.name, date = os.time()}
+                        MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, impound = @impound, vehicle = @vehicle, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate', {
+                            ['vehicle'] = json.encode(props),
+                            ['@garage_id'] = garage_id,
+                            ['@impound'] = state,
+                            ['@plate'] = plate:upper(),
+                            ['@stored'] = state,
+                            ['@isparked'] = 0
+                        })
+                    end
+                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE impound_garage SET `data` = @data WHERE garage = @garage', {
+                        ['@data'] = json.encode(impound_data),
+                        ['@garage'] = impoundid,
                     })
+                    if impound_G[impoundid] then
+                        impound_G[impoundid] = impound_data
+                    end
                     if updatepark then
                         Wait(300)
                         parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
@@ -848,7 +902,11 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
-                    TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Take out the Vehicle')
+                    if state == 1 then
+                        TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Impound the Vehicle')
+                    else
+                        TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Release the Vehicle')
+                    end
                 else
                     print('exploiting')
                 end

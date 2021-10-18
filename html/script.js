@@ -5,6 +5,50 @@ var garage_id = undefined
 var currentcar
 var chopper = false
 var inGarageVehicle = {}
+var impound_left = '0'
+var isimpounder = false
+var impound_fine = 0
+var impound_loc = 0
+function getTimeRemaining(endtime) {
+    const total = Date.parse(endtime) - Date.parse(new Date());
+    const seconds = Math.floor((total / 1000) % 60);
+    const minutes = Math.floor((total / 1000 / 60) % 60);
+    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(total / (1000 * 60 * 60 * 24));
+    
+    return {
+      total,
+      days,
+      hours,
+      minutes,
+      seconds
+    };
+  }
+  
+  function initializeClock(id, endtime) {
+    const clock = document.getElementById(id);
+    const daysSpan = clock.querySelector('.days');
+    const hoursSpan = clock.querySelector('.hours');
+    const minutesSpan = clock.querySelector('.minutes');
+    const secondsSpan = clock.querySelector('.seconds');
+  
+    function updateClock() {
+      const t = getTimeRemaining(endtime);
+  
+      daysSpan.innerHTML = t.days;
+      hoursSpan.innerHTML = ('0' + t.hours).slice(-2);
+      minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+      secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+  
+      if (t.total <= 0) {
+        clearInterval(timeinterval);
+      }
+    }
+  
+    updateClock();
+    const timeinterval = setInterval(updateClock, 1000);
+  }
+
 window.addEventListener('message', function(event) {
     var data = event.data;
     if (event.data.type == "returnveh") {
@@ -14,16 +58,35 @@ window.addEventListener('message', function(event) {
         cleanup()
     }
     if (event.data.type == "onimpound") {
+        impound_loc = event.data.garage
+        impound_fine = event.data.fee
         onimpound();
+        if (document.getElementById("impoundloc")) {
+            document.getElementById("impoundloc").innerHTML = impound_loc;
+        }
+        if (document.getElementById("fineamount")) {
+            document.getElementById("fineamount").innerHTML = impound_fine;
+        }
     }
     if (event.data.garage_id) {
         garage_id = event.data.garage_id
     }
     if (event.data.type == "ownerinfo") {
-    var utcSeconds = event.data.chopstats;
-    const milliseconds = utcSeconds * 1000 // 1575909015000
-    const dateObject = new Date(milliseconds)
-    const humanDateFormat = dateObject.toLocaleString()
+        impound_left = '0'
+        impound_fine = 0
+        var utcSeconds = event.data.impound_data.date || (Date.now() + 3600000) / 1000;
+        var impound_data = event.data.impound_data || {reason: 'No Reason', impounder: 'bobo', duration: 0, fine: 10000};
+        var duration_left = (utcSeconds * 1000) + impound_data.duration * 3600000
+        impound_fine = impound_data.fine
+        const milliseconds = utcSeconds * 1000 // 1575909015000
+        const dateObject = new Date(milliseconds)
+        const humanDateFormat = dateObject.toLocaleString()
+        isimpounder = event.data.job
+        if (Date.now() < duration_left && !event.data.job) {
+            const impound_epoch = duration_left
+            impound_left = duration_left
+            //impound_left = impound_left.replace(",", "")
+        }
         document.getElementById("dateissue").innerHTML = humanDateFormat;
         for(var [key,value] of Object.entries(data.info)){
             for(var [k,v] of Object.entries(value)){
@@ -38,6 +101,10 @@ window.addEventListener('message', function(event) {
                 }
             }     
         }
+        document.getElementById("reason").innerHTML = impound_data.reason || 'not specified';
+        document.getElementById("impounder").innerHTML = impound_data.impounder || 'not specified';
+        document.getElementById("duration").innerHTML = impound_data.duration || 'not specified';
+        document.getElementById("fine").innerHTML = impound_data.fine || 'not specified';
     }
     if (event.data.chopper) {
         chopper = true
@@ -64,6 +131,19 @@ window.addEventListener('message', function(event) {
             document.getElementById("perf").style.display = 'none';
             document.getElementById("seemod").style.display = 'none';
         }
+    }
+    if (event.data.type == "impoundform") {
+        var impounds = event.data.data.impounds
+        var durations = event.data.data.duration
+        $("#impounds").html('')
+        $("#impound_duration").html('')
+        for (const i in impounds) {
+            $("#impounds").append(`<option value="`+impounds[i].garage+`">`+impounds[i].name+`</option>`)
+        }
+        for (const i in durations) {
+            $("#impound_duration").append(`<option value="`+durations[i]+`">`+durations[i]+` Hours</option>`)
+        }
+        document.getElementById("impoundform").style.display = 'block';
     }
     if (event.data.type == "cats") {
         var cats = event.data.cats
@@ -152,10 +232,24 @@ window.addEventListener('message', function(event) {
 });
 
 function choosecat(i) {
-    console.log(i)
     $("#vehicle_cat").html('')
     $.post("https://renzu_garage/choosecat", JSON.stringify({ cat: i }));
 }
+
+document.getElementById("confirm_impound").addEventListener("click", function(event){
+    var impound_data = {}
+    for (const i in $( "form" ).serializeArray()) {
+        var data = $( "form" ).serializeArray()
+        impound_data[data[i].name] = data[i].value
+    }
+    document.getElementById("impoundform").style.display = 'none';
+    $.post("https://renzu_garage/receive_impound", JSON.stringify({ impound_data: impound_data }));
+});
+
+document.getElementById("cancel_impound").addEventListener("click", function(event) {
+    document.getElementById("impoundform").style.display = 'none';
+    $.post("https://renzu_garage/receive_impound", JSON.stringify({ impound_data: 'cancel' }));
+});
 
 $(document).ready(function() {
     $('.upper-bottom-container').on('afterChange', function(event, slick, currentSlide) {
@@ -196,12 +290,12 @@ $('#garage').append(app);
 
 function ShowVehicle(currentTarget) {
         var data = inGarageVehicle[currentTarget]
-        if (currentcar !== currentTarget) {
+        if (data && currentcar !== currentTarget) {
             currentcar = currentTarget
             var div = $(this).parent().find('.active');        
             $(div).removeClass('active');
             var itemDisabled = false;
-            if(!itemDisabled && garage_id != 'impound') {
+            if(!itemDisabled && garage_id.search("impound") == -1) {
                 $(currentTarget).addClass('active');
                 $('.modal').css("display","none");
 
@@ -209,7 +303,7 @@ function ShowVehicle(currentTarget) {
                 document.getElementById("vehicleclass").innerHTML = '';
                 document.getElementById("contentVehicle").innerHTML = '';
                           
-                document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/optimized/3X/0/3/0301f645963889531fb4870e8d47f2f7da7f1c45_2_1024x1024.gif">';
+                document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
 
                 $('#nameBrand').append(`
                     <span id="vehicle_class">`+data.brand+`</span> 
@@ -275,7 +369,7 @@ function ShowVehicle(currentTarget) {
                 } else {
                     $.post("https://renzu_garage/SpawnVehicle", JSON.stringify({ modelcar: data.model2, price: 1, props: data.props }));
                 }
-            } else if(!itemDisabled && garage_id == 'impound') {
+            } else if(!itemDisabled && garage_id.search("impound") !== -1) {
                 $(currentTarget).addClass('active');         
                 $('.vehiclegarage').animate({scrollLeft:scrollAmount}, 'fast');
 
@@ -295,13 +389,16 @@ function ShowVehicle(currentTarget) {
                 }
 
                 $(".menu-modifications").css("display","block");
+                if (data == undefined) {
+                    data = {}
+                }
                 if (data.brand == undefined) {
                     data.brand = 'Unknown'
                 }
                 CurrentVehicle = {brand: data.brand, modelcar: data.model2, sale: 1, name: data.name, props: data.props }
                 $('#contentVehicle').append(`
                     <div class="handling-container">
-                        <span>OWNER INFO</span>
+                        <span>Impound Data</span>
                         <div class="handling-bar-container">
                         <div class="handling-line"></div>
                         <div class="handling-circle" style="left: 100%;"></div>
@@ -311,13 +408,23 @@ function ShowVehicle(currentTarget) {
                     </div>
 
                     <div class="row spacebetween">
+                        <span class="title">Officer in charge: </span>
+                        <span id="impounder">Boy Ulol</span>
+                    </div>
+                    
+                    <div class="row spacebetween">
+                        <span class="title">Reason: </span>
+                        <span id="reason">Bobo</span>
+                    </div>
+                    
+                    <div class="row spacebetween">
                         <span class="title">Owners name</span>
                         <span id="ownerinfo">Boy Ulol</span>
                     </div>
 
                     <div class="row spacebetween">
                         <span class="title">CONTACT #</span>
-                        <span id="contact">69</span>
+                        <span id="contact">No Specified</span>
                     </div>
 
                     <div class="row spacebetween">
@@ -326,8 +433,18 @@ function ShowVehicle(currentTarget) {
                     </div>
 
                     <div class="row spacebetween">
+                        <span class="title">Duration: </span>
+                        <span id="duration">3:45</span>
+                    </div>
+
+                    <div class="row spacebetween">
                         <span class="title">DATE ISSUE</span>
                         <span id="dateissue">1/11/1111</span>
+                    </div>
+
+                    <div class="row spacebetween">
+                        <span class="title">Fine</span>
+                        <span id="fine">$ 4000.0</span>
                     </div>
                 `);
                 $.post("https://renzu_garage/ownerinfo", JSON.stringify({ plate: data.plate, identifier: data.identifier, chopstatus: 1 }));
@@ -345,15 +462,53 @@ function ShowConfirm(){
     $("#vehicle_cat").html('')
 
     $('.modal').css("display","flex");
+    if (impound_left !== '0') {
+        
+        $('#closemenu').append(`
+        <div class="background-circle"></div>
+        <div class="modal-content">
+            <i style="    position: absolute;
+            right: 20%;
+            font-size: 40px;" class="fas fa-garage-car"></i>
+            <p class="title">Impound:</p>
+            <p class="vehicle">Vehicle is Unavailable</p>
+        </div>
 
-    $('#closemenu').append(`
+        <div class="modal-footer" style="display:inline-block !important; text-align:center;margin:20px;">
+            <h1 style="font-size:12px;">Release Date</h1>
+            <div id="clockdiv">
+            <div>
+                <span class="days"></span>
+                <div class="smalltext">Days</div>
+            </div>
+            <div>
+                <span class="hours"></span>
+                <div class="smalltext">Hours</div>
+            </div>
+            <div>
+                <span class="minutes"></span>
+                <div class="smalltext">Minutes</div>
+            </div>
+            <div>
+                <span class="seconds"></span>
+                <div class="smalltext">Seconds</div>
+            </div>
+            </div>
+            </div>
+        `);
+        const deadline = new Date(impound_left);
+        initializeClock('clockdiv', deadline);
+          //# sourceURL=pen.js
+    } else {
+        $('#closemenu').append(`
         <div class="background-circle"></div>
         <div class="modal-content">
             <i style="    position: absolute;
             right: 20%;
             font-size: 40px;" class="fas fa-garage-car"></i>
             <p class="title">Confirm:</p>
-            <p class="vehicle">Take Out Vehicle</p>
+            <p class="vehicle">Release Vehicle</p>
+            <p style="display:none;" id="finediv">FINE: $ <span id="fineamount">0</span></p>
         </div>
 
         <div class="modal-footer">
@@ -368,7 +523,14 @@ function ShowConfirm(){
                 </div>
             </div>
         </div>
-    `);
+        `);
+        document.getElementById("finediv").style.display = 'none';
+        if (!isimpounder && impound_fine > 0) {
+            document.getElementById("fineamount").innerHTML = impound_fine;
+            document.getElementById("finediv").style.display = 'block';
+        }
+    }
+    
 }
 
 function returnveh(){    
@@ -405,13 +567,28 @@ function onimpound(){
     $('.modal').css("display","flex");
 
     $('#closemenu').append(`
+
         <div class="background-circle"></div>
         <div class="modal-content">
-            <p class="title">Ooops:</p>
-            <p class="vehicle">Vehicle is Impounded</p>      
+            <i style="    position: absolute;
+            right: 20%;
+            font-size: 40px;" class="fas fa-garage-car"></i>
+            <p class="title">Impound:</p>
+            <p class="vehicle">Vehicle is Impounded</p>
+        </div>
 
-            <p>Brand: <span class="brand">`+CurrentVehicle_.brand+`</span></p>
-            <p>Model: <span class="model">`+CurrentVehicle_.modelcar+`</span></p>
+        <div class="modal-footer">
+            <p style="font-size: 12px;
+            color: red;
+            display: block;
+            margin: 20px;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            background: #101113c7;
+            padding: 20px;
+            border-radius: 10px;"> Require to Pay at <span id="impoundloc" style="color:#ffffff !important;"></span>: <br> <br>
+            Fine $ `+impound_fine+`</p>
         </div>
     `);
 }
@@ -469,6 +646,8 @@ $(document).on('keydown', function(event) {
             VehicleArr = []
             CurrentVehicle = {}
             $("#vehicle_cat").html('')
+            impound_left = '0'
+            setTimeout(function(){ window.location.reload(false);  }, 500);
             $.post('https://renzu_garage/Close');  
             break;
         case 9: // TAB
