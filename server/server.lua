@@ -671,15 +671,17 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate', {
             ['@plate'] = plate
         })
-        local garage_impound = impoundcoord[1].garage
-        local impound_fee = ImpoundPayment
-        if result[1] and result[1].impound then
-            for k,v in pairs(impound_G) do
-                for k2,v2 in pairs(v) do
-                    if k2 == plate then
-                        garage_impound = k
-                        impound_fee = v2.fine or ImpoundPayment
-                        break
+        if string.find(id, "impound") then
+            local garage_impound = impoundcoord[1].garage
+            local impound_fee = ImpoundPayment
+            if result[1] and result[1].impound then
+                for k,v in pairs(impound_G) do
+                    for k2,v2 in pairs(v) do
+                        if k2 == plate then
+                            garage_impound = k
+                            impound_fee = v2.fine or ImpoundPayment
+                            break
+                        end
                     end
                 end
             end
