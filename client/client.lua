@@ -249,6 +249,7 @@ function DrawZuckerburg(name,v,reqdist)
 end
 
 CreateThread(function()
+    while PlayerData.job == nil do Wait(100) end
     Wait(500)
     if not Config.UsePopUI and Config.floatingtext then
         while true do
@@ -1593,9 +1594,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         vehicle_data[value.model] = value.name
     end
 
-    for _,value in pairs(tableVehicles) do
-        OwnedVehicles['garage'] = {}
-    end
+    OwnedVehicles['garage'] = {}
 
     for _,value in pairs(tableVehicles) do
         local props = json.decode(value.vehicle)
