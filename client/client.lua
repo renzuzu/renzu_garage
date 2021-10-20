@@ -1178,7 +1178,7 @@ AddEventHandler('opengarage', function()
                     break
                 end
             elseif not DoesEntityExist(vehiclenow) then
-                if dist <= v.Dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and string.find(v.garage, "impound") then
+                if dist <= v.Dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and not string.find(v.garage, "impound") then
                     id = v.garage
                     tid = k
                     TriggerEvent('renzu_notify:Notify', 'info','Garage', "Opening Garage...Please wait..")
