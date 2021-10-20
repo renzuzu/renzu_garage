@@ -3538,6 +3538,7 @@ RegisterNUICallback("Close",function(data, cb)
     DeleteGarage()
 end)
 
+local countspawn = 0
 function CloseNui()
     SendNUIMessage(
         {
@@ -3566,6 +3567,7 @@ function CloseNui()
             DisplayRadar(true)
         end
     end
+    countspawn = 0
     garagejob = false
 
     inGarage = false
@@ -3720,10 +3722,11 @@ function Spawn_Vehicle_Forward(veh, coords)
     Wait(10)
     local move_coords = coords
     local vehicle = GerNearVehicle(move_coords, 3, veh)
-    if vehicle then
+    if vehicle and countspawn < 5 then
         move_coords = move_coords + GetEntityForwardVector(veh) * 9.0
         SetEntityCoords(veh, move_coords.x, move_coords.y, move_coords.z)
-    else return end
+    else countspawn = 0 return end
+    countspawn = countspawn + 1
     Spawn_Vehicle_Forward(veh, move_coords)
 end
 
