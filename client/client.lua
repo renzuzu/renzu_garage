@@ -1751,7 +1751,9 @@ function LetterRand()
     return a
 end
 
+local patrolcars = {}
 function CreateDefault(default,jobonly,garage_type,id)
+    patrolcars = {}
     for k,v in pairs(default) do
         if v.grade <= PlayerData.job.grade then
             local vehicleModel = GetHashKey(v.model)
@@ -1760,6 +1762,7 @@ function CreateDefault(default,jobonly,garage_type,id)
                 pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
             end
             local genplate = LetterRand()..' '..math.random(100,999)
+            patrolcars[genplate] = true
             local VTable = {
                 brand = GetVehicleClassnamemodel(tonumber(vehicleModel)),
                 name = v.name:upper(),
@@ -2872,7 +2875,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     TriggerEvent('renzu_popui:closeui')
                     drawtext = false
                 end
-            end,plate,id)
+            end,plate,id,false,patrolcars[plate] or false)
         --end
     --end
 end)
@@ -3350,7 +3353,7 @@ RegisterNUICallback(
                 type = "returnveh"
             }) 
         end
-    end, props.plate,id,ispolice)
+    end, props.plate,id,ispolice,patrolcars[props.plate] or false)
     end
 )
 
