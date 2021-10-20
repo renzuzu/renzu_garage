@@ -1922,6 +1922,7 @@ function OpenGarage(id,garage_type,jobonly,default)
     else
         TriggerEvent('renzu_notify:Notify', 'info','Garage', 'You dont have any vehicle')
         SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
+        CloseNui()
     end
 
 end
@@ -2871,7 +2872,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     TriggerEvent('renzu_popui:closeui')
                     drawtext = false
                 end
-            end,plate)
+            end,plate,id)
         --end
     --end
 end)
