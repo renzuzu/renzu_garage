@@ -156,7 +156,7 @@ AddEventHandler('renzu_garage:GetVehiclesTable', function()
     local identifier = xPlayer.identifier
     --local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
     local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
-    TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle,vehicles)
+    TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
 end)
 
 RegisterServerEvent('renzu_garage:GetVehiclesTableImpound')
@@ -657,7 +657,7 @@ AddEventHandler('renzu_garage:getparkmeter', function(plate,state,model)
     end
 end)
 
-ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate, id, ispolice)
+ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate, id, ispolice, patrol)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     if not Config.PlateSpace then
@@ -665,7 +665,7 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
     else
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     end
-    if plate == Config.DefaultPlate then
+    if patrol then
         cb(true,0)
     else
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate', {
