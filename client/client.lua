@@ -55,7 +55,11 @@ Citizen.CreateThread(function()
         SetBlipColour (blip, v.Blip.color)
         SetBlipAsShortRange(blip, true)
         BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+        if Config.BlipNamesStatic then
+            AddTextComponentSubstringPlayerName("Garage")
+        else
+            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+        end
         EndTextCommandSetBlipName(blip)
     end
     if Config.EnableImpound then
@@ -67,7 +71,11 @@ Citizen.CreateThread(function()
             SetBlipColour (blip, v.Blip.color)
             SetBlipAsShortRange(blip, true)
             BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+            if Config.BlipNamesStatic then
+                AddTextComponentSubstringPlayerName("Impound")
+            else
+                AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+            end
             EndTextCommandSetBlipName(blip)
         end
     end
@@ -79,7 +87,11 @@ Citizen.CreateThread(function()
         SetBlipColour (blip, v.Blip.color)
         SetBlipAsShortRange(blip, true)
         BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName(""..v.name.."")
+        if Config.BlipNamesStatic then
+            AddTextComponentSubstringPlayerName("Garage Private")
+        else
+            AddTextComponentSubstringPlayerName("Garage: "..v.name.."")
+        end
         EndTextCommandSetBlipName(blip)
     end
 end)
