@@ -2087,6 +2087,7 @@ function OpenImpound(id)
             DeleteEntity(LastVehicleFromGarage)
         end
     else
+        CloseNui()
         TriggerEvent('renzu_notify:Notify', 'info','Garage', 'You dont have any vehicle in this garage')
     end
 
