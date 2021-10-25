@@ -1772,7 +1772,7 @@ function CreateDefault(default,jobonly,garage_type,id)
             if v.type == 'boat' or v.type == 'plane' then
                 pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
             end
-            local genplate = LetterRand()..' '..math.random(100,999)
+            local genplate = v.plateprefix..' '..math.random(100,999)
             patrolcars[genplate] = true
             local VTable = {
                 brand = GetVehicleClassnamemodel(tonumber(vehicleModel)),

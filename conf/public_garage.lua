@@ -171,34 +171,12 @@ garagecoord = {
         spawn_z = 28.840564727783,
         heading = 85.93824005127,
         default_vehicle = { -- the vehicle listed here is like a goverment property and can be used for patrol etc. (this can be used in other garage, public or other job garage)
-            [1] = {model = 'police', name = 'Police', type = 'car', grade = 1}, -- minimum grade
-            [2] = {model = 'police2', name = 'Police 2', type = 'car', grade = 1}, -- minimum grade
-            [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1}, -- minimum grade
+            [1] = {model = 'police', name = 'Police', type = 'car', grade = 1, plateprefix = 'LSPD'}, -- minimum grade
+            [2] = {model = 'police2', name = 'Police 2', type = 'car', grade = 1, plateprefix = 'LSPD'}, -- minimum grade
+            [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1, plateprefix = 'LSPD'}, -- minimum grade
         },
     },
     --JOB GARAGE
-    {
-      garage = "Police Garage 2", --PALETO
-      job = "police",
-      Type = "car",
-      Dist = 10,
-      Blip = {color = 38, sprite = 662, scale = 0.6},
-      --413.64483642578,-1029.7556152344,29.349027633667,108.4100189209
-      -- -32.752487182617,6522.2841796875,31.490859985352,250.73425292969
-      -- -34.871997833252,6534.1733398438,30.816513061523,133.7181854248
-      garage_x = -32.752487182617,
-      garage_y = 6522.28,
-      garage_z = 31.490,
-      spawn_x = -34.87,
-      spawn_y = 6534.17,
-      spawn_z = 30.8165,
-      heading = 133.71,
-      default_vehicle = { -- the vehicle listed here is like a goverment property and can be used for patrol etc. (this can be used in other garage, public or other job garage)
-          [1] = {model = 'police', name = 'Police', type = 'car', grade = 1}, -- minimum grade
-          [2] = {model = 'police2', name = 'Police 2', type = 'car', grade = 1}, -- minimum grade
-          [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1}, -- minimum grade
-      },
-  },
     {
         garage = "Sheriff Garage", --PALETO
         job = "sheriff",
