@@ -1,6 +1,6 @@
 
 local LastVehicleFromGarage
-local id = 'A'
+local garageid = 'A'
 local inGarage = false
 local ingarage = false
 local garage_coords = {}
@@ -19,6 +19,7 @@ local parkmeter = {}
 local jobgarages = {}
 local coordcache = {}
 local propertyspawn = {}
+local lastcat = nil
 Citizen.CreateThread(function()
     Wait(1000)
     coordcache = garagecoord
@@ -26,7 +27,7 @@ Citizen.CreateThread(function()
         if v.job ~= nil and jobgarages[v.garage] == nil then
             jobgarages[v.garage] = {}
             jobgarages[v.garage].coord = vector3(v.garage_x,v.garage_y,v.garage_z)
-            jobgarages[v.garage].id = v.garage
+            jobgarages[v.garage].garageid = v.garage
             jobgarages[v.garage].job = v.job
         end
     end
@@ -281,6 +282,7 @@ CreateThread(function()
                 end
                 if dist < req_dis then
                     tid = k
+                    garageid = v.garage
                     neargarage = true
                     --PopUI(v.garage,vec,req_dis)
                     if IsPedInAnyVehicle(PlayerPedId()) then
@@ -297,6 +299,7 @@ CreateThread(function()
                     local dist = #(vec - mycoord)
                     if dist < v.Dist then
                         tid = k
+                        garageid = v.garage
                         neargarage = true
                         --PopUI(v.garage,vec)
                         if IsPedInAnyVehicle(PlayerPedId()) then
@@ -314,6 +317,7 @@ CreateThread(function()
                     local dist = #(vec - mycoord)
                     if dist < 10 then
                         tid = k
+                        garageid = v.garage
                         neargarage = true
                         if IsPedInAnyVehicle(PlayerPedId()) then
                             msg = 'Press [E] Store Helicopter'
@@ -346,6 +350,7 @@ CreateThread(function()
                 end
                 if dist < req_dis then
                     tid = k
+                    garageid = v.garage
                     neargarage = true
                     PopUI(v.garage,vec,req_dis)
                 end
@@ -356,6 +361,7 @@ CreateThread(function()
                     local dist = #(vec - mycoord)
                     if dist < v.Dist then
                         tid = k
+                        garageid = v.garage
                         neargarage = true
                         PopUI(v.garage,vec)
                     end
@@ -367,6 +373,7 @@ CreateThread(function()
                     local dist = #(vec - mycoord)
                     if dist < 10 then
                         tid = k
+                        garageid = v.garage
                         neargarage = true
                         PopUI(v.garage,vec)
                     end
@@ -917,8 +924,8 @@ end)
 
 local opened = false
 RegisterNetEvent('renzu_garage:opengaragemenu')
-AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
-    local garage,table = id,v
+AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
+    local garage,table = garageid,v
     ESX.TriggerServerCallback("renzu_garage:isgarageowned",function(owned,share)
         local multimenu = {}
         if not owned then
@@ -932,7 +939,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
                 },
             }
             multimenu['Garage Menu'] = firstmenu
-            if share and share.garage == id then
+            if share and share.garage == garageid then
                 activeshare = share
                 sharing = {
                     ['Visit Garage'] = {
@@ -953,7 +960,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
         elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
             local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
             ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
-            TriggerServerEvent('renzu_garage:storeprivate',id,v, prop)
+            TriggerServerEvent('renzu_garage:storeprivate',garageid,v, prop)
             opened = true
         elseif owned then
             secondmenu = {
@@ -966,7 +973,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
                 },
             }
             multimenu['My Garage'] = secondmenu
-            if share and share.garage == id then
+            if share and share.garage == garageid then
                 activeshare = share
                 sharing = {
                     ['Visit Garage'] = {
@@ -982,7 +989,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(id,v)
             TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Garage Menu",false,'Garage Menu')
             TriggerEvent('renzu_contextmenu:show')
         end
-    end,id,v)
+    end,garageid,v)
 end)
 
 CreateThread(function()
@@ -1186,13 +1193,13 @@ AddEventHandler('opengarage', function()
             if DoesEntityExist(vehiclenow) then
                 local req_dist = v.Store_dist or v.Dist
                 if dist <= req_dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and not string.find(v.garage, "impound") then
-                    id = v.garage
+                    garageid = v.garage
                     Storevehicle(vehiclenow)
                     break
                 end
             elseif not DoesEntityExist(vehiclenow) then
                 if dist <= v.Dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and not string.find(v.garage, "impound") then
-                    id = v.garage
+                    garageid = v.garage
                     tid = k
                     TriggerEvent('renzu_notify:Notify', 'info','Garage', "Opening Garage...Please wait..")
                     TriggerServerEvent("renzu_garage:GetVehiclesTable")
@@ -1228,13 +1235,13 @@ AddEventHandler('opengarage', function()
             end
             if DoesEntityExist(vehiclenow) then
                 if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
-                    id = v.garage
+                    garageid = v.garage
                     Storevehicle(vehiclenow)
                     break
                 end
             elseif not DoesEntityExist(vehiclenow) then
                 if dist <= v.Dist and Impoundforall or not Impoundforall and dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
-                    id = v.garage
+                    garageid = v.garage
                     TriggerEvent('renzu_notify:Notify', 'info','Garage', "Opening Impound...Please wait..")
                     TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
                     fetchdone = false
@@ -1650,11 +1657,11 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
         end
         if value.garage_id ~= nil then -- fix blank job column, seperate the car to other non job garages
             for k,v in pairs(jobgarages) do 
-                if v.job ~= nil and value.job ~= nil and v.job == value.job and v.id == value.garage_id and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
+                if v.job ~= nil and value.job ~= nil and v.job == value.job and v.garageid == value.garage_id and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
                     value.job = v.job
                 end
             end
-            --value.garage_id = jobgarages[value.job].id
+            --value.garage_id = jobgarages[value.job].garageid
         end
         local VTable = 
         {
@@ -1763,7 +1770,7 @@ function LetterRand()
 end
 
 local patrolcars = {}
-function CreateDefault(default,jobonly,garage_type,id)
+function CreateDefault(default,jobonly,garage_type,garageid)
     patrolcars = {}
     for k,v in pairs(default) do
         if v.grade <= PlayerData.job.grade then
@@ -1789,7 +1796,7 @@ function CreateDefault(default,jobonly,garage_type,id)
                 fuel = 100,
                 bodyhealth = 1000,
                 enginehealth = 1000,
-                garage_id = id,
+                garage_id = garageid,
                 impound = 0,
                 stored = 1,
                 identifier = jobonly,
@@ -1809,7 +1816,7 @@ RegisterNUICallback(
     end
 )
 
-function OpenGarage(id,garage_type,jobonly,default)
+function OpenGarage(garageid,garage_type,jobonly,default)
     inGarage = true
     local ped = PlayerPedId()
     if not Config.Quickpick and garage_type == 'car' and propertyspawn.x == nil then
@@ -1819,18 +1826,18 @@ function OpenGarage(id,garage_type,jobonly,default)
     Citizen.Wait(333)
     end
     local vehtable = {}
-    vehtable[id] = {}
+    vehtable[garageid] = {}
     local cars = 0
-    CreateDefault(default,jobonly,garage_type,id)
+    CreateDefault(default,jobonly,garage_type,garageid)
     local cats = {}
     local totalcats = 0
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or string.find(id, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
-            or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == id
+            if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
+            or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
             or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
                 v.brand = v.brand:upper()
                 if v.stored and ImpoundedLostVehicle or not ImpoundedLostVehicle then
@@ -1855,11 +1862,11 @@ function OpenGarage(id,garage_type,jobonly,default)
     end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if Config.UniqueCarperGarage and id == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or not Config.UniqueCarperGarage and id ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and id == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or string.find(id, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
-            or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == id
+            if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
+            or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
             or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
                 if cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() and not ImpoundedLostVehicle or totalcats == 1 and not ImpoundedLostVehicle or cat == nil and not ImpoundedLostVehicle 
                 or cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() and ImpoundedLostVehicle and v.stored or totalcats == 1 and ImpoundedLostVehicle and v.stored or cat == nil and ImpoundedLostVehicle and v.stored then
@@ -1872,34 +1879,36 @@ function OpenGarage(id,garage_type,jobonly,default)
                     end
                     veh = 
                     {
-                    brand = v.brand,
-                    name = v.name,
-                    brake = v.brake,
-                    handling = v.handling,
-                    topspeed = v.topspeed,
-                    power = v.power,
-                    torque = v.torque,
+                    brand = v.brand or 1.0,
+                    name = v.name or 1.0,
+                    brake = v.brake or 1.0,
+                    handling = v.handling or 1.0,
+                    topspeed = v.topspeed or 1.0,
+                    power = v.power or 1.0,
+                    torque = v.torque or 1.0,
                     model = v.model,
                     model2 = v.model2,
                     plate = v.plate,
-                    props = v.props,
-                    fuel = v.fuel,
-                    bodyhealth = v.bodyhealth,
-                    enginehealth = v.enginehealth,
-                    garage_id = v.garage_id,
-                    impound = v.impound,
-                    ingarage = v.ingarage
+                    --props = v.props,
+                    fuel = v.fuel or 100.0,
+                    bodyhealth = v.bodyhealth or 1000.0,
+                    enginehealth = v.enginehealth or 1000.0,
+                    garage_id = v.garage_id or 'A',
+                    impound = v.impound or 0,
+                    ingarage = v.ingarage or false
                     }
                     table.insert(vehtable[v.garage_id], veh)
                 end
             end
         end
     end
+    lastcat = cat
     cat = nil
     if cars > 0 then
+        print("INSIDE")
         SendNUIMessage(
             {
-                garage_id = id,
+                garage_id = garageid,
                 data = vehtable,
                 type = "display"
             }
@@ -1910,7 +1919,7 @@ function OpenGarage(id,garage_type,jobonly,default)
             --RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
             for k,v in pairs(garagecoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 40.0 and id == v.garage then
+                if dist <= 40.0 and garageid == v.garage then
                     cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-4.0, v.garage_y, v.garage_z+21.0, 360.00, 0.00, 0.00, 60.00, false, 0)
                     PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z+21.0)
                     SetCamActive(cam, true)
@@ -1935,14 +1944,18 @@ function OpenGarage(id,garage_type,jobonly,default)
         end
     else
         TriggerEvent('renzu_notify:Notify', 'info','Garage', 'You dont have any vehicle')
-        SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
+        if not propertyspawn.x then
+            SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
+        else
+            SetEntityCoords(PlayerPedId(), propertyspawn.x,propertyspawn.y,propertyspawn.z, false, false, false, true)
+        end
         CloseNui()
     end
 
 end
 
 
-function OpenHeli(id)
+function OpenHeli(garageid)
     inGarage = true
     local ped = PlayerPedId()
     while not fetchdone do
@@ -1966,7 +1979,7 @@ function OpenHeli(id)
             model = v.model,
             model2 = v.model2,
             plate = v.plate,
-            props = v.props,
+            --props = v.props,
             fuel = v.fuel,
             bodyhealth = v.bodyhealth,
             enginehealth = v.enginehealth,
@@ -1979,7 +1992,7 @@ function OpenHeli(id)
     end
     SendNUIMessage(
         {
-            garage_id = id,
+            garage_id = garageid,
             data = vehtable,
             type = "display",
             chopper = true
@@ -1987,7 +2000,7 @@ function OpenHeli(id)
     )
     SetNuiFocus(true, true)
     if not Config.Quickpick then
-        for k,v in pairs(helispawn[id]) do
+        for k,v in pairs(helispawn[garageid]) do
             local v = v.coords
             local dist = #(vector3(v.x,v.y,v.z) - GetEntityCoords(ped))
             if dist <= 10.0 then
@@ -2012,17 +2025,26 @@ function OpenHeli(id)
 end
 
 
-function OpenImpound(id)
+function OpenImpound(garageid)
     inGarage = true
     local ped = PlayerPedId()
-    if not Config.Quickpick then
-        CreateGarageShell()
-    end
     while not fetchdone do
     Citizen.Wait(333)
     end
     local vehtable = {}
     local c = 0
+    local nearbyvehicles = {}
+    local gameVehicles = GetAllVehicleFromPool()
+    for i = 1, #gameVehicles do
+        local vehicle = gameVehicles[i]
+        if DoesEntityExist(vehicle) then
+            local otherplate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1'):upper()
+            local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
+            if #(GetEntityCoords(ped) - GetEntityCoords(vehicle)) < 50 then
+                nearbyvehicles[otherplate] = true
+            end
+        end
+    end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if v.garage_id == 'impound' then
@@ -2032,43 +2054,47 @@ function OpenImpound(id)
                 v.impound = 1
                 v.garage_id = impoundcoord[1].garage
             end
-            if id == v.garage_id and v.impound and ispolice or id == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
+            local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
+            if not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice or not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
                 c = c + 1
                 if vehtable[v.impound] == nil then
                     vehtable[v.impound] = {}
                 end
                 veh = 
                 {
-                brand = v.brand,
-                name = v.name,
-                brake = v.brake,
-                handling = v.handling,
-                topspeed = v.topspeed,
-                power = v.power,
-                torque = v.torque,
+                brand = v.brand or 1.0,
+                name = v.name or 1.0,
+                brake = v.brake or 1.0,
+                handling = v.handling or 1.0,
+                topspeed = v.topspeed or 1.0,
+                power = v.power or 1.0,
+                torque = v.torque or 1.0,
                 model = v.model,
                 model2 = v.model2,
                 plate = v.plate,
-                props = v.props,
-                fuel = v.fuel,
-                bodyhealth = v.bodyhealth,
-                enginehealth = v.enginehealth,
-                garage_id = v.garage_id,
-                impound = v.impound,
-                ingarage = v.ingarage,
-                impound = v.impound,
-                stored = v.stored,
-                identifier = v.identifier,
-                impound_date = v.impound_date
+                --props = v.props,
+                fuel = v.fuel or 100.0,
+                bodyhealth = v.bodyhealth or 1000.0,
+                enginehealth = v.enginehealth or 1000.0,
+                garage_id = v.garage_id or 'A',
+                impound = v.impound or 0,
+                ingarage = v.ingarage or 0,
+                impound = v.impound or 0,
+                stored = v.stored or 0,
+                identifier = v.identifier or '',
+                impound_date = v.impound_date or -1
                 }
                 table.insert(vehtable[v.impound], veh)
             end
         end
     end
     if c > 0 then
+        if not Config.Quickpick then
+            CreateGarageShell()
+        end
         SendNUIMessage(
             {
-                garage_id = id,
+                garage_id = garageid,
                 data = vehtable,
                 type = "display"
             }
@@ -2099,6 +2125,7 @@ function OpenImpound(id)
             DeleteEntity(LastVehicleFromGarage)
         end
     else
+        SetEntityCoords(PlayerPedId(), impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
         CloseNui()
         TriggerEvent('renzu_notify:Notify', 'info','Garage', 'You dont have any vehicle in this garage')
     end
@@ -2265,72 +2292,75 @@ local i = 0
 local vehtable = {}
 local garage_id = 'A'
 DoScreenFadeIn(0)
-function GotoGarage(id, property, propertycoord, job)
+function GotoGarage(garageid, property, propertycoord, job)
     if job == nil then job = false end
     FreezeEntityPosition(PlayerPedId(),true)
     vehtable = {}
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if Config.UniqueCarperGarage and id == v.garage_id and type == v.type and v.garage_id ~= 'private' 
-            or not Config.UniqueCarperGarage and id ~= nil and type == v.type and job == false and not v.job and v.garage_id ~= 'private' 
-            or not Config.UniqueCarperGarage and id ~= nil and type == v.type and job == PlayerData.job.name and v.job ~= nil and v.job and id == v.garage_id and v.garage_id ~= 'impound' and v.garage_id ~= 'private' 
-            or ispolice and string.find(id, "impound") and string.find(v.garage_id, "impound") and type == v.type or string.find(id, "impound") and string.find(v.garage_id, "impound") and type == v.type and Impoundforall and v.identifier == PlayerData.identifier then
-                if vehtable[tostring(id)] == nil and not property then
-                    vehtable[tostring(id)] = {}
-                end
-                if string.find(v.garage_id, "impound") then
-                    v.garage_id = 'A'
-                end
-                if property then
-                    if vehtable[tostring(id)] == nil then
-                        vehtable[tostring(id)] = {}
+            if Config.UniqueCarperGarage and garageid == v.garage_id and type == v.type and v.garage_id ~= 'private' 
+            or not Config.UniqueCarperGarage and garageid ~= nil and type == v.type and job == false and not v.job and v.garage_id ~= 'private' 
+            or not Config.UniqueCarperGarage and garageid ~= nil and type == v.type and job == PlayerData.job.name and v.job ~= nil and v.job and garageid == v.garage_id and v.garage_id ~= 'impound' and v.garage_id ~= 'private' 
+            or ispolice and string.find(garageid, "impound") and string.find(v.garage_id, "impound") and type == v.type or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and type == v.type and Impoundforall and v.identifier == PlayerData.identifier then
+                if lastcat == nil or v.brand:upper() == lastcat:upper() then
+                    if vehtable[tostring(garageid)] == nil and not property then
+                        vehtable[tostring(garageid)] = {}
                     end
-                end
-                local VTable = {
-                    brand = v.brand,
-                    name = v.name,
-                    brake = v.brake,
-                    handling = v.handling,
-                    topspeed = v.topspeed,
-                    power = v.power,
-                    torque = v.torque,
-                    model = v.model,
-                    model2 = v.model2,
-                    plate = v.plate,
-                    props = v.props,
-                    fuel = v.fuel,
-                    bodyhealth = v.bodyhealth,
-                    enginehealth = v.enginehealth,
-                    garage_id = v.garage_id,
-                    impound = v.impound,
-                    ingarage = v.ingarage,
-                    impound = v.impound,
-                    stored = v.stored,
-                    identifier = v.owner
-                }
-                if property then
-                    table.insert(vehtable[tostring(id)], VTable)
-                else
-                    table.insert(vehtable[tostring(id)], VTable)
+                    if string.find(v.garage_id, "impound") then
+                        v.garage_id = 'A'
+                    end
+                    if property then
+                        if vehtable[tostring(garageid)] == nil then
+                            vehtable[tostring(garageid)] = {}
+                        end
+                    end
+                    local VTable = {
+                        brand = v.brand,
+                        name = v.name,
+                        brake = v.brake,
+                        handling = v.handling,
+                        topspeed = v.topspeed,
+                        power = v.power,
+                        torque = v.torque,
+                        model = v.model,
+                        model2 = v.model2,
+                        plate = v.plate,
+                        props = v.props,
+                        fuel = v.fuel,
+                        bodyhealth = v.bodyhealth,
+                        enginehealth = v.enginehealth,
+                        garage_id = v.garage_id,
+                        impound = v.impound,
+                        ingarage = v.ingarage,
+                        impound = v.impound,
+                        stored = v.stored,
+                        identifier = v.owner
+                    }
+                    if property then
+                        table.insert(vehtable[tostring(garageid)], VTable)
+                    else
+                        table.insert(vehtable[tostring(garageid)], VTable)
+                    end
                 end
             end
         end
     end
-    garage_id = id
+    lastcat = nil
+    garage_id = garageid
     local ped = PlayerPedId()
     local garage_coords = {}
     if not property then
-        if string.find(id, "impound") then
+        if string.find(garageid, "impound") then
             for k,v in pairs(impoundcoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 100.0 and id == v.garage then
+                if dist <= 100.0 and garageid == v.garage then
                     garage_coords =vector3(v.garage_x,v.garage_y-9.0,v.garage_z + 30.0)
                 end
             end
         else
             for k,v in pairs(garagecoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 100.0 and id == v.garage then
+                if dist <= 100.0 and garageid == v.garage then
                     garage_coords =vector3(v.garage_x,v.garage_y-9.0,v.garage_z + 30.0)
                 end
             end
@@ -2405,8 +2435,9 @@ function GotoGarage(id, property, propertycoord, job)
         end
     end
     ingarage = true
+    GarageVehicle()
     while ingarage do
-        VehiclesinGarage(GetEntityCoords(ped), 3.0, property or false, propertycoord or false, id)
+        VehiclesinGarage(GetEntityCoords(ped), 3.0, property or false, propertycoord or false, garageid)
         local dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(PlayerPedId()))
         while dist2 < 5 and ingarage do
             DrawMarker(36, shell_door_coords.x,shell_door_coords.y,shell_door_coords.z+1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7, 200, 10, 10, 100, 0, 0, 1, 1, 0, 0, 0)
@@ -2414,7 +2445,7 @@ function GotoGarage(id, property, propertycoord, job)
             if IsControlJustPressed(0, 38) then
                 local ped = PlayerPedId()
                 CloseNui()
-                if string.find(id, "impound") then
+                if string.find(garageid, "impound") then
                     for k,v in pairs(impoundcoord) do
                         local actualShop = v
                         if property then
@@ -2422,7 +2453,7 @@ function GotoGarage(id, property, propertycoord, job)
                             break
                         else
                             local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                            if dist <= 70.0 and id == v.garage then
+                            if dist <= 70.0 and garageid == v.garage then
                                 SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
                             end
                         end
@@ -2435,7 +2466,7 @@ function GotoGarage(id, property, propertycoord, job)
                             break
                         else
                             local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                            if dist <= 70.0 and id == v.garage then
+                            if dist <= 70.0 and garageid == v.garage then
                                 SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
                             end
                         end
@@ -2454,9 +2485,9 @@ end
 local min = 0
 local max = 10
 local plus = 0
-Citizen.CreateThread(
-    function()
-        while true do
+function GarageVehicle()
+    Citizen.CreateThread(function()
+        while ingarage do
             local sleep = 2000
             local ped = PlayerPedId()
             if ingarage then
@@ -2464,10 +2495,10 @@ Citizen.CreateThread(
             end
 
             if IsControlJustPressed(0, 174) and min >= 10 then
-                id = garage_id
+                garageid = garage_id
                 for k,v2 in pairs(OwnedVehicles) do
                     for k2,v in pairs(v2) do
-                        if id == v.garage_id and not string.find(v.garage_id, "impound") then
+                        if garageid == v.garage_id and not string.find(v.garage_id, "impound") then
                             if vehtable[k] == nil then
                                 vehtable[k] = {}
                             end
@@ -2585,10 +2616,10 @@ Citizen.CreateThread(
             end
             
             if IsControlJustPressed(0, 175) then
-                id = garage_id
+                garageid = garage_id
                 for k,v2 in pairs(OwnedVehicles) do
                     for k2,v in pairs(v2) do
-                        if id == v.garage_id and not string.find(v.garage_id, "impound") then
+                        if garageid == v.garage_id and not string.find(v.garage_id, "impound") then
                             if vehtable[k] == nil then
                                 vehtable[k] = {}
                             end
@@ -2693,6 +2724,7 @@ Citizen.CreateThread(
             Citizen.Wait(sleep)
         end
     end)
+end
 
 function GetAllVehicleFromPool()
     local list = {}
@@ -2794,9 +2826,9 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
             plate = vp.plate
             model = GetEntityModel(vehicle)
             ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee)
-                if stored and impound == 0 or not Config.EnableReturnVehicle or string.find(id, "impound") then
+                if stored and impound == 0 or not Config.EnableReturnVehicle or string.find(garageid, "impound") then
                     local tempcoord = garagecoord
-                    if string.find(id, "impound") then tempcoord = impoundcoord end
+                    if string.find(garageid, "impound") then tempcoord = impoundcoord end
                     DoScreenFadeOut(0)
                     Citizen.Wait(333)
                     if not property then
@@ -2823,7 +2855,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     TaskWarpPedIntoVehicle(PlayerPedId(), v, -1)
                     veh = v
                     DoScreenFadeIn(333)
-                    TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, id, vp.model, vp)
+                    TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, garageid, vp.model, vp)
                     for k,v in pairs(spawnedgarage) do
                         ReqAndDelete(v)
                     end
@@ -2887,7 +2919,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     TriggerEvent('renzu_popui:closeui')
                     drawtext = false
                 end
-            end,plate,id,false,patrolcars[plate] or false)
+            end,plate,garageid,false,patrolcars[plate] or false)
         --end
     --end
 end)
@@ -3001,29 +3033,29 @@ end
 RegisterNetEvent('renzu_garage:store')
 AddEventHandler('renzu_garage:store', function(i)
     local vehicleProps = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId(), 0))
-    id = i
-    if id == nil then
-    id = 'A'
+    garageid = i
+    if garageid == nil then
+    garageid = 'A'
     end
     -- if impound then
-    -- id = 'impound'
+    -- garageid = 'impound'
     -- end
-    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, id, vehicleProps.model, vehicleProps)
+    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps)
     DeleteEntity(GetVehiclePedIsIn(PlayerPedId(), 0))
 end)
 
 function Storevehicle(vehicle,impound, impound_data)
     local vehicleProps = GetVehicleProperties(vehicle)
-    if id == nil then
-    id = 'A'
+    if garageid == nil then
+        garageid = 'A'
     end
     if impound then
-        id = impound_data['impounds'] or impoundcoord[1].garage
+        garageid = impound_data['impounds'] or impoundcoord[1].garage
     end
     Wait(100)
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
     Wait(2000)
-    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, id, vehicleProps.model, vehicleProps, impound_data or {})
+    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {})
     DeleteEntity(vehicle)
     neargarage = false
 end
@@ -3061,10 +3093,10 @@ function SpawnVehicleLocal(model, props)
     local nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
     ReqAndDelete(nearveh)
 
-    if string.find(id, "impound") then
+    if string.find(garageid, "impound") then
         for k,v in pairs(impoundcoord) do
             local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-            if dist <= 80.0 and id == v.garage then
+            if dist <= 80.0 and garageid == v.garage then
                 local actualShop = v
                 local zaxis = actualShop.garage_z
                 local hash = tonumber(model)
@@ -3093,7 +3125,7 @@ function SpawnVehicleLocal(model, props)
     else
         for k,v in pairs(garagecoord) do
             local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-            if dist <= 80.0 and id == v.garage and not string.find(id, "impound") then
+            if dist <= 80.0 and garageid == v.garage and not string.find(garageid, "impound") then
                 local actualShop = v
                 local zaxis = actualShop.garage_z
                 local hash = tonumber(model)
@@ -3167,7 +3199,8 @@ end
 
 myoldcoords = nil
 RegisterNetEvent('renzu_garage:property')
-AddEventHandler('renzu_garage:property', function(id, propertycoord, index, spawncoord)
+AddEventHandler('renzu_garage:property', function(i, propertycoord, index, spawncoord)
+    local i = i
     DeleteEntity(LastVehicleFromGarage)
     LastVehicleFromGarage = nil
     --CloseNui()
@@ -3177,26 +3210,26 @@ AddEventHandler('renzu_garage:property', function(id, propertycoord, index, spaw
     while not fetchdone do
         Wait(0)
     end
-    if Config.PropertyQuickPick and Config.EnablePropertyCoordGarageCoord then
-        propertygarage = index
-        id = index
-        tid = index
+    if Config.PropertyQuickPick then
+        propertygarage = i
+        garageid = i
+        tid = i
         if IsPedInAnyVehicle(PlayerPedId()) then
             Storevehicle(GetVehiclePedIsIn(PlayerPedId()))
         else
-            OpenGarage(id,'car',garagejob or false,{})
+            OpenGarage(garageid,'car',garagejob or false,{})
         end
     else
-        id = id
-        tid = id
-        propertygarage = id
+        garageid = i
+        tid = i
+        propertygarage = i
         if IsPedInAnyVehicle(PlayerPedId()) then
             Storevehicle(GetVehiclePedIsIn(PlayerPedId()))
         else
             if Config.PropertyQuickPick then
-                OpenGarage(id,'car',garagejob or false,{})
+                OpenGarage(garageid,'car',garagejob or false,{})
             else
-                GotoGarage(id, true, propertycoord)
+                GotoGarage(garageid, true, propertycoord)
             end
         end
     end
@@ -3211,12 +3244,13 @@ RegisterNUICallback(
         DoScreenFadeOut(0)
         local job = garagejob
         CloseNui()
-        if string.find(id, "impound") and not ispolice then
+        if string.find(garageid, "impound") and not ispolice then
             DoScreenFadeIn(0)
+            SetEntityCoords(PlayerPedId(), impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
             TriggerEvent('renzu_notify:Notify', 'error','Garage', 'You Have not Access to Garage')
             return
         end
-        GotoGarage(data.id,false,false,job)
+        GotoGarage(data.garageid or garageid,false,false,job)
     end
 )
 
@@ -3232,18 +3266,30 @@ RegisterNUICallback("ownerinfo",function(data, cb)
             }
         )
         end
-    end,data.identifier, data.plate, id)
+    end,data.identifier, data.plate, garageid)
 end)
 
 RegisterNUICallback("SpawnVehicle",function(data, cb)
     if not Config.Quickpick and type == 'car' or propertyspawn.x ~= nil and not Config.PropertyQuickPick then
-        SpawnVehicleLocal(data.modelcar, json.decode(data.props))
+        local props = nil
+        for k,v in pairs(OwnedVehicles['garage']) do
+            if v.plate == data.plate then
+                props = json.decode(v.props)
+            end
+        end
+        SpawnVehicleLocal(data.modelcar, props)
     end
 end)
 
 RegisterNUICallback("SpawnChopper",function(data, cb)
     if not Config.Quickpick then
-        SpawnChopperLocal(data.modelcar, json.decode(data.props))
+        local props = nil
+        for k,v in pairs(OwnedVehicles['garage']) do
+            if v.plate == data.plate then
+                props = json.decode(v.props)
+            end
+        end
+        SpawnChopperLocal(data.modelcar, props)
     end
 end)
 
@@ -3253,24 +3299,31 @@ RegisterNUICallback(
     "GetVehicleFromGarage",
     function(data, cb)
         local ped = PlayerPedId()
-        local props = json.decode(data.props)
+        local props = nil
+        if props == nil then
+            for k,v in pairs(OwnedVehicles['garage']) do
+                if v.plate == data.plate then
+                    props = json.decode(v.props)
+                end
+            end
+        end
         local veh = nil
     ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee)
-        if stored and impound == 0 or ispolice and string.find(id, "impound") or not Config.EnableReturnVehicle and impound ~= 1 or impound == 1 and not Config.EnableImpound then
+        if stored and impound == 0 or ispolice and string.find(garageid, "impound") or not Config.EnableReturnVehicle and impound ~= 1 or impound == 1 and not Config.EnableImpound then
             local tempcoord = {}
             if propertygarage then
                 spawn = GetEntityCoords(PlayerPedId())
                 found, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(spawn.x + math.random(1, 2), spawn.y + math.random(1, 2), spawn.z, 0, 3, 0)
                 --table.insert(garagecoord, {spawn_x = spawnPos.x, spawn_y = spawnPos.y, spawn_z = spawnPos.z, garage = gid, property = true})
                 tid = propertygarage
-                id = propertygarage
+                garageid = propertygarage
                 if propertyspawn.x ~= nil then
                     spawnPos = vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)
                     spawnHeading = propertyspawn.w
                 end
                 tempcoord[tid] = {garage_x = myoldcoords.x, garage_y = myoldcoords.y, garage_z = myoldcoords.z, spawn_x = spawnPos.x*1.0, spawn_y = spawnPos.y*1.0, spawn_z = spawnPos.z*1.0, garage = propertygarage, property = true, Dist = 4, heading = spawnHeading*1.0}
                 dist2 = #(vector3(spawnPos.x,spawnPos.y,spawnPos.z) - GetEntityCoords(PlayerPedId()))
-            elseif string.find(id, "impound") then
+            elseif string.find(garageid, "impound") then
                 tempcoord[tid] = impoundcoord[tid]
             else
                 tempcoord[tid] = garagecoord[tid]
@@ -3278,7 +3331,7 @@ RegisterNUICallback(
             --for k,v in pairs(garagecoord) do
                 local actualShop = tempcoord[tid]
                 local dist = #(vector3(tempcoord[tid].spawn_x,tempcoord[tid].spawn_y,tempcoord[tid].spawn_z) - GetEntityCoords(PlayerPedId()))
-                if id == tempcoord[tid].garage or string.find(id, "impound") then
+                if garageid == tempcoord[tid].garage or string.find(garageid, "impound") then
                     DoScreenFadeOut(333)
                     Citizen.Wait(333)
                     CheckWanderingVehicle(props.plate)
@@ -3318,7 +3371,7 @@ RegisterNUICallback(
             while veh == nil do
                 Citizen.Wait(10)
             end
-            TriggerServerEvent("renzu_garage:changestate", props.plate, 0, id, props.model, props)
+            TriggerServerEvent("renzu_garage:changestate", props.plate, 0, garageid, props.model, props)
             LastVehicleFromGarage = nil
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
             CloseNui()
@@ -3331,7 +3384,7 @@ RegisterNUICallback(
             plus = 0
             drawtext = false
             indist = false
-            if propertygarage or string.find(id, "impound") then
+            if propertygarage or string.find(garageid, "impound") then
                 tempcoord[tid] = nil
             end
             SendNUIMessage(
@@ -3365,7 +3418,7 @@ RegisterNUICallback(
                 type = "returnveh"
             }) 
         end
-    end, props.plate,id,ispolice,patrolcars[props.plate] or false)
+    end, props.plate,garageid,ispolice,patrolcars[props.plate] or false)
     end
 )
 
@@ -3431,10 +3484,14 @@ RegisterNUICallback(
     function(data, cb)
         DeleteEntity(LastVehicleFromGarage)
         local ped = PlayerPedId()
-        local props = json.decode(data.props)
+        local props = nil
         local veh = nil
         local bool = false
-        print("RETURN V")
+        for k,v in pairs(OwnedVehicles['garage']) do
+            if v.plate == data.plate then
+                props = json.decode(v.props)
+            end
+        end
         ESX.TriggerServerCallback("renzu_garage:returnpayment",function(canreturn)
             if canreturn then
                 if propertygarage then
@@ -3442,7 +3499,7 @@ RegisterNUICallback(
                     found, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(spawn.x + math.random(1, 2), spawn.y + math.random(1, 2), spawn.z, 0, 3, 0)
                     --table.insert(garagecoord, {spawn_x = spawnPos.x, spawn_y = spawnPos.y, spawn_z = spawnPos.z, garage = gid, property = true})
                     tid = propertygarage
-                    id = propertygarage
+                    garageid = propertygarage
                     if propertyspawn.x ~= nil then
                         spawnPos = vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)
                         spawnHeading = propertyspawn.w
@@ -3453,7 +3510,7 @@ RegisterNUICallback(
                 --for k,v in pairs(garagecoord) do
                     local actualShop = garagecoord[tid]
                     local dist = #(vector3(garagecoord[tid].spawn_x,garagecoord[tid].spawn_y,garagecoord[tid].spawn_z) - GetEntityCoords(ped))
-                    if id == garagecoord[tid].garage then
+                    if garageid == garagecoord[tid].garage then
                         DoScreenFadeOut(333)
                         Citizen.Wait(111)
                         CheckWanderingVehicle(props.plate)
@@ -3488,7 +3545,7 @@ RegisterNUICallback(
                 while veh == nil do
                     Citizen.Wait(1)
                 end
-                TriggerServerEvent("renzu_garage:changestate", props.plate, 0, id, props.model, props)
+                TriggerServerEvent("renzu_garage:changestate", props.plate, 0, garageid, props.model, props)
                 LastVehicleFromGarage = nil
                 Wait(111)
                 CloseNui()
@@ -3528,12 +3585,12 @@ RegisterNUICallback("Close",function(data, cb)
     DoScreenFadeOut(111)
     local ped = PlayerPedId()
     CloseNui()
-    if string.find(id, "impound") then
+    if string.find(garageid, "impound") then
         for k,v in pairs(impoundcoord) do
             local actualShop = v
             if v.garage_x ~= nil then
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 40.0 and id == v.garage then
+                if dist <= 40.0 and garageid == v.garage then
                     SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
                 end
             end
@@ -3543,7 +3600,7 @@ RegisterNUICallback("Close",function(data, cb)
             local actualShop = v
             if v.garage_x ~= nil then
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 40.0 and id == v.garage then
+                if dist <= 40.0 and garageid == v.garage then
                     SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
                 end
             end
@@ -3667,7 +3724,7 @@ RegisterNUICallback("receive_impound", function(data, cb)
 end)
 
 RegisterCommand('impound', function(source, args, rawCommand)
-    if Config.EnableImpound and PlayerData.job ~= nil and PlayerData.job.name == 'police' or Config.EnableImpound and PlayerData.job ~= nil and PlayerData.job.name == 'sheriff' then
+    if Config.EnableImpound and PlayerData.job ~= nil and JobImpounder[PlayerData.job.name] then
         local ped = PlayerPedId()
         local coords = GetEntityCoords(ped)
         local vehicle = GetNearestVehicleinPool(coords, 5)
@@ -3712,7 +3769,7 @@ RegisterCommand('transfer', function(source, args, rawCommand)
                 local userid = args[1]
                 TriggerServerEvent("renzu_garage:transfercar", plate, userid)
             elseif args[1] == nil then
-                ESX.ShowNotification("User id missing.. example: /transfercar 10")
+                ESX.ShowNotification("User garageid missing.. example: /transfercar 10")
             else
                 ESX.ShowNotification("No vehicle in front")
             end
