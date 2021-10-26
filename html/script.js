@@ -190,6 +190,7 @@ window.addEventListener('message', function(event) {
         }
     }
     if (event.data.type == "display") {
+        garage_id = event.data.garage_id
         chopper = false
         if (event.data.chopper) {
             chopper = true
@@ -204,7 +205,7 @@ window.addEventListener('message', function(event) {
                 VehicleArr.push(v);          
             }             
         }
-        Renzu_Garage.Open(VehicleArr);
+        OpenGarage(VehicleArr)
         ShowVehicle(0);
     }
 
@@ -295,24 +296,36 @@ function ShowVehicle(currentTarget) {
             var div = $(this).parent().find('.active');        
             $(div).removeClass('active');
             var itemDisabled = false;
+            if (garage_id == undefined) {
+                garage_id = 'A'
+            }
             if(!itemDisabled && garage_id.search("impound") == -1) {
                 $(currentTarget).addClass('active');
                 $('.modal').css("display","none");
+                
+                if (document.getElementById("nameBrand")) {
+                    document.getElementById("nameBrand").innerHTML = '';
+                }
+                if (document.getElementById("vehicleclass")) {
+                    document.getElementById("vehicleclass").innerHTML = '';
+                }
+                if (document.getElementById("contentVehicle")) {
+                    document.getElementById("contentVehicle").innerHTML = '';
+                }
+                if (document.getElementById("vehicleclass")) {
+                    document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
+                }     
 
-                document.getElementById("nameBrand").innerHTML = '';
-                document.getElementById("vehicleclass").innerHTML = '';
-                document.getElementById("contentVehicle").innerHTML = '';
-                          
-                document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
-
-                $('#nameBrand').append(`
+                if (data.brand && data.name) {
+                    $('#nameBrand').append(`
                     <span id="vehicle_class">`+data.brand+`</span> 
                     <span id="vehicle_name">`+data.name+`</span> 
-                `);
+                    `);
+                }
 
                 $(".menu-modifications").css("display","block");
 
-                CurrentVehicle = {brand: data.brand, modelcar: data.model2, sale: 1, name: data.name, props: data.props }
+                CurrentVehicle = {brand: data.brand || 'Sports', modelcar: data.model2 || -1, sale: 1, name: data.name || 'Vehicle',  plate: data.plate }
                 $('#contentVehicle').append(`
                     <div class="row spacebetween">
                         <span class="title">HANDLING</span>
@@ -365,9 +378,9 @@ function ShowVehicle(currentTarget) {
                     </div>
                 `);
                 if (chopper) {
-                    $.post("https://renzu_garage/SpawnChopper", JSON.stringify({ modelcar: data.model2, price: 1, props: data.props }));
+                    $.post("https://renzu_garage/SpawnChopper", JSON.stringify({ modelcar: data.model2, price: 1,  plate: data.plate }));
                 } else {
-                    $.post("https://renzu_garage/SpawnVehicle", JSON.stringify({ modelcar: data.model2, price: 1, props: data.props }));
+                    $.post("https://renzu_garage/SpawnVehicle", JSON.stringify({ modelcar: data.model2, price: 1,  plate: data.plate }));
                 }
             } else if(!itemDisabled && garage_id.search("impound") !== -1) {
                 $(currentTarget).addClass('active');         
@@ -375,11 +388,18 @@ function ShowVehicle(currentTarget) {
 
                 $('.modal').css("display","none");
 
-                document.getElementById("nameBrand").innerHTML = '';
-                document.getElementById("vehicleclass").innerHTML = '';
-                document.getElementById("contentVehicle").innerHTML = '';
-                          
-                document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/optimized/3X/0/3/0301f645963889531fb4870e8d47f2f7da7f1c45_2_1024x1024.gif">';
+                if (document.getElementById("nameBrand")) {
+                    document.getElementById("nameBrand").innerHTML = '';
+                }
+                if (document.getElementById("vehicleclass")) {
+                    document.getElementById("vehicleclass").innerHTML = '';
+                }
+                if (document.getElementById("contentVehicle")) {
+                    document.getElementById("contentVehicle").innerHTML = '';
+                }
+                if (document.getElementById("vehicleclass")) {
+                    document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
+                }
 
                 if (data !== undefined && data.brand !== undefined && data.name !== undefined) {
                     $('#nameBrand').append(`
@@ -395,7 +415,7 @@ function ShowVehicle(currentTarget) {
                 if (data.brand == undefined) {
                     data.brand = 'Unknown'
                 }
-                CurrentVehicle = {brand: data.brand, modelcar: data.model2, sale: 1, name: data.name, props: data.props }
+                CurrentVehicle = {brand: data.brand || 'Sports', modelcar: data.model2 || -1, sale: 1, name: data.name || 'Vehicle',  plate: data.plate }
                 $('#contentVehicle').append(`
                     <div class="handling-container">
                         <span>Impound Data</span>
@@ -448,10 +468,9 @@ function ShowVehicle(currentTarget) {
                     </div>
                 `);
                 $.post("https://renzu_garage/ownerinfo", JSON.stringify({ plate: data.plate, identifier: data.identifier, chopstatus: 1 }));
-                $.post("https://renzu_garage/SpawnVehicle", JSON.stringify({ modelcar: data.model2, price: 1, props: data.props }));
+                $.post("https://renzu_garage/SpawnVehicle", JSON.stringify({ modelcar: data.model2, price: 1, plate: data.plate }));
             }
         }
-
 }
 function garage() {
     $.post("https://renzu_garage/gotogarage", JSON.stringify({id: garage_id }));
@@ -656,14 +675,11 @@ $(document).on('keydown', function(event) {
             break;
     }
 });
-
-    $('.vehiclegarage').empty();
-    $('.app_inner').empty();
-    $("#garage").fadeOut();
-(() => {
     Renzu_Garage = {};
     inGarageVehicle = {}
-    Renzu_Garage.Open = function(data) {
+    function OpenGarage(data) {
+        $('.vehiclegarage').empty();
+        $('.app_inner').empty();
         if (document.getElementById("vehlist")) {
             document.getElementById("vehlist").innerHTML = '';
         }
@@ -673,5 +689,5 @@ $(document).on('keydown', function(event) {
             $(".app_inner").append('<label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:7px;color: #e2e2e2;;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:8px;color:#75ffb9;">Garage: '+ data[i].garage_id +'</span><h2 style="font-size:11px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="min-width: 120px;height: 70px;border-radius: 10px;max-width: 120px;border-color: #c7c7c7;;" onerror="this.src=`https://i.imgur.com/Jdz2ZMK.png`;" src="../imgs/uploads/' + modelUper +'.jpg"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> </div> </div> </label></input></label>');    
         }     
     }
-    Renzu_Garage.Open(VehicleArr)
-})();
+    $("#garage").fadeOut();
+    //OpenGarage(VehicleArr)
