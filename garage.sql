@@ -48,3 +48,21 @@ CREATE TABLE IF NOT EXISTS `parking_meter` (
 COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;
+
+CREATE TABLE IF NOT EXISTS `garagekeys` (
+	`identifier` VARCHAR(64) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+	`keys` LONGTEXT NULL COLLATE 'utf8mb4_general_ci',
+	PRIMARY KEY (`identifier`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
+
+CREATE TABLE IF NOT EXISTS `vehiclekeys` (
+	`plate` VARCHAR(64) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+	`keys` LONGTEXT NULL COLLATE 'utf8mb4_general_ci',
+	PRIMARY KEY (`plate`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;

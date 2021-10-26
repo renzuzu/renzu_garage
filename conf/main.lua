@@ -10,7 +10,7 @@ Config.floatingtext = true -- use native floating text and marker to interact wi
 Config.UsePopUI = false -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
 Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
 Config.UniqueCarperGarage = false -- if false, show all vehicles to all garage location! else if true, Vehicles Saved in Garage A cannot be take out from Garage B for example.
-
+Config.GarageKeys = true -- Enable Player to Give Public Garage Keys to enable vehicle sharing
 -- BLIPS --
 Config.BlipNamesStatic = true -- if true no more garage a garage b blip names from MAP , only says  Garage
 --GENERAL SETTING

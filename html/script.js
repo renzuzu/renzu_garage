@@ -145,6 +145,131 @@ window.addEventListener('message', function(event) {
         }
         document.getElementById("impoundform").style.display = 'block';
     }
+    if (event.data.type == "garagekeys") {
+        var garages = event.data.data.garages
+        var mykeys = event.data.data.mykeys
+        var action = event.data.data.action
+        var playersnearby = event.data.data.players
+        $("#garages").html('')
+        $("#mygaragekeys").html('')
+        $("#formid").html('')
+        var managekey = `<form method="post" id="use" name="new_post"  action="" class="wpcf7-form" enctype="mu ltipart/form-data">
+        <div class="form-body">
+          <div class="spacer-b30">
+          <div class="tagline"><span>Garage Data</span></div><!-- .tagline -->
+          </div>
+          <div class="section" style="display:none;">
+              <label class="field select">
+                  <select id="garages" name="garages">
+                      <option value="">Select Garage Location...</option>
+                  </select>
+                  <i class="arrow double"></i>                    
+              </label>  
+          </div><!-- end section -->            
+          
+          <div class="section">
+            <label class="field select">
+                <select id="mygaragekeys" name="mygaragekeys">
+                    <option value="">Select Keys</option>
+                </select>
+                <i class="arrow double"></i>                    
+            </label>  
+        </div><!-- end section -->
+          
+        </div><!-- end .form-body section -->
+        <div class="form-footer">
+            <button type="submit" class="button btn-primary" id="use_key"> Use </button>
+            <button type="submit" class="button btn-primary" style="background:red;" id="del_key"> Delete </button>
+          <button type="reset" class="button" id="cancel_keys"> Cancel </button>
+        </div><!-- end .form-footer section -->
+      </form>`
+      var givekey = `<form method="post" id="new_post" name="new_post"  action="" class="wpcf7-form" enctype="mu ltipart/form-data">
+        <div class="form-body">
+          <div class="spacer-b30">
+          <div class="tagline"><span>Nearby Citizen</span></div><!-- .tagline -->
+          </div>
+          <div class="section">
+              <label class="field select">
+                  <select id="playerslist" name="playerslist">
+                      <option value="">Select Citizen</option>
+                  </select>
+                  <i class="arrow double"></i>                    
+              </label>  
+          </div><!-- end section -->            
+          
+          <div class="section">
+            <label class="field select">
+                <select id="garages" name="garages">
+                    <option value="">Select Garage</option>
+                </select>
+                <i class="arrow double"></i>                    
+            </label>  
+        </div><!-- end section -->
+          
+        </div><!-- end .form-body section -->
+        <div class="form-footer">
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(47, 109, 255);" id="give_key"> Give </button>
+          <button type="reset" class="button" id="cancel_keys"> Cancel </button>
+        </div><!-- end .form-footer section -->
+      </form>`
+      if (action == 'manage') {
+        $("#formid").append(managekey)
+        for (const i in garages) {
+            $("#garages").append(`<option value="`+garages[i].garage+`">Garage `+garages[i].garage+`</option>`)
+        }
+        for (const i in mykeys) {
+            $("#mygaragekeys").append(`<option value="`+mykeys[i].identifier+`">`+mykeys[i].name+` Key</option>`)
+        }
+        document.getElementById("use_key").addEventListener("click", function(event){
+            var givedata = {}
+            for (const i in $( "#use" ).serializeArray()) {
+                var data = $( "#use" ).serializeArray()
+                givedata[data[i].name] = data[i].value
+            }
+            document.getElementById("garagekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ action: 'use', data: givedata}));
+        });
+        document.getElementById("del_key").addEventListener("click", function(event){
+            var givedata = {}
+            for (const i in $( "#use" ).serializeArray()) {
+                var data = $( "#use" ).serializeArray()
+                givedata[data[i].name] = data[i].value
+            }
+            document.getElementById("garagekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ action: 'del', data: givedata}));
+        });
+        
+        document.getElementById("cancel_keys").addEventListener("click", function(event) {
+            document.getElementById("garagekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ garagekeysdata: 'cancel' }));
+        });
+      } else {
+        $("#formid").append(givekey)
+        for (const i in playersnearby) {
+            console.log(playersnearby[i],i,playersnearby[i].identifier)
+            $("#playerslist").append(`<option value="`+playersnearby[i].identifier+`">`+playersnearby[i].name+` - [`+playersnearby[i].source+`]</option>`)
+        }
+        for (const i in garages) {
+            $("#garages").append(`<option value="`+garages[i].garage+`">Garage `+garages[i].garage+` Key</option>`)
+        }
+        document.getElementById("give_key").addEventListener("click", function(event){
+            var datagive = {}
+            for (const i in $( "form" ).serializeArray()) {
+                var data = $( "form" ).serializeArray()
+                console.log($( "form" ).serializeArray(),data[i].name)
+                datagive[data[i].name] = data[i].value
+                console.log()
+            }
+            document.getElementById("garagekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ action: 'give', data: datagive}));
+        });
+        document.getElementById("cancel_keys").addEventListener("click", function(event) {
+            document.getElementById("garagekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ garagekeysdata: 'cancel' }));
+        });
+      }
+        document.getElementById("garagekeys").style.display = 'block';
+    }
     if (event.data.type == "cats") {
         var cats = event.data.cats
         for (const i in cats) {
