@@ -814,6 +814,11 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     updatepark = true
                 end
             end
+            for k,park in pairs(parkmeter) do
+                if string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1'):upper() == plate:upper() then
+                    updatepark = true
+                end
+            end
             if result[1].vehicle ~= nil then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
@@ -830,6 +835,12 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                         Wait(200)
                         parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+                        isparked = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter WHERE TRIM(plate) = @plate', {['@plate'] = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')}) or {}
+                        if isparked[1] then
+                            MysqlGarage(Config.Mysql,'execute','DELETE FROM parking_meter WHERE TRIM(plate) = @plate', {['@plate'] =  string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')})
+                            parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+                        end
+                        Wait(200)
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     if state == 1 then
@@ -848,7 +859,12 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
             if #result > 0 then
                 local updatepark = false
                 for k,park in pairs(parkedvehicles) do
-                    if park.plate:upper() == plate:upper() then
+                    if string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1'):upper() == plate:upper() then
+                        updatepark = true
+                    end
+                end
+                for k,park in pairs(parkmeter) do
+                    if string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1'):upper() == plate:upper() then
                         updatepark = true
                     end
                 end
@@ -901,7 +917,11 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         Wait(300)
                         parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
                         Wait(200)
-                        parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+                        isparked = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter WHERE TRIM(plate) = @plate', {['@plate'] = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')}) or {}
+                        if isparked[1] then
+                            MysqlGarage(Config.Mysql,'execute','DELETE FROM parking_meter WHERE TRIM(plate) = @plate', {['@plate'] =  string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')})
+                            parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+                        end
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     if state == 1 then
