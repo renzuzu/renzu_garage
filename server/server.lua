@@ -153,9 +153,10 @@ RegisterServerEvent('renzu_garage:GetVehiclesTable')
 AddEventHandler('renzu_garage:GetVehiclesTable', function()
     local src = source 
     local xPlayer = ESX.GetPlayerFromId(src)
-    local identifier = xPlayer.identifier
+    local ply = Player(src).state
+    local identifier = ply.garagekey or xPlayer.identifier
     --local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
-    local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
+    local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = identifier})
     TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
 end)
 
@@ -704,6 +705,82 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
     end
 end)
 
+ESX.RegisterServerCallback('renzu_garage:getgaragekeys', function (source, cb)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
+        ['@identifier'] = xPlayer.identifier
+    })
+    local xPlayers = ESX.GetPlayers()
+    local players = {}
+    for i=1, #xPlayers, 1 do
+        local x = ESX.GetPlayerFromId(xPlayers[i])
+        if x.identifier ~= xPlayer.identifier then
+            table.insert(players,x)
+        end
+    end
+    cb(json.decode(result[1] ~= nil and result[1].keys) or false,players)
+end)
+
+RegisterNetEvent('renzu_garage:updategaragekeys')
+AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
+    if action == 'give' then
+        local xPlayer = ESX.GetPlayerFromIdentifier(data.playerslist)
+        local sender = ESX.GetPlayerFromId(source)
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
+            ['@identifier'] = xPlayer.identifier
+        })
+        
+        if result[1] then
+            local keys = json.decode(result[1].keys) or {}
+            local existkey = false
+            for k,v in ipairs(keys) do
+                if v.identifier == sender.identifier then
+                    existkey = true
+                    local newgarage = true
+                    for k,garage in pairs(v.garages or {}) do
+                        if garage == data.garages then
+                            newgarage = false
+                        end
+                    end
+                    if newgarage then
+                        table.insert(v.garages, data.garages)
+                    end
+                end
+            end
+            if not existkey then
+                table.insert(keys, {identifier = sender.identifier, name = sender.name, garages = {data.garages}})
+            end
+            MysqlGarage(Config.Mysql,'execute','UPDATE garagekeys SET `keys` = @keys WHERE identifier = @identifier', {
+                ['@keys'] = json.encode(keys),
+                ['@identifier'] = xPlayer.identifier,
+            })
+        else
+            result = {}
+            table.insert(result, {identifier = sender.identifier, name = sender.name, garages = {data.garages}})
+            MysqlGarage(Config.Mysql,'execute','INSERT INTO garagekeys (identifier, `keys`) VALUES (@identifier, @keys)', {
+                ['@identifier']   = xPlayer.identifier,
+                ['@keys']   = json.encode(result),
+            })
+        end
+        TriggerClientEvent('renzu_notify:Notify',xPlayer.source 'success','Garage', 'You receive a Garage Key from '..sender.name)
+    elseif action == 'del' then
+        local xPlayer = ESX.GetPlayerFromId(source)
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
+            ['@identifier'] = xPlayer.identifier
+        })
+        local keys = json.decode(result[1] ~= nil and result[1].keys or '[]') or {}
+        for k,v in pairs(keys) do
+            if v.identifier == data then
+                keys[k] = nil
+            end
+        end
+        MysqlGarage(Config.Mysql,'execute','UPDATE garagekeys SET `keys` = @keys WHERE identifier = @identifier', {
+            ['@keys'] = json.encode(keys),
+            ['@identifier'] = xPlayer.identifier,
+        })
+    end
+end)
+
 RegisterServerEvent('renzu_garage:GetParkedVehicles')
 AddEventHandler('renzu_garage:GetParkedVehicles', function()
     TriggerClientEvent('renzu_garage:update_parked',source,parkedvehicles, false, parkmeter)
@@ -802,9 +879,11 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
     local state = tonumber(state)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
+    local ply = Player(source).state
+    local identifier = ply.garagekey or xPlayer.identifier
     if xPlayer then
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
-            ['@owner'] = xPlayer.identifier,
+            ['@owner'] = identifier,
             ['@plate'] = plate
         })
         if #result > 0 and not string.find(garage_id, "impound") then
@@ -826,7 +905,7 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                         ['vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
                         ['@plate'] = plate:upper(),
-                        ['@owner'] = xPlayer.identifier,
+                        ['@owner'] = identifier,
                         ['@stored'] = state,
                         ['@isparked'] = 0
                     })

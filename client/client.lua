@@ -3755,6 +3755,52 @@ RegisterCommand('impound', function(source, args, rawCommand)
     end
 end, false)
 
+local garagekeysdata = nil
+
+RegisterNUICallback("receive_garagekeys", function(data, cb)
+    SetNuiFocus(false,false)
+    garagekeysdata = data
+end)
+
+RegisterCommand('garagekeys', function(source, args, rawCommand)
+    ESX.TriggerServerCallback("renzu_garage:getgaragekeys",function(sharedkeys,players)
+        if Config.GarageKeys and PlayerData.job ~= nil then
+            local ped = PlayerPedId()
+            local coords = GetEntityCoords(ped)
+            local vehicle = GetNearestVehicleinPool(coords, 5)
+            local mykeys = {}
+            table.insert(mykeys,{identifier = 'own', name = 'My Owned key'})
+            if sharedkeys then
+                for k,v in pairs(sharedkeys) do
+                    table.insert(mykeys,v)
+                end
+            end
+            SendNUIMessage(
+                {
+                    data = {garages = garagecoord, mykeys = mykeys, action = args[1], players = players},
+                    type = "garagekeys"
+                }
+            )
+            SetNuiFocus(true, true)
+            while garagekeysdata == nil do Wait(100) end
+            if garagekeysdata.action == 'give' then
+                TriggerServerEvent('renzu_garage:updategaragekeys',garagekeysdata.action,garagekeysdata.data)
+                TriggerEvent('renzu_notify:Notify', 'success','Garage', 'Garage Key has been share')
+            end
+            if garagekeysdata.action == 'del' then
+                TriggerServerEvent('renzu_garage:updategaragekeys',garagekeysdata.action,garagekeysdata.data.mygaragekeys)
+                LocalPlayer.state:set('garagekey', false, true)
+                TriggerEvent('renzu_notify:Notify', 'success','Garage', 'Garage Key has been Deleted')
+            end
+            if garagekeysdata.action == 'use' then
+                LocalPlayer.state:set('garagekey', garagekeysdata.data.mygaragekeys ~= 'own' and garagekeysdata.data.mygaragekeys or false, true)
+                TriggerEvent('renzu_notify:Notify', 'success','Garage', 'Garage Key has been changed')
+            end
+            garagekeysdata = nil
+        end
+    end)
+end, false)
+
 RegisterCommand('transfer', function(source, args, rawCommand)
         local ped = PlayerPedId()
         local coords = GetEntityCoords(ped)
