@@ -227,7 +227,6 @@ function DrawInteraction(i,v,reqdist,msg,event,server,var,disablemarker)
                 if not disablemarker then
                     DrawMarker(27, coord.x,coord.y,coord.z-0.8, 0, 0, 0, 0, 0, 0, 0.7, 0.7, 0.7, 200, 255, 255, 255, 0, 0, 1, 1, 0, 0, 0)
                 end
-                --print(i)
                 if dist < reqdist[1] then ShowFloatingHelpNotification(msg, coord, disablemarker , i) end
                 if dist < reqdist[1] and IsControlJustReleased(1, 51) then
                     ShowFloatingHelpNotification(msg, coord, disablemarker , i)
@@ -397,7 +396,7 @@ function AntiDupe(coords, hash,x,y,z,w,prop)
     Wait(10)
     local move_coords = coords
     local vehicle = IsAnyVehicleNearPoint(coords.x,coords.y,coords.z,1.1)
-	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,true) private_garages[v] = v SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) end
+	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,true) private_garages[v] = v SetVehicleProp(v, prop) SetVehicleBobo(v) SetEntityCollision(v,true) FreezeEntityPosition(v, false) end
 end
 
 RegisterNetEvent('renzu_garage:ingarage')
@@ -865,6 +864,7 @@ AddEventHandler('renzu_garage:choose', function(table,garage)
         end
     end
     local vehicle = CreateVehicle(table.model,garage.buycoords.x,garage.buycoords.y,garage.buycoords.z,garage.buycoords.w,true,true)
+    SetVehicleBobo(vehicle)
     SetVehicleProp(vehicle, table)
     NetworkFadeInEntity(vehicle,1)
     Wait(10)
@@ -1141,6 +1141,7 @@ CreateThread(function()
                                         end
                                     end
                                     myveh = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 1, 1)
+                                    SetVehicleBobo(myveh)
                                     SetEntityHeading(myveh, coord.heading)
                                     --FreezeEntityPosition(myveh, true)
                                     -- SetEntityCollision(spawned_cars[park.plate],false)
@@ -2762,6 +2763,7 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
             Wait(100)
             local vehicle = CreateVehicle(tonumber(vp.model), tonumber(v.spawn_x)*1.0,tonumber(v.spawn_y)*1.0,tonumber(v.spawn_z)*1.0, tonumber(v.heading), 1, 1)
             while not DoesEntityExist(vehicle) do Wait(1) print(vp.model,'loading model') end
+            SetVehicleBobo(vehicle)
             Wait(100)
             SetVehicleProp(vehicle, vp)
             SetEntityCoords(GetEntityCoords(vehicle))
@@ -2848,6 +2850,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                         end
                     end
                     v = CreateVehicle(model, tempcoord[tid].spawn_x,tempcoord[tid].spawn_y,tempcoord[tid].spawn_z, tempcoord[tid].heading, 1, 1)
+                    SetVehicleBobo(v)
                     CheckWanderingVehicle(vp.plate)
                     vp.health = GetVehicleEngineHealth(GetVehiclePedIsIn(PlayerPedId()))
                     SetVehicleProp(v, vp)
@@ -3354,6 +3357,7 @@ RegisterNUICallback(
                     end
                     local vehicle = CreateVehicle(tonumber(props.model), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
                     SetVehicleProp(vehicle, props)
+                    SetVehicleBobo(vehicle)
                     if not propertygarage then
                         Spawn_Vehicle_Forward(vehicle, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
                     end
@@ -3453,6 +3457,7 @@ RegisterNUICallback(
                     end
                 end
                 v = CreateVehicle(hash, actualShop.x,actualShop.y,actualShop.z, 256.0, 1, 1)
+                SetVehicleBobo(vehicle)
                 Spawn_Vehicle_Forward(v, vector3(actualShop.x,actualShop.y,actualShop.z))
                 veh = v
                 DoScreenFadeIn(333)
@@ -3530,6 +3535,7 @@ RegisterNUICallback(
                             end
                         end
                         vehicle = CreateVehicle(tonumber(data.modelcar), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
+                        SetVehicleBobo(vehicle)
                         SetVehicleProp(vehicle, props)
                         if not propertygarage then
                             Spawn_Vehicle_Forward(vehicle, vector3(actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z))
@@ -3950,6 +3956,7 @@ CreateThread(function()
                                 end
                             end
                             myveh = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 1, 1)
+                            SetVehicleBobo(myveh)
                             SetEntityHeading(myveh, parkcoord.w)
                             --FreezeEntityPosition(myveh, true)
                             -- SetEntityCollision(spawned_cars[park.plate],false)
@@ -3974,3 +3981,384 @@ CreateThread(function()
         Wait(1000)
     end
 end)
+
+local entering = false
+function isVehicleUnlocked()
+    local p = PlayerPedId()
+    local mycoords = GetEntityCoords(p)
+    local veh = nil
+    if not IsPedInAnyVehicle(p) and IsAnyVehicleNearPoint(mycoords.x,mycoords.y,mycoords.z,10.0) then
+        --print("ENTERING")
+        veh = GetVehiclePedIsEntering(p)
+        local c = 0
+        while not veh or veh == 0 do
+            veh = GetVehiclePedIsTryingToEnter(p)
+            if c > 2000 then
+                break
+            end
+            c = c + 10
+            Wait(0)
+        end
+    end
+    if not DoesEntityExist(veh) or entering then return end
+    entering = true
+    CreateThread(function()
+        while true do
+            local sleep = 0
+            if Config.EnableKeySystem then
+                if Config.LockAllLocalVehicle then
+                    if veh then
+                        EnsureEntityStateBag(veh)
+                        plate = GetVehicleNumberPlateText(veh)
+                        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
+                        local ent = Entity(veh).state
+                        --ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or false
+                        if not ent.havekeys then
+                            ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] or false
+                            if ent.hotwired and ent.havekeys then
+                                ent.hotwired = false
+                                ent:set('hotwired', false, true)
+                                TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
+                                ent:set('havekeys', false, true)
+                                TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
+                                Wait(200)
+                                ent.havekeys = true
+                                SetVehicleEngineOn(veh,false,true,false)
+                                SetVehicleNeedsToBeHotwired(veh,false)
+                                Wait(100)
+                            end
+                        elseif GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
+                            SetVehicleEngineOn(veh,false,true,false)
+                            SetVehicleNeedsToBeHotwired(veh,false)
+                            if ent.hotwired then
+                                ent.hotwired = false
+                                ent:set('hotwired', false, true)
+                                TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
+                                ent:set('havekeys', false, true)
+                                TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
+                                Wait(200)
+                                ent.havekeys = true
+                                SetVehicleEngineOn(veh,false,true,false)
+                                SetVehicleNeedsToBeHotwired(veh,false)
+                                Wait(100)
+                            end
+                        end
+                        if not ent.unlock then
+                            SetVehicleDoorsLocked(veh, 2)
+                        else
+                            SetVehicleDoorsLocked(veh, 1)
+                        end
+                        sleep = 1
+                        if not ent.havekeys then
+                            SetVehicleEngineOn(veh,false,true,true)
+                        end
+                        if ent.unlock and not ent.havekeys then
+                            local c = 0
+                            while not GetPedInVehicleSeat(veh,-1) == PlayerPedId() or c < 50 do if GetPedInVehicleSeat(veh,-1) == PlayerPedId() then break end Wait(100) c = c + 1 end
+                        end
+                        if ent.unlock and not ent.havekeys and GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) then
+                            SetVehicleEngineOn(veh,false,true,true)
+                            while GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) do
+                                ShowFloatingHelpNotification('[H] to Hot Wire Vehicle <br> [F] to Cancel', GetEntityCoords(veh), true, 'hotwire')
+                                if IsControlJustPressed(0,74) then
+                                    HotWireVehicle(veh)
+                                    Wait(1000)
+                                end
+                                Wait(0)
+                            end
+                            SetVehicleNeedsToBeHotwired(veh,true)
+                        end
+                        if ent.unlock and ent.havekeys and ent.hotwired and GetSeatPedIsTryingToEnter(PlayerPedId()) == -1 then
+                            SetVehicleEngineOn(veh,false,true,false)
+                            SetVehicleNeedsToBeHotwired(veh,true)
+                        end
+                        if ent.unlock and not ent.havekeys and not ent.hotwired then
+                            SetVehicleEngineOn(veh,false,true,true)
+                            SetVehicleNeedsToBeHotwired(veh,false)
+                        end
+                        break
+                    end
+                end
+            end
+            Wait(sleep)
+        end
+        entering = false
+    end)
+end
+
+RegisterCommand('entervehicle', function()
+	isVehicleUnlocked()
+end, false)
+
+CreateThread(function()
+	RegisterKeyMapping('entervehicle', 'Enter Vehicle', 'keyboard', 'F')
+	return
+end)
+
+function SetVehicleBobo(vehicle)
+    local netid = NetworkGetNetworkIdFromEntity(vehicle)
+    SetNetworkIdExistsOnAllMachines(netid,true)
+end
+
+function getveh()
+    local ped = PlayerPedId()
+	local v = GetVehiclePedIsIn(PlayerPedId(), false)
+	lastveh = GetVehiclePedIsIn(PlayerPedId(), true)
+	local dis = -1
+	if v == 0 then
+		if #(GetEntityCoords(ped) - GetEntityCoords(lastveh)) < 5 then
+			v = lastveh
+		end
+		dis = #(GetEntityCoords(ped) - GetEntityCoords(lastveh))
+	end
+	if dis > 3 then
+		v = 0
+	end
+	if v == 0 then
+		local count = 5
+		v = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 8.000, 0, 70)
+		while #(GetEntityCoords(ped) - GetEntityCoords(v)) > 10 and count >= 0 do
+			v = GetClosestVehicle(GetEntityCoords(PlayerPedId()),8.000, 0, 70)
+			count = count - 1
+			Wait(1)
+		end
+        if v == 0 then
+            local temp = {}
+            for k,v in pairs(GetGamePool('CVehicle')) do
+                local dist = #(GetEntityCoords(ped) - GetEntityCoords(v))
+                temp[k] = {}
+                temp[k].dist = dist
+                temp[k].entity = v
+            end
+            local dist = -1
+            local nearestveh = nil
+            for k,v in pairs(temp) do
+                if dist == -1 or dist > v.dist then
+                    dist = v.dist
+                    nearestveh = v.entity
+                end
+            end
+            v = nearestveh
+        end
+	end
+	return tonumber(v)
+end
+
+function playanimation(animDict,name)
+	RequestAnimDict(animDict)
+	while not HasAnimDictLoaded(animDict) do 
+		Wait(1)
+		RequestAnimDict(animDict)
+	end
+	TaskPlayAnim(PlayerPedId(), animDict, name, 2.0, 2.0, -1, 47, 0, 0, 0, 0)
+end
+
+function Keyless()
+    local plate = nil
+    local vehiclesinarea = {}
+    -- ITERATE AND RETURN NEAREST OWNED VEHICLE
+    local mycoords = GetEntityCoords(PlayerPedId())
+    for k,v in pairs(GetGamePool('CVehicle')) do
+        local p = GetVehicleNumberPlateText(v)
+        plate = string.gsub(p, '^%s*(.-)%s*$', '%1')
+        vehiclesinarea[plate] = {}
+        vehiclesinarea[plate].entity = v
+        vehiclesinarea[plate].plate = plate
+        vehiclesinarea[plate].distance = #(mycoords - GetEntityCoords(v, false))
+        vehiclesinarea[plate].owner = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner or false
+    end
+    local near = -1
+    local nearestveh = nil
+    local nearestplate = nil
+    for k,v in pairs(vehiclesinarea) do
+        if near == -1 or near > v.distance and v.owner then
+            near = v.distance
+            nearestveh = v.entity
+            nearestplate = v.plate
+            if v.owner and near < 60 then
+                nearestowner = v.owner
+            end
+        end
+    end
+    EnsureEntityStateBag(nearestveh)
+    -- check nearest owned vehicle
+    local ent = Entity(nearestveh).state
+    if GlobalState.GVehicles[nearestplate] and GlobalState.GVehicles[nearestplate].owner == PlayerData.identifier -- player owned
+    or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] == GlobalState.GVehicles[nearestplate].owner then -- shared vehicle
+        PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)
+        playanimation('anim@mp_player_intmenu@key_fob@','fob_click')
+        SetVehicleLights(nearestveh, 2);Citizen.Wait(100);SetVehicleLights(nearestveh, 0);Citizen.Wait(200);SetVehicleLights(nearestveh, 2)
+		Citizen.Wait(100)
+		SetVehicleLights(nearestveh, 0)	
+        ent:set('hotwired', false, true)
+        TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(nearestveh))
+        --ent:set('unlock', ent.havekeys, true)
+        SetVehicleDoorsLocked(nearestveh, 1)
+        SetVehicleEngineOn(nearestveh,false,true,false)
+        ent.unlock = not ent.unlock
+        if ent.unlock then
+            ent.havekeys = true
+            ent:set('unlock', true, true)
+            TriggerServerEvent('statebugupdate','unlock',true, VehToNet(nearestveh))
+            --local payload = msgpack_pack(v)
+            --SetStateBagValue(es, s, payload, payload:len(), r)
+            PlaySoundFromEntity(-1, "Door_Open", nearestveh, "Lowrider_Super_Mod_Garage_Sounds", 0, 0)
+            TriggerEvent('renzu_notify:Notify', 'success','Garage', 'Vehicle Unlocked')
+            --StartVehicleHorn(nearestveh,2)
+            StartVehicleHorn(nearestveh, 11, "HELDDOWN", false)
+            Wait(200)
+            StartVehicleHorn(nearestveh, 0, "HELDDOWN", false)
+        else
+            ent.havekeys = false
+            ent:set('unlock', false, true)
+            TriggerServerEvent('statebugupdate','unlock',false, VehToNet(nearestveh))
+            TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(nearestveh))
+            StartVehicleHorn(nearestveh, 11, "HELDDOWN", false)
+            Wait(200)
+            StartVehicleHorn(nearestveh, 0, "HELDDOWN", false)
+            TriggerEvent('renzu_notify:Notify', 'success','Garage', 'Vehicle locked')
+        end
+        Wait(500)
+        ClearPedTasks(PlayerPedId())
+        return
+    end
+    TriggerEvent('renzu_notify:Notify', 'info','Garage', 'No Owned Vehicles in area')
+end
+
+RegisterCommand('keyless', function()
+	Keyless()
+end, false)
+
+CreateThread(function()
+	RegisterKeyMapping('keyless', 'Lock Vehicle', 'keyboard', 'L')
+	return
+end)
+
+-- LOCKPICK
+RegisterCommand('lockpick', function()
+	LockPick()
+end, false)
+
+function HotWireVehicle(veh)
+    SetVehicleNeedsToBeHotwired(veh,false)
+    SetVehicleDoorsLocked(veh, 1)
+    local ent = Entity(veh).state
+    while not ent.havekeys do
+        Wait(20)
+        SetVehicleEngineOn(veh,false,true,true)
+        TaskEnterVehicle(PlayerPedId(), veh, 10.0, -1, 2.0, 0)
+        while not IsPedInAnyVehicle(PlayerPedId()) do Wait(100) SetVehicleDoorsLocked(veh, 1) end
+        local o = {
+            dict = "anim@amb@clubhouse@tutorial@bkr_tut_ig3@",
+            name = "machinic_loop_mechandplayer",
+            flag = 49,
+        }
+        local ret = exports.renzu_lockgame:CreateGame(5,o,true)
+        if ret then
+            SetVehicleEngineOn(veh,false,true,false)
+            SetVehicleNeedsToBeHotwired(veh,true)
+            ent.havekeys = true
+            ent:set('havekeys', true, true)
+            ent:set('hotwired', true, true)
+            TriggerServerEvent('statebugupdate','havekeys',true, VehToNet(veh))
+            TriggerServerEvent('statebugupdate','hotwired',true, VehToNet(veh))
+            break
+        end
+    end
+end
+
+function LockPick()
+    local veh = getveh()
+    if veh ~= 0 then
+        local ent = Entity(veh).state
+        if not ent.unlock then
+            local ret = exports.renzu_lockgame:CreateGame(3)
+            if ret then
+                ent.unlock = not ent.unlock
+                ent:set('unlock', ent.unlock, true)
+                TriggerServerEvent('statebugupdate','unlock',ent.unlock, VehToNet(veh))
+                SetVehicleDoorsLocked(veh, 1)
+                HotWireVehicle(veh)
+            else
+                SetVehicleAlarmTimeLeft(veh,20)
+                SetVehicleAlarm(veh,true)
+                StartVehicleAlarm(veh)
+            end
+        end
+    end
+end
+
+-- Vehicle Keys
+
+local vehiclekeysdata = nil
+
+RegisterNUICallback("receive_vehiclekeys", function(data, cb)
+    SetNuiFocus(false,false)
+    vehiclekeysdata = data
+end)
+
+RegisterCommand('vehiclekeys', function(source, args, rawCommand)
+    ESX.TriggerServerCallback("renzu_garage:getgaragekeys",function(sharedkeys,players)
+        if Config.GarageKeys and PlayerData.job ~= nil then
+            local ped = PlayerPedId()
+            local coords = GetEntityCoords(ped)
+            local vehicles = {}
+            for k,v in pairs(GlobalState.GVehicles) do
+                if v.owner == PlayerData.identifier then
+                    vehicles[k] = {}
+                    vehicles[k].plate = v.plate
+                    vehicles[k].name = v.name
+                end
+            end
+            local p = GetVehicleNumberPlateText(GetVehiclePedIsIn(PlayerPedId()))
+            local plate = 'NULL'
+            if p then
+                plate = string.gsub(p, '^%s*(.-)%s*$', '%1')
+            end
+            SendNUIMessage(
+                {
+                    data = {vehicles = vehicles, players = players, current = IsPedInAnyVehicle(PlayerPedId()) and vehicles[plate] or false},
+                    type = "vehiclekeys"
+                }
+            )
+            SetNuiFocus(true, true)
+            while vehiclekeysdata == nil do Wait(100) end
+            if vehiclekeysdata.action == 'give' then
+                local owned = false
+                local vehicle = GetVehiclePedIsIn(PlayerPedId())
+                for k,v in pairs(GlobalState.GVehicles) do
+                    if vehiclekeysdata.data and string.gsub(v.plate, '^%s*(.-)%s*$', '%1') == string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1') and v.owner == PlayerData.identifier then
+                        owned = true
+                        plate = string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1')
+                        break
+                    end
+                end
+                if owned then
+                    TriggerServerEvent('renzu_garage:transfercar',plate,vehiclekeysdata.data.playerslist)
+                    TriggerEvent('renzu_notify:Notify', 'success','Garage', 'Vehicle Ownership has been transfer')
+                end
+            end
+            if vehiclekeysdata.action == 'dupe' and p then
+                local owned = false
+                local vehicle = GetVehiclePedIsIn(PlayerPedId())
+                for k,v in pairs(GlobalState.GVehicles) do
+                    if string.gsub(v.plate, '^%s*(.-)%s*$', '%1') == string.gsub(p, '^%s*(.-)%s*$', '%1') and v.owner == PlayerData.identifier then
+                        owned = true
+                        break
+                    end
+                end
+                if owned and vehiclekeysdata.data ~= nil and string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1') == plate then
+                    local ent = Entity(vehicle).state
+                    local share = ent.share or {}
+                    share[vehiclekeysdata.data.playerslist] = PlayerData.identifier
+                    ent:set('share', share, true)
+                    TriggerServerEvent('statebugupdate','share',share, VehToNet(vehicle))
+                    TriggerEvent('renzu_notify:Notify', 'success','Garage', 'Vehicle Key has been Share')
+                else
+                    TriggerEvent('renzu_notify:Notify', 'warning','Garage', 'You can only share the current vehicle')
+                end
+            end
+            vehiclekeysdata = nil
+        end
+    end)
+end, false)

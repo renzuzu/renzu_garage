@@ -45,3 +45,10 @@ Config.MeterProp = {
   [2] = 'prop_parknmeter_02',
 }
 Config.MeterPayment = 5000
+
+-- Vehicle Keys --
+Config.EnableKeySystem = true
+Config.LockAllLocalVehicle = true
+Config.EnableLockpick = true
+Config.EnableDuplicateKeys = true -- Carlock Purpose and to bypass hotwired
+Config.GiveKeysCommand = 'transfer' -- give keys to other player (transfer vehicle)

@@ -10,7 +10,26 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
+    GlobalState.VehicleinDb = vehicles
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
+    globalvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles', {}) or {}
+    local tempvehicles = {}
+    for k,v in ipairs(globalvehicles) do
+        local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
+        tempvehicles[plate] = v
+        tempvehicles[plate].name = 'NULL'
+    end
+    for k,v in pairs(tempvehicles) do
+        for k2,v2 in pairs(vehicles) do
+            local prop = json.decode(v.vehicle) or {model = ''}
+            if prop.model == GetHashKey(v2.model) then
+                tempvehicles[k].name = v2.name
+                break
+            end
+        end
+    end
+    GlobalState.GVehicles = tempvehicles 
+    tempvehicles = nil
     parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
     impoundget = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM impound_garage', {})
     for k,v in pairs(impoundget) do
@@ -580,7 +599,6 @@ RegisterCommand(Config.GiveAccessCommand, function(source, args, rawCommand)
     if lastgarage[source] then
         for k,v in pairs(current_routing) do
             if v == source then
-                print('added',tonumber(args[1]))
                 garageshare[tonumber(args[1])] = {}
                 garageshare[tonumber(args[1])].owner = xPlayer.identifier
                 garageshare[tonumber(args[1])].route = k
@@ -1025,20 +1043,15 @@ end)
 
 RegisterServerEvent('renzu_garage:transfercar')
 AddEventHandler('renzu_garage:transfercar', function(plate,id)
-    if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    else
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    end
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
-    local transfer = ESX.GetPlayerFromId(id)
+    local transfer = ESX.GetPlayerFromIdentifier(id)
     if id == nil then
         xPlayer.showNotification("Invalid User ID! (Must be Digits only)", 1, 0)
     else
         if plate and transfer then
             local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate and owner = @owner LIMIT 1', {
-                ['@plate'] = plate:upper(),
+                ['@plate'] = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper(),
                 ['@owner'] = xPlayer.identifier
             })
             if #result > 0 then
@@ -1048,6 +1061,15 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
                 })
                 xPlayer.showNotification("You Transfer the car with plate #"..plate.." to "..transfer.name.."", 1, 0)
                 transfer.showNotification("You Receive a car with plate #"..plate.." from "..xPlayer.name.."", 1, 0)
+
+                -- update statebag
+                local newtransfer = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(plate) = @plate', {['@plate'] = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()}) or {}
+                if newtransfer[1] then
+                    local tempvehicles = GlobalState.GVehicles
+                    tempvehicles[plate] = newtransfer[1]
+                    GlobalState.GVehicles = tempvehicles
+                    print(plate,'Newly Transfer Vehicles Found..Updating Key system')
+                end
             else
                 xPlayer.showNotification("This Vehicle is not your property", 1, 0)
             end
@@ -1067,4 +1089,31 @@ AddEventHandler('onResourceStop', function(resourceName)
         SetPlayerRoutingBucket(k,0)
     end
     print('The resource ' .. resourceName .. ' was stopped.')
-end)  
+end)
+
+RegisterServerEvent('statebugupdate')
+AddEventHandler('statebugupdate', function(name,value,net)
+    local ent = Entity(NetworkGetEntityFromNetworkId(net)).state
+    ent[name] = value
+end)
+
+AddEventHandler('entityCreated', function(entity)
+    local entity = entity
+    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then
+        Wait(4000)
+        local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
+        local ent = Entity(entity).state
+        ent.unlock = true
+        ent.hotwired = false
+        ent.havekeys = false
+        if not GlobalState.GVehicles[plate] then
+            local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
+            if new_spawned[1] then
+                local tempvehicles = GlobalState.GVehicles
+                tempvehicles[plate] = new_spawned[1]
+                GlobalState.GVehicles = tempvehicles
+                print(plate,'Newly Owned Vehicles Found..Adding to Key system')
+            end
+        end
+    end
+  end)
