@@ -155,6 +155,7 @@ AddEventHandler('renzu_garage:GetVehiclesTable', function()
     local xPlayer = ESX.GetPlayerFromId(src)
     local ply = Player(src).state
     local identifier = ply.garagekey or xPlayer.identifier
+    print(ply.garagekey,identifier)
     --local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
     local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = identifier})
     TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
@@ -718,7 +719,8 @@ ESX.RegisterServerCallback('renzu_garage:getgaragekeys', function (source, cb)
             table.insert(players,x)
         end
     end
-    cb(json.decode(result[1] ~= nil and result[1].keys) or false,players)
+    local keys = result[1] ~= nil and json.decode(result[1].keys) or false
+    cb(keys,players)
 end)
 
 RegisterNetEvent('renzu_garage:updategaragekeys')
