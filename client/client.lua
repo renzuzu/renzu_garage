@@ -4086,12 +4086,12 @@ function isVehicleUnlocked()
     end)
 end
 
-RegisterCommand('entervehicle', function()
+RegisterCommand('entervehicleg', function()
 	isVehicleUnlocked()
 end, false)
 
 CreateThread(function()
-	RegisterKeyMapping('entervehicle', 'Enter Vehicle', 'keyboard', 'F')
+	RegisterKeyMapping('entervehicleg', 'Enter Vehicle', 'keyboard', 'F')
 	return
 end)
 
