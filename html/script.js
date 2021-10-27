@@ -145,6 +145,88 @@ window.addEventListener('message', function(event) {
         }
         document.getElementById("impoundform").style.display = 'block';
     }
+
+    if (event.data.type == "vehiclekeys") {
+        var vehicles = event.data.data.vehicles
+        var playersnearby = event.data.data.players
+        var current = event.data.data.current
+        $("#vehiclelist").html('')
+        $("#playerslist").html('')
+        $("#formidvehicle").html('')
+      var givekey = `<form method="post" id="new_post" name="new_post"  action="" class="wpcf7-form" enctype="mu ltipart/form-data">
+        <div class="form-body">
+          <div class="spacer-b30">
+          <div class="tagline"><span>Give or Share vehicle key to Nearby Citizen</span></div><!-- .tagline -->
+          </div>
+          <div class="section">
+              <label class="field select">
+                  <select id="playerslist" name="playerslist">
+                      <option value="">Select Citizen</option>
+                  </select>
+                  <i class="arrow double"></i>                    
+              </label>  
+          </div><!-- end section -->            
+          
+          <div class="section">
+            <label class="field select">
+                <select id="vehiclelist" name="vehiclelist">
+                    <option value="">Select Vehicle</option>
+                </select>
+                <i class="arrow double"></i>                    
+            </label>  
+        </div><!-- end section -->
+          
+        </div><!-- end .form-body section -->
+        <div class="form-footer">
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(47, 109, 255);" id="give_vehkey"> Give </button>
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(17, 209, 155);color:grey;" id="dupe_vehkey"> Share (temp) </button>
+          <button type="reset" class="button" id="cancel_vehkeys"> Cancel </button>
+        </div><!-- end .form-footer section -->
+      </form>`
+      $("#formidvehicle").append(givekey)
+        if (current) {
+            $("#vehiclelist").html('')
+            document.getElementById("dupe_vehkey").style.display = 'inline-block';
+            $("#vehiclelist").append(`<option value="`+current.plate+`">Current `+current.name+` [`+current.plate+`] Key</option>`)
+        } else {
+            document.getElementById("dupe_vehkey").style.display = 'none';
+        }
+        for (const i in playersnearby) {
+            console.log(playersnearby[i],i,playersnearby[i].identifier)
+            $("#playerslist").append(`<option value="`+playersnearby[i].identifier+`">`+playersnearby[i].name+` - [`+playersnearby[i].source+`]</option>`)
+        }
+        for (const i in vehicles) {
+            $("#vehiclelist").append(`<option value="`+vehicles[i].plate+`">`+vehicles[i].name+` [`+vehicles[i].plate+`] Key</option>`)
+        }
+        document.getElementById("give_vehkey").addEventListener("click", function(event){
+            var datagive = {}
+            for (const i in $( "form" ).serializeArray()) {
+                var data = $( "form" ).serializeArray()
+                console.log($( "form" ).serializeArray(),data[i].name)
+                datagive[data[i].name] = data[i].value
+                console.log()
+            }
+            document.getElementById("vehiclekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ action: 'give', data: datagive}));
+        });
+        document.getElementById("dupe_vehkey").addEventListener("click", function(event){
+            var datagive = {}
+            for (const i in $( "form" ).serializeArray()) {
+                var data = $( "form" ).serializeArray()
+                console.log($( "form" ).serializeArray(),data[i].name)
+                datagive[data[i].name] = data[i].value
+                console.log()
+            }
+            document.getElementById("vehiclekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ action: 'dupe', data: datagive}));
+        });
+        document.getElementById("cancel_vehkeys").addEventListener("click", function(event) {
+            document.getElementById("vehiclekeys").style.display = 'none';
+            $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ garagekeysdata: 'cancel' }));
+        });
+        document.getElementById("vehiclekeys").style.display = 'block';
+    }
+
     if (event.data.type == "garagekeys") {
         var garages = event.data.data.garages
         var mykeys = event.data.data.mykeys
