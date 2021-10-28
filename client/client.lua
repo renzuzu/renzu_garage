@@ -3768,7 +3768,7 @@ RegisterNUICallback("receive_garagekeys", function(data, cb)
     garagekeysdata = data
 end)
 
-RegisterCommand('garagekeys', function(source, args, rawCommand)
+RegisterCommand(Config.GarageKeysCommand, function(source, args, rawCommand)
     ESX.TriggerServerCallback("renzu_garage:getgaragekeys",function(sharedkeys,players)
         if Config.GarageKeys and PlayerData.job ~= nil then
             local ped = PlayerPedId()
@@ -4006,78 +4006,95 @@ function isVehicleUnlocked()
         while true do
             local sleep = 0
             if Config.EnableKeySystem then
-                if Config.LockAllLocalVehicle then
-                    if veh then
-                        EnsureEntityStateBag(veh)
-                        plate = GetVehicleNumberPlateText(veh)
-                        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
-                        local ent = Entity(veh).state
-                        --ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or false
-                        if not ent.havekeys then
-                            ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] or false
-                            if ent.hotwired and ent.havekeys then
-                                ent.hotwired = false
-                                ent:set('hotwired', false, true)
-                                TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
-                                ent:set('havekeys', false, true)
-                                TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
-                                Wait(200)
-                                ent.havekeys = true
-                                SetVehicleEngineOn(veh,false,true,false)
-                                SetVehicleNeedsToBeHotwired(veh,false)
-                                Wait(100)
-                            end
-                        elseif GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
+                if veh then
+                    EnsureEntityStateBag(veh)
+                    plate = GetVehicleNumberPlateText(veh)
+                    plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
+                    local ent = Entity(veh).state
+                    --ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or false
+                    if not ent.havekeys then
+                        ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] or false
+                        if ent.hotwired and ent.havekeys then
+                            ent.hotwired = false
+                            ent:set('hotwired', false, true)
+                            TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
+                            ent:set('havekeys', false, true)
+                            TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
+                            Wait(200)
+                            ent.havekeys = true
                             SetVehicleEngineOn(veh,false,true,false)
                             SetVehicleNeedsToBeHotwired(veh,false)
-                            if ent.hotwired then
-                                ent.hotwired = false
-                                ent:set('hotwired', false, true)
-                                TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
-                                ent:set('havekeys', false, true)
-                                TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
-                                Wait(200)
-                                ent.havekeys = true
-                                SetVehicleEngineOn(veh,false,true,false)
-                                SetVehicleNeedsToBeHotwired(veh,false)
-                                Wait(100)
-                            end
+                            Wait(100)
                         end
-                        if not ent.unlock then
-                            SetVehicleDoorsLocked(veh, 2)
+                    elseif GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
+                        SetVehicleEngineOn(veh,false,true,false)
+                        SetVehicleNeedsToBeHotwired(veh,false)
+                        if ent.hotwired then
+                            ent.hotwired = false
+                            ent:set('hotwired', false, true)
+                            TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
+                            ent:set('havekeys', false, true)
+                            TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
+                            Wait(200)
+                            ent.havekeys = true
+                            SetVehicleEngineOn(veh,false,true,false)
+                            SetVehicleNeedsToBeHotwired(veh,false)
+                            Wait(100)
+                        end
+                    end
+                    if not ent.unlock and Config.LockAllLocalVehicle 
+                    or not ent.unlock and GetEntityPopulationType(veh) == 7 and not Config.LockAllLocalVehicle then 
+                        SetVehicleDoorsLocked(veh, 2)
+                    else
+                        if not Config.LockAllLocalVehicle and GetEntityPopulationType(veh) ~= 7 then
+                            local driver = GetPedInVehicleSeat(veh, -1)
+                            if not DoesEntityExist(driver) and Config.LockParkedLocalVehiclesOnly and GetLastPedInVehicleSeat(veh,-1) ~= PlayerPedId() then
+                                SetVehicleDoorsLocked(veh, 2)
+                            else
+                                ent.unlock = true
+                                SetVehicleEngineOn(veh,false,true,true)
+                                SetVehicleNeedsToBeHotwired(veh,false)
+                                SetVehicleDoorsLocked(veh, 7)
+                                while GetIsVehicleEngineRunning(veh) do Wait(100) SetVehicleEngineOn(veh,false,true,true) end
+                            end
                         else
                             SetVehicleDoorsLocked(veh, 1)
                         end
-                        sleep = 1
-                        if not ent.havekeys then
-                            SetVehicleEngineOn(veh,false,true,true)
-                        end
-                        if ent.unlock and not ent.havekeys then
-                            local c = 0
-                            while not GetPedInVehicleSeat(veh,-1) == PlayerPedId() or c < 50 do if GetPedInVehicleSeat(veh,-1) == PlayerPedId() then break end Wait(100) c = c + 1 end
-                        end
-                        if ent.unlock and not ent.havekeys and GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) then
-                            SetVehicleEngineOn(veh,false,true,true)
-                            while GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) do
-                                ShowFloatingHelpNotification('[H] to Hot Wire Vehicle <br> [F] to Cancel', GetEntityCoords(veh), true, 'hotwire')
-                                if IsControlJustPressed(0,74) then
-                                    HotWireVehicle(veh)
-                                    Wait(1000)
-                                end
-                                Wait(0)
-                            end
-                            SetVehicleNeedsToBeHotwired(veh,true)
-                        end
-                        if ent.unlock and ent.havekeys and ent.hotwired and GetSeatPedIsTryingToEnter(PlayerPedId()) == -1 then
-                            SetVehicleEngineOn(veh,false,true,false)
-                            SetVehicleNeedsToBeHotwired(veh,true)
-                        end
-                        if ent.unlock and not ent.havekeys and not ent.hotwired then
-                            SetVehicleEngineOn(veh,false,true,true)
-                            SetVehicleNeedsToBeHotwired(veh,false)
-                        end
-                        break
                     end
+                    sleep = 1
+                    if not ent.havekeys then
+                        SetVehicleEngineOn(veh,false,true,true)
+                    end
+                    if ent.unlock and not ent.havekeys then
+                        local c = 0
+                        while not GetPedInVehicleSeat(veh,-1) == PlayerPedId() or c < 70 do SetVehicleEngineOn(veh,false,true,true) if GetPedInVehicleSeat(veh,-1) == PlayerPedId() then break end Wait(100) c = c + 1 end
+                    end
+                    Wait(100)
+                    if Config.EnableHotwire and ent.unlock and not ent.havekeys and GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) then
+                        SetVehicleEngineOn(veh,false,true,true)
+                        while GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) do
+                            ShowFloatingHelpNotification('[H] to Hot Wire Vehicle <br> [F] to Cancel', GetEntityCoords(veh), true, 'hotwire')
+                            if IsControlJustPressed(0,74) then
+                                HotWireVehicle(veh)
+                                Wait(1000)
+                            end
+                            Wait(0)
+                        end
+                        SetVehicleNeedsToBeHotwired(veh,true)
+                    end
+                    if ent.unlock and ent.havekeys and ent.hotwired and GetSeatPedIsTryingToEnter(PlayerPedId()) == -1 then
+                        SetVehicleEngineOn(veh,false,true,false)
+                        SetVehicleNeedsToBeHotwired(veh,true)
+                    end
+                    if ent.unlock and not ent.havekeys and not ent.hotwired then
+                        SetVehicleEngineOn(veh,false,true,true)
+                        SetVehicleNeedsToBeHotwired(veh,false)
+                    end
+                    if not Config.EnableHotwire then
+                        SetVehicleEngineOn(veh,false,true,false)
+                        SetVehicleNeedsToBeHotwired(veh,false)
+                    end
+                    break
                 end
             end
             Wait(sleep)
@@ -4234,19 +4251,29 @@ function Keyless()
     TriggerEvent('renzu_notify:Notify', 'info','Garage', 'No Owned Vehicles in area')
 end
 
-RegisterCommand('keyless', function()
+RegisterCommand('keyless'..Config.CarlockKey, function()
 	Keyless()
 end, false)
 
 CreateThread(function()
-	RegisterKeyMapping('keyless', 'Lock Vehicle', 'keyboard', 'L')
+	RegisterKeyMapping('keyless'..Config.CarlockKey, 'Lock Vehicle', 'keyboard', Config.CarlockKey)
 	return
 end)
 
 -- LOCKPICK
-RegisterCommand('lockpick', function()
-	LockPick()
-end, false)
+CreateThread(function()
+    if Config.EnableLockpickCommand then
+        RegisterCommand(Config.LockpickCommand, function()
+            LockPick()
+        end, false)
+    end
+    return
+end)
+
+RegisterNetEvent('renzu_garage:lockpick')
+AddEventHandler('renzu_garage:lockpick', function()
+    LockPick()
+end)
 
 function HotWireVehicle(veh)
     SetVehicleNeedsToBeHotwired(veh,false)
@@ -4262,7 +4289,7 @@ function HotWireVehicle(veh)
             name = "machinic_loop_mechandplayer",
             flag = 49,
         }
-        local ret = exports.renzu_lockgame:CreateGame(5,o,true)
+        local ret = exports.renzu_lockgame:CreateGame(Config.HotwireLevel,o,true)
         if ret then
             SetVehicleEngineOn(veh,false,true,false)
             SetVehicleNeedsToBeHotwired(veh,true)
@@ -4272,16 +4299,19 @@ function HotWireVehicle(veh)
             TriggerServerEvent('statebugupdate','havekeys',true, VehToNet(veh))
             TriggerServerEvent('statebugupdate','hotwired',true, VehToNet(veh))
             break
+        elseif Config.EnableAlert then
+            Config.FailAlert()
         end
     end
 end
 
 function LockPick()
+    if not Config.EnableLockpick then return end
     local veh = getveh()
     if veh ~= 0 then
         local ent = Entity(veh).state
         if not ent.unlock then
-            local ret = exports.renzu_lockgame:CreateGame(3)
+            local ret = exports.renzu_lockgame:CreateGame(Config.LockpickLevel)
             if ret then
                 ent.unlock = not ent.unlock
                 ent:set('unlock', ent.unlock, true)
@@ -4289,6 +4319,9 @@ function LockPick()
                 SetVehicleDoorsLocked(veh, 1)
                 HotWireVehicle(veh)
             else
+                if Config.EnableAlert then
+                    Config.FailAlert()
+                end
                 SetVehicleAlarmTimeLeft(veh,20)
                 SetVehicleAlarm(veh,true)
                 StartVehicleAlarm(veh)
@@ -4306,7 +4339,7 @@ RegisterNUICallback("receive_vehiclekeys", function(data, cb)
     vehiclekeysdata = data
 end)
 
-RegisterCommand('vehiclekeys', function(source, args, rawCommand)
+RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
     ESX.TriggerServerCallback("renzu_garage:getgaragekeys",function(sharedkeys,players)
         if Config.GarageKeys and PlayerData.job ~= nil then
             local ped = PlayerPedId()
@@ -4326,7 +4359,7 @@ RegisterCommand('vehiclekeys', function(source, args, rawCommand)
             end
             SendNUIMessage(
                 {
-                    data = {vehicles = vehicles, players = players, current = IsPedInAnyVehicle(PlayerPedId()) and vehicles[plate] or false},
+                    data = {vehicles = vehicles, players = players, current = Config.EnableDuplicateKeys and IsPedInAnyVehicle(PlayerPedId()) and vehicles[plate] or false},
                     type = "vehiclekeys"
                 }
             )

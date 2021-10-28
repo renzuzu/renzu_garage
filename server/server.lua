@@ -1141,4 +1141,8 @@ AddEventHandler('entityCreated', function(entity)
             end
         end
     end
-  end)
+end)
+
+ESX.RegisterUsableItem(Config.LockpickItem, function(source)
+    TriggerClientEvent('renzu_garage:lockpick', source)
+end)

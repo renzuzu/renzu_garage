@@ -46,9 +46,36 @@ Config.MeterProp = {
 }
 Config.MeterPayment = 5000
 
+-- FEAT 1.71, a lot of functions here used One Sync State bags, One Sync must be enable
+
+-- GarageKeys
+Config.GarageKeysCommand = 'garagekeys' -- command to call garagekeys UI
+
 -- Vehicle Keys --
-Config.EnableKeySystem = true
-Config.LockAllLocalVehicle = true
-Config.EnableLockpick = true
+Config.VehicleKeysCommand = 'vehiclekeys' -- command to call vehiclekeys ui
+Config.EnableKeySystem = true -- Main Key System Config, if this is disable , a lot of feature of lock and hotwire will not work
+Config.LockAllLocalVehicle = true -- lock all vehicles in area if not unlocked state (This are not looped, its being locked only when you Press F) (if you are using F Keybind in other script, this might not work properly) ex. in renzu_hud, F is being used, you may need to disable it there.
+Config.LockParkedLocalVehiclesOnly = true -- if this is true and Config.LockAllLocalVehicle is true, its useless, this is useful if Config.LockAllLocalVehicle is false and this is true
+Config.EnableLockpick = true -- enable lock pick item and command function
 Config.EnableDuplicateKeys = true -- Carlock Purpose and to bypass hotwired
-Config.GiveKeysCommand = 'transfer' -- give keys to other player (transfer vehicle)
+
+--Hotwire
+Config.EnableHotwire = true -- enable hotwire if keys is not present in state
+Config.HotwireLevel = 5 -- how many pins to complete (renzu_lockgame) https://github.com/renzuzu/renzu_lockgame
+-- Lockpick
+Config.EnableLockpickCommand = true -- enable / disable command
+Config.LockpickCommand = 'lockpick' -- command name
+Config.LockpickItem = 'lockpick' -- itemname -- makesure you register this
+Config.LockpickLevel = 3 -- how many pins to complete
+-- Fail Alert
+Config.EnableAlert = true
+Config.AlertJob = 'police'
+Config.FailAlert = function() -- linden outlaw alert are preconfigured (please correct this , i might be wrong) https://github.com/thelindat/linden_outlawalert
+  local data = {displayCode = '211', description = 'Carjacking', isImportant = 0, recipientList = {Config.AlertJob}, length = '10000', infoM = 'fa-info-circle', info = 'Ongoing Carnapping'}
+  local dispatchData = {dispatchData = data, caller = 'Alarm', coords = GetEntityCoords(PlayerPedId())}
+  TriggerEvent('wf-alerts:svNotify', dispatchData)
+  print("SENT ALERT")
+end
+
+-- Carlock
+Config.CarlockKey = 'L' -- Keyboard (changable in keybinds FIVEM setting)
