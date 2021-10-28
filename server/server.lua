@@ -1101,8 +1101,16 @@ end)
 
 RegisterServerEvent('statebugupdate')
 AddEventHandler('statebugupdate', function(name,value,net)
-    local ent = Entity(NetworkGetEntityFromNetworkId(net)).state
+    local vehicle = NetworkGetEntityFromNetworkId(net)
+    local ent = Entity(vehicle).state
     ent[name] = value
+    if name == 'unlock' then
+        local val = 1
+        if not value then
+            val = 2
+        end
+        SetVehicleDoorsLocked(vehicle,tonumber(val))
+    end
 end)
 
 AddEventHandler('entityCreated', function(entity)

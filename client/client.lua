@@ -4225,6 +4225,7 @@ function Keyless()
         if ent.unlock then
             ent.havekeys = true
             ent:set('unlock', true, true)
+            SetVehicleDoorsLocked(nearestveh,1)
             TriggerServerEvent('statebugupdate','unlock',true, VehToNet(nearestveh))
             --local payload = msgpack_pack(v)
             --SetStateBagValue(es, s, payload, payload:len(), r)
@@ -4237,6 +4238,7 @@ function Keyless()
         else
             ent.havekeys = false
             ent:set('unlock', false, true)
+            SetVehicleDoorsLocked(nearestveh,2)
             TriggerServerEvent('statebugupdate','unlock',false, VehToNet(nearestveh))
             TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(nearestveh))
             StartVehicleHorn(nearestveh, 11, "HELDDOWN", false)
