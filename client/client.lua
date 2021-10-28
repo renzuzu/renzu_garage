@@ -4171,24 +4171,29 @@ function Keyless()
     local nearestveh = nil
     local nearestplate = nil
     for k,v in pairs(vehiclesinarea) do
-        if near == -1 or near > v.distance and v.owner then
-            near = v.distance
-            nearestveh = v.entity
-            nearestplate = v.plate
-            if v.owner and near < 60 then
+        local ent = Entity(v.entity).state
+        if v.owner == PlayerData.identifier and near == -1  -- iterate 1st time checks if owned
+        or near == -1 and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate 1st time check if shared
+        or near > v.distance and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate distance checks and checked if shared
+        or near > v.distance and v.owner == PlayerData.identifier then -- iterate distance checks and checked if owned
+            if v.owner and near > v.distance or v.owner and near == -1 then
+                near = v.distance
+                nearestveh = v.entity
+                nearestplate = v.plate
                 nearestowner = v.owner
             end
         end
     end
+    if not nearestveh then return end
     EnsureEntityStateBag(nearestveh)
     -- check nearest owned vehicle
     local ent = Entity(nearestveh).state
     if GlobalState.GVehicles[nearestplate] and GlobalState.GVehicles[nearestplate].owner == PlayerData.identifier -- player owned
-    or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] == GlobalState.GVehicles[nearestplate].owner then -- shared vehicle
+    or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] then -- shared vehicle
         PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)
         if not IsPedInAnyVehicle(PlayerPedId(), false) then 
-        playanimation('anim@mp_player_intmenu@key_fob@','fob_click')
-        SetVehicleLights(nearestveh, 2);Citizen.Wait(100);SetVehicleLights(nearestveh, 0);Citizen.Wait(200);SetVehicleLights(nearestveh, 2)
+            playanimation('anim@mp_player_intmenu@key_fob@','fob_click')
+            SetVehicleLights(nearestveh, 2);Citizen.Wait(100);SetVehicleLights(nearestveh, 0);Citizen.Wait(200);SetVehicleLights(nearestveh, 2)
         end
 		Citizen.Wait(100)
 		SetVehicleLights(nearestveh, 0)	
@@ -4197,7 +4202,7 @@ function Keyless()
         --ent:set('unlock', ent.havekeys, true)
         SetVehicleDoorsLocked(nearestveh, 1)
         if not IsPedInAnyVehicle(PlayerPedId(), false) then
-        SetVehicleEngineOn(nearestveh,false,true,false)
+            SetVehicleEngineOn(nearestveh,false,true,false)
         end
         ent.unlock = not ent.unlock
         if ent.unlock then

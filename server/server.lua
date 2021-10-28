@@ -6,6 +6,7 @@ local default_routing = {}
 local current_routing = {}
 local lastgarage = {}
 local impound_G = {}
+local jobplates = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
@@ -13,6 +14,13 @@ Citizen.CreateThread(function()
     GlobalState.VehicleinDb = vehicles
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
     globalvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles', {}) or {}
+    for k,v in pairs(garagecoord) do
+        if v.job and v.default_vehicle then
+            for k2,v2 in pairs(v.default_vehicle) do
+                jobplates[v2.plateprefix] = true
+            end
+        end
+    end
     local tempvehicles = {}
     for k,v in ipairs(globalvehicles) do
         local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
@@ -1106,6 +1114,7 @@ AddEventHandler('entityCreated', function(entity)
         ent.unlock = true
         ent.hotwired = false
         ent.havekeys = false
+        ent.share = {}
         if not GlobalState.GVehicles[plate] then
             local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
@@ -1113,6 +1122,22 @@ AddEventHandler('entityCreated', function(entity)
                 tempvehicles[plate] = new_spawned[1]
                 GlobalState.GVehicles = tempvehicles
                 print(plate,'Newly Owned Vehicles Found..Adding to Key system')
+            end
+        end
+        local plyid = NetworkGetEntityOwner(entity)
+        if plyid then
+            for k,v in pairs(jobplates) do
+                if string.find(plate, k) then
+                    local share = {}
+                    local xPlayer = ESX.GetPlayerFromId(plyid)
+                    if xPlayer then
+                        local tempvehicles = GlobalState.GVehicles
+                        tempvehicles[plate] = {plate = plate, name = "Vehicle", owner = xPlayer.identifier}
+                        GlobalState.GVehicles = tempvehicles
+                        share[xPlayer.identifier] = true
+                        ent.share = share
+                    end
+                end
             end
         end
     end
