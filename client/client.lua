@@ -4186,15 +4186,19 @@ function Keyless()
     if GlobalState.GVehicles[nearestplate] and GlobalState.GVehicles[nearestplate].owner == PlayerData.identifier -- player owned
     or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] == GlobalState.GVehicles[nearestplate].owner then -- shared vehicle
         PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)
+        if not IsPedInAnyVehicle(PlayerPedId(), false) then 
         playanimation('anim@mp_player_intmenu@key_fob@','fob_click')
         SetVehicleLights(nearestveh, 2);Citizen.Wait(100);SetVehicleLights(nearestveh, 0);Citizen.Wait(200);SetVehicleLights(nearestveh, 2)
+        end
 		Citizen.Wait(100)
 		SetVehicleLights(nearestveh, 0)	
         ent:set('hotwired', false, true)
         TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(nearestveh))
         --ent:set('unlock', ent.havekeys, true)
         SetVehicleDoorsLocked(nearestveh, 1)
+        if not IsPedInAnyVehicle(PlayerPedId(), false) then
         SetVehicleEngineOn(nearestveh,false,true,false)
+        end
         ent.unlock = not ent.unlock
         if ent.unlock then
             ent.havekeys = true
