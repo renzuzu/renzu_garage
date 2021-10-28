@@ -1125,7 +1125,7 @@ AddEventHandler('entityCreated', function(entity)
             end
         end
         local plyid = NetworkGetEntityOwner(entity)
-        if plyid then
+        if plyid and not GlobalState.GVehicles[plate] then
             for k,v in pairs(jobplates) do
                 if string.find(plate, k) then
                     local share = {}
