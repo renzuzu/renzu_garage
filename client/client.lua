@@ -1138,6 +1138,7 @@ CreateThread(function()
                                     SetEntityCollision(spawned_cars[park.plate],false)
                                     return
                                 end)
+                                SetVehicleDoorsLocked(spawned_cars[park.plate],2)
                             elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < 5 then
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],0)
                                 SetEntityCollision(spawned_cars[park.plate],true)
@@ -3995,6 +3996,7 @@ CreateThread(function()
                         SetEntityCollision(meter_cars[vehicle.plate],false)
                         return
                     end)
+                    SetVehicleDoorsLocked(meter_cars[vehicle.plate],2)
                 end
                 if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and PlayerData.identifier == v.identifier then
                     SetVehicleDoorsLocked(meter_cars[vehicle.plate],0)
