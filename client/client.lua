@@ -51,22 +51,7 @@ Citizen.CreateThread(function()
         TriggerServerEvent('renzu_garage:GetParkedVehicles')
     end
     for k, v in pairs (garagecoord) do
-        local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
-        SetBlipSprite (blip, v.Blip.sprite)
-        SetBlipDisplay(blip, 4)
-        SetBlipScale  (blip, v.Blip.scale)
-        SetBlipColour (blip, v.Blip.color)
-        SetBlipAsShortRange(blip, true)
-        BeginTextCommandSetBlipName('STRING')
-        if Config.BlipNamesStatic then
-            AddTextComponentSubstringPlayerName("Garage")
-        else
-            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
-        end
-        EndTextCommandSetBlipName(blip)
-    end
-    if Config.EnableImpound then
-        for k, v in pairs (impoundcoord) do
+        if v.job ~= nil and v.job == PlayerData.job.name or v.job == nil then
             local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
             SetBlipSprite (blip, v.Blip.sprite)
             SetBlipDisplay(blip, 4)
@@ -75,11 +60,30 @@ Citizen.CreateThread(function()
             SetBlipAsShortRange(blip, true)
             BeginTextCommandSetBlipName('STRING')
             if Config.BlipNamesStatic then
-                AddTextComponentSubstringPlayerName("Impound")
+                AddTextComponentSubstringPlayerName("Garage")
             else
                 AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
             end
             EndTextCommandSetBlipName(blip)
+        end
+    end
+    if Config.EnableImpound then
+        for k, v in pairs (impoundcoord) do
+            if PlayerData.job ~= nil and JobImpounder[PlayerData.job.name] ~= nil then
+                local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
+                SetBlipSprite (blip, v.Blip.sprite)
+                SetBlipDisplay(blip, 4)
+                SetBlipScale  (blip, v.Blip.scale)
+                SetBlipColour (blip, v.Blip.color)
+                SetBlipAsShortRange(blip, true)
+                BeginTextCommandSetBlipName('STRING')
+                if Config.BlipNamesStatic then
+                    AddTextComponentSubstringPlayerName("Impound")
+                else
+                    AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+                end
+                EndTextCommandSetBlipName(blip)
+            end
         end
     end
     for k, v in pairs (private_garage) do
