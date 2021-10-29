@@ -1121,6 +1121,7 @@ CreateThread(function()
                                 --local posZ = coord.z + 999.0
                                 --_,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
                                 spawned_cars[park.plate] = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 0, 0)
+                                while not DoesEntityExist(spawned_cars[park.plate]) do Wait(100) end
                                 SetEntityHeading(spawned_cars[park.plate], coord.heading)
                                 SetVehicleProp(spawned_cars[park.plate], json.decode(park.vehicle))
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],2)
@@ -3977,6 +3978,7 @@ CreateThread(function()
                     --_,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
                     while IsAnyVehicleNearPoint(parkcoord.x,parkcoord.y,parkcoord.z,1.1) do local nearveh = GetClosestVehicle(vector3(parkcoord.x,parkcoord.y,parkcoord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                     meter_cars[vehicle.plate] = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 0, 0)
+                    while not DoesEntityExist(meter_cars[vehicle.plate]) do Wait(100) end
                     SetEntityCollision(meter_cars[vehicle.plate],false)
                     FreezeEntityPosition(meter_cars[vehicle.plate], true)
                     SetEntityHeading(meter_cars[vehicle.plate], parkcoord.w)
