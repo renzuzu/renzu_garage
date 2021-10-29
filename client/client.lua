@@ -2892,7 +2892,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                             share[PlayerData.identifier] = true
                         end
                         ent.share = share
-                        LocalPlayer.state:set('share', share, true)
+                        ent:set('share', share, true)
                         TriggerServerEvent('statebugupdate','share',share, VehToNet(v))
                     end
                     for k,v in pairs(spawnedgarage) do
@@ -3434,7 +3434,7 @@ RegisterNUICallback(
                     share[PlayerData.identifier] = true
                 end
                 ent.share = share
-                LocalPlayer.state:set('share', share, true)
+                ent:set('share', share, true)
                 TriggerServerEvent('statebugupdate','share',share, VehToNet(veh))
             end
             Wait(100)
