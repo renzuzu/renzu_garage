@@ -7,13 +7,40 @@ local current_routing = {}
 local lastgarage = {}
 local impound_G = {}
 local jobplates = {}
+local sharedgarage = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
+    print("^2 -------- renzu_garage v1.71 Starting.. ----------^7")
+    print("^2 Checking vehicles table ^7")
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
+    print("^2 vehicles ok ^7")
     GlobalState.VehicleinDb = vehicles
+    print("^2 Checking owned_vehicles isparked column table ^7")
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
+    print("^2 owned_vehicles isparked column ok ^7")
     globalvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles', {}) or {}
+    print("^2 Checking garagekeys table ^7")
+    local resgaragekeys = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys', {})
+    print("^2 garagekeys table ok ^7")
+    if resgaragekeys and resgaragekeys[1] then
+        print("^2 saving garagekeys data ^7")
+        for k,v in pairs(resgaragekeys) do
+            if v.identifier and v.keys then
+                local garagekey = json.decode(v.keys) or {}
+                if garagekey then
+                    for k2,v2 in pairs(garagekey) do
+                        if v2.identifier then
+                            if not sharedgarage[v.identifier] then sharedgarage[v.identifier] = {} end
+                            sharedgarage[v.identifier][v2.identifier] = v2.garages
+                        end
+                    end
+                end
+            end
+        end
+        print("^2 garagekeys data saved ^7")
+    end
+    print("^2 saving job prefix plates data ^7")
     for k,v in pairs(garagecoord) do
         if v.job and v.default_vehicle then
             for k2,v2 in pairs(v.default_vehicle) do
@@ -21,6 +48,7 @@ Citizen.CreateThread(function()
             end
         end
     end
+    print("^2 job prefixes plates data saved ^7")
     local tempvehicles = {}
     for k,v in ipairs(globalvehicles) do
         local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
@@ -38,18 +66,25 @@ Citizen.CreateThread(function()
     end
     GlobalState.GVehicles = tempvehicles 
     tempvehicles = nil
+    print("^2 Checking parking_meter table ^7")
     parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+    print("^2 parking_meter table ok ^7")
+    print("^2 Checking impound_garage table ^7")
     impoundget = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM impound_garage', {})
+    print("^2 impound_garage table ok ^7")
     for k,v in pairs(impoundget) do
         impound_G[v.garage] = json.decode(v.data) or {}
     end
+    print("^2 Auto Import impound_garage table default data ^7")
     for k,v in pairs(impoundcoord) do
         MysqlGarage(Config.Mysql,'execute','INSERT IGNORE INTO impound_garage (garage, data) VALUES (@garage, @data)', {
             ['@garage']   = v.garage,
             ['@data']   = '[]'
         })
     end
+    print("^2 impound_data Import success ^7")
     Wait(100)
+    print("^2 -------- renzu_garage v1.71 Started ----------^7")
     if Config.UseRayZone then
         local garages = {} -- garage table
         garages['multi_zone'] = {} -- rayzone multizone
@@ -177,14 +212,31 @@ function MysqlGarage(plugin,type,query,var)
 end
 
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
-AddEventHandler('renzu_garage:GetVehiclesTable', function()
+AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid)
     local src = source 
     local xPlayer = ESX.GetPlayerFromId(src)
     local ply = Player(src).state
     local identifier = ply.garagekey or xPlayer.identifier
+    local sharegarage = false
+    if ply.garagekey and garageid and sharedgarage[xPlayer.identifier] and sharedgarage[xPlayer.identifier][ply.garagekey] then
+        for k,v in pairs(sharedgarage[xPlayer.identifier][ply.garagekey]) do
+            if garageid == v then
+                sharegarage = v
+            end
+        end
+        if not sharegarage then
+            identifier = xPlayer.identifier
+            sharegarage = garageid
+        end
+    end
     --local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
-    local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = identifier})
-    TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
+    if sharegarage then
+        local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner AND garage_id = @garage_id', {['@owner'] = identifier, ['@garage_id'] = sharegarage})
+        TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
+    else
+        local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = identifier})
+        TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
+    end
 end)
 
 RegisterServerEvent('renzu_garage:GetVehiclesTableImpound')

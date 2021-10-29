@@ -1219,7 +1219,7 @@ AddEventHandler('opengarage', function()
                     garageid = v.garage
                     tid = k
                     TriggerEvent('renzu_notify:Notify', 'info','Garage', "Opening Garage...Please wait..")
-                    TriggerServerEvent("renzu_garage:GetVehiclesTable")
+                    TriggerServerEvent("renzu_garage:GetVehiclesTable",garageid)
                     fetchdone = false
                     while not fetchdone do
                         Wait(0)
@@ -3245,7 +3245,7 @@ AddEventHandler('renzu_garage:property', function(i, propertycoord, index, spawn
     --CloseNui()
     myoldcoords = propertycoord
     propertyspawn = spawncoord
-    TriggerServerEvent("renzu_garage:GetVehiclesTable")
+    TriggerServerEvent("renzu_garage:GetVehiclesTable",garageid)
     while not fetchdone do
         Wait(0)
     end
