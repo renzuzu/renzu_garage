@@ -21,6 +21,7 @@ local coordcache = {}
 local propertyspawn = {}
 local lastcat = nil
 local deleting = false
+local housingcustom = nil
 meter_cars = {}
 Citizen.CreateThread(function()
     Wait(1000)
@@ -100,6 +101,21 @@ Citizen.CreateThread(function()
             AddTextComponentSubstringPlayerName("Garage: "..v.name.."")
         end
         EndTextCommandSetBlipName(blip)
+    end
+    if Config.EnablePropertyCoordGarageCoord and Config.HousingBlips then
+        for k,v in pairs(HousingGarages) do
+            local vec = vector3(v.garage.x,v.garage.y,v.garage.z)
+            local name = 'Garage House #'..k
+            local blip = AddBlipForCoord(v.garage.x,v.garage.y,v.garage.z)
+            SetBlipSprite (blip, 524)
+            SetBlipDisplay(blip, 5)
+            SetBlipScale  (blip, 0.4)
+            SetBlipColour (blip, 2)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName(""..name.."")
+            EndTextCommandSetBlipName(blip)
+        end
     end
 end)
 
@@ -228,14 +244,19 @@ local drawsleep = 1
 function DrawInteraction(i,v,reqdist,msg,event,server,var,disablemarker)
     local i = i
     if not markers[i] and i ~= nil and not inGarage then
+        local ped = PlayerPedId()
+        local inveh = IsPedInAnyVehicle(ped)
         Citizen.CreateThread(function()
             markers[i] = true
             --local reqdist = reqdist[2]
             local coord = v
-            local dist = #(GetEntityCoords(PlayerPedId()) - coord)
+            local dist = #(GetEntityCoords(ped) - coord)
             while dist < reqdist[2] do
+                if inveh ~= IsPedInAnyVehicle(ped) then
+                    break
+                end
                 drawsleep = 1
-                dist = #(GetEntityCoords(PlayerPedId()) - coord)
+                dist = #(GetEntityCoords(ped) - coord)
                 if not disablemarker then
                     DrawMarker(27, coord.x,coord.y,coord.z-0.8, 0, 0, 0, 0, 0, 0, 0.7, 0.7, 0.7, 200, 255, 255, 255, 0, 0, 1, 1, 0, 0, 0)
                 end
@@ -341,6 +362,32 @@ CreateThread(function()
                     end
                 end
             end
+            if Config.EnablePropertyCoordGarageCoord then
+                for k,v in pairs(HousingGarages) do
+                    local vec = vector3(v.garage.x,v.garage.y,v.garage.z)
+                    local req_dis = 3
+                    local dist = #(vec - mycoord)
+                    if dist < 10 then
+                        tid = k
+                        garageid = 'garage_'..k
+                        neargarage = true
+                        if GlobalState.HousingGarages[garageid] ~= nil and GlobalState.HousingGarages[garageid] == PlayerData.identifier then
+                            if IsPedInAnyVehicle(PlayerPedId()) then
+                                print("in vehicle")
+                                msg = 'Press [E] Store Vehicle'
+                                DrawInteraction(garageid,vec,{10,15},msg,'renzu_garage:storeprivatehouse',false,garageid,false)
+                            else
+                                msg = 'Press [E] House Garage #'..k
+                                DrawInteraction(garageid,vec,{10,15},msg,'renzu_garage:gotohousegarage',true,{v.shell, {},false,garageid,vector4(v.garage.x,v.garage.y,v.garage.z,v.garage.w)},false)
+                            end
+                        else
+                            msg = 'Press [E] Buy House Garage #'..k
+                            DrawInteraction(garageid,vec,{10,15},msg,'renzu_garage:buygarage',true,garageid,false)
+                        end
+                        --PopUI(v.garage,vec)
+                    end
+                end
+            end
             Wait(1000)
         end
     end
@@ -413,14 +460,15 @@ function AntiDupe(coords, hash,x,y,z,w,prop)
 end
 
 RegisterNetEvent('renzu_garage:ingarage')
-AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id, vehicle_)
+AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id, vehicle_,housing)
+    housingcustom = housing
     DoScreenFadeOut(1)
     SetEntityCoords(PlayerPedId(),garage.coords.x,garage.coords.y,garage.coords.z,true)
     SetEntityHeading(PlayerPedId(),garage.coords.w)
     Wait(1000)
     DoScreenFadeIn(200)
     currentprivate = garage_id
-    local table = json.decode(table.vehicles)
+    local table = json.decode(table ~= nil and table.vehicles or '[]')
 	Wait(500)
     for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
         vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
@@ -760,7 +808,11 @@ AddEventHandler('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
         newprop = GetVehicleProperties(vehicle)
         while carrymode do
             newprop = GetVehicleProperties(vehicle)
-            local vec = private_garage[currentprivate].garage_inventory
+            local shell = currentprivate
+            if not private_garage[garage_id] then
+                shell = housingcustom.shell
+            end
+            local vec = private_garage[shell].garage_inventory
             local distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
             if distance < 3 then
                 local table = {
@@ -876,12 +928,18 @@ AddEventHandler('renzu_garage:choose', function(table,garage)
             Citizen.Wait(10)
         end
     end
-    local vehicle = CreateVehicle(table.model,garage.buycoords.x,garage.buycoords.y,garage.buycoords.z,garage.buycoords.w,true,true)
+    local vehicle
+    if housingcustom then
+        vehicle = CreateVehicle(table.model,housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z,housingcustom.housing.w,true,true)
+    else
+        vehicle = CreateVehicle(table.model,garage.buycoords.x,garage.buycoords.y,garage.buycoords.z,garage.buycoords.w,true,true)
+    end
     SetVehicleBobo(vehicle)
     SetVehicleProp(vehicle, table)
     NetworkFadeInEntity(vehicle,1)
     Wait(10)
     TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
+    housingcustom = nil
 	DoScreenFadeIn(333)
 end)
 
@@ -929,8 +987,13 @@ AddEventHandler('renzu_garage:exitgarage', function(table,exit)
     TriggerServerEvent('renzu_garage:exitgarage',table)
     else
         DoScreenFadeOut(1)
-        SetEntityCoords(PlayerPedId(),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
-        Wait(500)
+        if housingcustom then
+            SetEntityCoords(PlayerPedId(),housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z,true)
+        else
+            SetEntityCoords(PlayerPedId(),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
+        end
+        Wait(3500)
+        housingcustom = nil
         DoScreenFadeIn(100)
     end
 end)
@@ -3239,6 +3302,15 @@ function SpawnChopperLocal(model, props)
 end
 
 myoldcoords = nil
+
+RegisterNetEvent('renzu_garage:storeprivatehouse')
+AddEventHandler('renzu_garage:storeprivatehouse', function(i, propertycoord, index, spawncoord)
+    local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
+    ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
+    print("store private")
+    TriggerServerEvent('renzu_garage:storeprivate',i,v, prop)
+end)
+
 RegisterNetEvent('renzu_garage:property')
 AddEventHandler('renzu_garage:property', function(i, propertycoord, index, spawncoord)
     local i = i
@@ -3418,7 +3490,7 @@ RegisterNUICallback(
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
             CloseNui()
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
-            SetVehicleEngineHealth(veh,props.engineHealth)
+            SetVehicleEngineHealth(veh,props.engineHealth or 1000.0)
             if sharedvehicle then
                 local ent = Entity(veh).state
                 while ent.share == nil do Wait(100) end

@@ -976,19 +976,19 @@ border-color: #41EFB6;
 
 
 .wrap{
-  max-width: 50vw;
+  max-width: 40vw;
   margin: 0 auto;
   position: relative;
   padding: 0 20px;
-  height: 385px;
+  height: 355px;
   background: #080808e0;
   border-radius: 20px;
   margin-top: 20px;
-  margin-left: 100px;
+  margin-left: 10px;
   color: #d8d6d6;
   font-size: 12px;
-  font-family: revert;
-  font-weight: 100;
+  font-family: 'Roboto';
+  font-weight: 500;
 }
 .section-title h1{
     margin: 0;

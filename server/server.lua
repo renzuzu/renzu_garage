@@ -8,10 +8,11 @@ local lastgarage = {}
 local impound_G = {}
 local jobplates = {}
 local sharedgarage = {}
+local housegarage = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
-    print("^2 -------- renzu_garage v1.71 Starting.. ----------^7")
+    print("^2 -------- renzu_garage v1.72 Starting.. ----------^7")
     print("^2 Checking vehicles table ^7")
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
     print("^2 vehicles ok ^7")
@@ -40,6 +41,18 @@ Citizen.CreateThread(function()
         end
         print("^2 garagekeys data saved ^7")
     end
+
+    local housingtemp = {}
+    local result_housing = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage', {})
+    if result_housing and result_housing[1] then
+        for k,v in pairs(result_housing) do
+            if v.garage then
+                housingtemp[v.garage] = v.identifier
+            end
+        end
+    end
+    GlobalState.HousingGarages = housingtemp
+    
     print("^2 saving job prefix plates data ^7")
     for k,v in pairs(garagecoord) do
         if v.job and v.default_vehicle then
@@ -436,16 +449,44 @@ AddEventHandler('renzu_garage:buygarage', function(id,v)
     local src = source  
     local xPlayer = ESX.GetPlayerFromId(src)
     local identifier = xPlayer.identifier
-    if xPlayer.getMoney() >= v.cost then
-        MysqlGarage(Config.Mysql,'execute','INSERT INTO private_garage (identifier, garage, vehicles) VALUES (@identifier, @garage, @vehicles)', {
-            ['@identifier']   = xPlayer.identifier,
-            ['@garage']   = id,
-            ['@vehicles'] = '[]'
+    local cost = 10000
+    local canbuy = true
+    if string.find(id, 'garage_') then
+        local available = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
+            ['@garage'] = id
         })
-        xPlayer.removeMoney(v.cost)
-        TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Purchase this Garage ('..id..')')
-    else
-        TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'not enough money')
+        if available and available[1] then
+            canbuy = false
+        end
+    end
+    if canbuy then
+        if type(v) ~= 'table' then
+            local shellcost = 10000
+            local houseid = string.gsub(id, 'garage_', '')
+            for k,v in pairs(HousingGarages) do
+                if tonumber(houseid) == tonumber(k) then
+                    print(v.shell,HouseGarageCost[v.shell])
+                    shellcost = HouseGarageCost[v.shell] or 10000
+                end
+            end
+            cost = shellcost
+        else
+            cost = v.cost
+        end
+        if xPlayer.getMoney() >= cost then
+            MysqlGarage(Config.Mysql,'execute','INSERT INTO private_garage (identifier, garage, vehicles) VALUES (@identifier, @garage, @vehicles)', {
+                ['@identifier']   = xPlayer.identifier,
+                ['@garage']   = id,
+                ['@vehicles'] = '[]'
+            })
+            xPlayer.removeMoney(cost)
+            TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Purchase this Garage ('..id..')')
+            local housingtemp = GlobalState.HousingGarages or {}
+            housingtemp[id] = xPlayer.identifier
+            GlobalState.HousingGarages = housingtemp
+        else
+            TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'not enough money')
+        end
     end
 end)
 
@@ -466,7 +507,17 @@ end
 
 RegisterServerEvent('renzu_garage:storeprivate')
 AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
-    local id = id
+    if not private_garage[id] then
+        local shelltype = 'small'
+        local houseid = string.gsub(id, 'garage_', '')
+        for k,v in pairs(HousingGarages) do
+            if tonumber(houseid) == tonumber(k) then
+                shelltype = v.shell
+            end
+        end
+        housegarage[id] = {shell = shelltype, id = id, housing = housing}
+    end
+    local id = housegarage[id] ~= nil and housegarage[id].id or id
     local prop = prop
     local src = source  
     local xPlayer = ESX.GetPlayerFromId(src)
@@ -495,7 +546,11 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
         end
     end
     if newgarage then
-        local pgarage = deepcopy(private_garage[id].park)
+        local shell = id
+        if housegarage[id] ~= nil then
+            shell = housegarage[id].shell
+        end
+        local pgarage = deepcopy(private_garage[shell].park)
         for k,v in pairs(pgarage) do
             vehiclesgarage[k] = v
             if v.vehicle == nil then vehiclesgarage[k].taken = false end
@@ -526,6 +581,63 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
     else
         TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'There is not enough space in this garage')
     end
+end)
+
+RegisterServerEvent('renzu_garage:gotohousegarage')
+AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
+    id,v,share,houseid,housing = table.unpack(var)
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local identifier = xPlayer.identifier
+    if share and not DoiOwnthis(xPlayer,houseid) then
+        identifier = v.owner
+    end
+    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
+        ['@identifier'] = identifier,
+        ['@garage'] = houseid
+    })
+    if not result[1] then
+        MysqlGarage(Config.Mysql,'execute','INSERT INTO private_garage (identifier, garage, vehicles) VALUES (@identifier, @garage, @vehicles)', {
+            ['@identifier']   = xPlayer.identifier,
+            ['@garage']   = houseid,
+            ['@vehicles'] = '[]'
+        })
+        result = {identifier = xPlayer.identifier, garage = houseid, vehicles = '[]'}
+    end
+    local routing = 0
+    local haveworld = false
+    for k,v in pairs(current_routing) do
+        if tonumber(v) == tonumber(source) then
+            haveworld = true
+            routing = tonumber(k)
+        end
+    end
+    if not haveworld then
+        default_routing[source] = GetPlayerRoutingBucket(source)
+    end
+    if not share and not haveworld then
+        for route = default_routing[source]+100, 65000 do
+            routing = route
+            if current_routing[route] == nil then
+                break
+            end
+        end
+    elseif share then
+        routing = v.route
+    end
+    SetPlayerRoutingBucket(source,routing)
+    if not share and not haveworld then
+        current_routing[routing] = source
+    end
+    Wait(1000)
+    lastgarage[source] = houseid
+	local vehicle_ = {}
+	for k,v in pairs(json.decode(result[1] and result[1].vehicles or '[]')) do
+		vehicle_[k] = v
+	end
+    housegarage[houseid] = {shell = id, id = houseid, housing = housing}
+    TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],houseid, vehicle_,housegarage[houseid])
+
 end)
 
 RegisterServerEvent('renzu_garage:gotogarage')
