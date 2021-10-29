@@ -20,6 +20,8 @@ local jobgarages = {}
 local coordcache = {}
 local propertyspawn = {}
 local lastcat = nil
+local deleting = false
+meter_cars = {}
 Citizen.CreateThread(function()
     Wait(1000)
     coordcache = garagecoord
@@ -43,9 +45,9 @@ Citizen.CreateThread(function()
 	end
 
 	PlayerData = ESX.GetPlayerData()
-    Wait(3000)
+    Wait(2000)
     if Config.Realistic_Parking then
-        playerloaded = true
+        while not LocalPlayer.state.loaded do Wait(100) end
         TriggerServerEvent('renzu_garage:GetParkedVehicles')
     end
     for k, v in pairs (garagecoord) do
@@ -100,6 +102,9 @@ end)
 RegisterNetEvent('esx:playerLoaded')
 AddEventHandler('esx:playerLoaded', function(xPlayer)
     playerloaded = true
+    Wait(1000)
+    LocalPlayer.state:set( 'loaded', true, true)
+    LocalPlayer.state.loaded = true
     if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
         for k, v in pairs (helispawn[PlayerData.job.name]) do
             local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
@@ -109,7 +114,7 @@ AddEventHandler('esx:playerLoaded', function(xPlayer)
             SetBlipColour (blip, v.Blip.color)
             SetBlipAsShortRange(blip, true)
             BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName("Garage: "..v.garage.."")
+            AddTextComponentSubstringPlayerName(""..v.garage.."")
             EndTextCommandSetBlipName(blip)
         end
     end
@@ -141,14 +146,16 @@ end)
 local parkedvehicles = {}
 RegisterNetEvent('renzu_garage:update_parked')
 AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
-    Wait(2000)
+    deleting = true
+    Wait(1500)
     if p then
         parkmeter = p
         for k,v in pairs(meter_cars) do
-            if tostring(k, '^%s*(.-)%s*$', '%1'):upper() == tostring(plate, '^%s*(.-)%s*$', '%1'):upper() then
+            if string.gsub(tostring(k), '^%s*(.-)%s*$', '%1') == string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1') then
                 ent = v
                 meter_cars[tostring(k, '^%s*(.-)%s*$', '%1'):upper()] = nil
                 ReqAndDelete(ent)
+                print('delete')
             end
         end
     end
@@ -156,13 +163,14 @@ AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
     Wait(100)
     if plate ~= nil then
         for k,v in pairs(spawned_cars) do
-            if tostring(k, '^%s*(.-)%s*$', '%1'):upper() == plate then
+            if string.gsub(tostring(k), '^%s*(.-)%s*$', '%1') == string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1') then
                 ent = v
                 spawned_cars[k] = nil
                 ReqAndDelete(ent)
             end
         end
     end
+    deleting = false
 end)
 
 local drawtext = false
@@ -261,6 +269,7 @@ function DrawZuckerburg(name,v,reqdist)
 end
 
 CreateThread(function()
+    while not LocalPlayer.state.loaded do Wait(100) end
     while PlayerData.job == nil do Wait(100) end
     Wait(500)
     if not Config.UsePopUI and Config.floatingtext then
@@ -994,6 +1003,7 @@ end)
 
 CreateThread(function()
     Wait(500)
+    while not LocalPlayer.state.loaded do Wait(100) end
     while Config.Private_Garage do
         for k,v in pairs(private_garage) do
             local distance = #(GetEntityCoords(PlayerPedId()) - vector3(v.buycoords.x,v.buycoords.y,v.buycoords.z))
@@ -1024,6 +1034,7 @@ end)
 
 CreateThread(function()
     Wait(2500)
+    while not LocalPlayer.state.loaded do Wait(100) end
     while Config.Realistic_Parking do
         for k,v in pairs(parking) do
             local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
@@ -1040,6 +1051,7 @@ CreateThread(function()
                             if IsControlPressed(0,Config.ParkButton) then
                                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
                                 vehicleProps = GetVehicleProperties(vehicle)
+                                vehicleProps.plate = string.gsub(tostring(vehicleProps.plate), '^%s*(.-)%s*$', '%1')
                                 local coord = {
                                     heading = GetEntityHeading(vehicle),
                                     x = GetEntityCoords(vehicle).x,
@@ -1074,9 +1086,7 @@ end)
 
 CreateThread(function()
     Wait(500)
-    while not playerloaded do
-        Wait(100)
-    end
+    while not LocalPlayer.state.loaded do Wait(100) end
     while Config.Realistic_Parking do
         for k,v in pairs(parking) do
             local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
@@ -1091,9 +1101,10 @@ CreateThread(function()
                     for k,park in pairs(parked) do
                         local coord = json.decode(park.park_coord)
                         local vehicle_coord = vector3(coord.x,coord.y,coord.z)
-                        park.plate = park.plate:upper()
+                        park.plate = string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1')
                         if #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < v.Dist then
                             if spawned_cars[park.plate] == nil then
+                                while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                                 local hash = tonumber(json.decode(park.vehicle).model)
                                 local count = 0
                                 if not HasModelLoaded(hash) then
@@ -1127,12 +1138,13 @@ CreateThread(function()
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],0)
                                 SetEntityCollision(spawned_cars[park.plate],true)
                                 if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park.owner then
-                                    ReqAndDelete(spawned_cars[park.plate])
                                     TriggerServerEvent("renzu_garage:unpark", park.plate, 0, tonumber(json.decode(park.vehicle).model))
                                     Wait(100)
+                                    while DoesEntityExist(spawned_cars[park.plate]) do Wait(1) end
                                     --spawned_cars[park.plate] = nil
                                     local hash = tonumber(json.decode(park.vehicle).model)
                                     local count = 0
+                                    while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                                     if not HasModelLoaded(hash) then
                                         RequestModel(hash)
                                         while not HasModelLoaded(hash) and count < 111 do
@@ -3658,6 +3670,8 @@ end
 function ReqAndDelete(object, detach)
 	if DoesEntityExist(object) then
 		NetworkRequestControlOfEntity(object)
+        SetEntityCollision(object, false, false)
+        SetEntityAlpha(object, 0.0, true)
 		local attempt = 0
 		while not NetworkHasControlOfEntity(object) and attempt < 100 and DoesEntityExist(object) do
 			NetworkRequestControlOfEntity(object)
@@ -3854,8 +3868,6 @@ function Spawn_Vehicle_Forward(veh, coords)
     Spawn_Vehicle_Forward(veh, move_coords)
 end
 
-meter_cars = {}
-
 function Park()
     local closestparkingmeter = nil
     local vehicle = GetVehiclePedIsIn(PlayerPedId())
@@ -3898,11 +3910,13 @@ end)
 
 CreateThread(function()
     Wait(2500)
+    while not LocalPlayer.state.loaded do Wait(100) end
     while Config.ParkingMeter do
         for k,v in pairs(parkmeter) do
             local parkcoord = json.decode(v.park_coord)
             local coord = GetEntityCoords(PlayerPedId())
             local vehicle = json.decode(v.vehicle)
+            vehicle.plate = string.gsub(vehicle.plate, '^%s*(.-)%s*$', '%1')
             if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 50 then
                 if meter_cars[vehicle.plate] == nil then
                     local hash = tonumber(vehicle.model)
@@ -3916,7 +3930,10 @@ CreateThread(function()
                     end
                     --local posZ = coord.z + 999.0
                     --_,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
+                    while IsAnyVehicleNearPoint(parkcoord.x,parkcoord.y,parkcoord.z,1.1) do local nearveh = GetClosestVehicle(vector3(parkcoord.x,parkcoord.y,parkcoord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                     meter_cars[vehicle.plate] = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 0, 0)
+                    SetEntityCollision(meter_cars[vehicle.plate],false)
+                    FreezeEntityPosition(meter_cars[vehicle.plate], true)
                     SetEntityHeading(meter_cars[vehicle.plate], parkcoord.w)
                     SetVehicleProp(meter_cars[vehicle.plate], vehicle)
                     SetVehicleDoorsLocked(meter_cars[vehicle.plate],2)
@@ -3942,12 +3959,14 @@ CreateThread(function()
                         FreezeEntityPosition(meter_cars[vehicle.plate], false)
                         SetEntityCollision(meter_cars[vehicle.plate],true)
                         if GetVehiclePedIsIn(PlayerPedId()) == meter_cars[vehicle.plate] then
-                            ReqAndDelete(meter_cars[vehicle.plate])
+                            --ReqAndDelete(meter_cars[vehicle.plate])
                             TriggerServerEvent("renzu_garage:getparkmeter", vehicle.plate, 0, tonumber(vehicle.model))
                             Wait(100)
+                            while DoesEntityExist(meter_cars[vehicle.plate]) do Wait(1) end
                             --spawned_cars[park.plate] = nil
                             local hash = tonumber(vehicle.model)
                             local count = 0
+                            while IsAnyVehicleNearPoint(parkcoord.x,parkcoord.y,parkcoord.z,1.1) do local nearveh = GetClosestVehicle(vector3(parkcoord.x,parkcoord.y,parkcoord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                             if not HasModelLoaded(hash) then
                                 RequestModel(hash)
                                 while not HasModelLoaded(hash) and count < 111 do
@@ -3956,20 +3975,22 @@ CreateThread(function()
                                 end
                             end
                             myveh = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 1, 1)
+                            FreezeEntityPosition(myveh, true)
+                            SetEntityCollision(myveh,false)
                             SetVehicleBobo(myveh)
                             SetEntityHeading(myveh, parkcoord.w)
                             --FreezeEntityPosition(myveh, true)
                             -- SetEntityCollision(spawned_cars[park.plate],false)
-                            FreezeEntityPosition(meter_cars[vehicle.plate], false)
-                            SetEntityCollision(meter_cars[vehicle.plate],true)
                             SetVehicleProp(myveh, vehicle)
                             NetworkFadeInEntity(myveh,1)
                             TaskWarpPedIntoVehicle(PlayerPedId(), myveh, -1)
                             TriggerEvent('renzu_notify:Notify', 'info','Garage', 'Vehicle Unparked')
                             Wait(2500)
+                            FreezeEntityPosition(myveh, false)
+                            SetEntityCollision(myveh,true)
                             meter_cars[vehicle.plate] = nil
                         end
-                        Wait(1000)
+                        Wait(2000)
                     end
                 end
             elseif meter_cars[vehicle.plate] then
