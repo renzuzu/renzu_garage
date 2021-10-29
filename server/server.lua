@@ -726,7 +726,14 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
         elseif result and result[1].stored ~= nil then
             local stored = result[1].stored
             local impound = result[1].impound
-            cb(stored,impound,garage_impound,impound_fee)
+            local sharedvehicle = false
+            if stored then
+                local ply = Player(source).state
+                if ply.garagekey and ply.garagekey ~= xPlayer.identifier then -- sharing, taking out other vehicle
+                    sharedvehicle = true
+                end
+            end
+            cb(stored,impound,garage_impound or false,impound_fee,sharedvehicle)
         end
     end
 end)
@@ -789,7 +796,7 @@ AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
                 ['@keys']   = json.encode(result),
             })
         end
-        TriggerClientEvent('renzu_notify:Notify',xPlayer.source 'success','Garage', 'You receive a Garage Key from '..sender.name)
+        TriggerClientEvent('renzu_notify:Notify',xPlayer.source, 'success','Garage', 'You receive a Garage Key from '..sender.name)
     elseif action == 'del' then
         local xPlayer = ESX.GetPlayerFromId(source)
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
@@ -1099,7 +1106,7 @@ AddEventHandler('onResourceStop', function(resourceName)
     print('The resource ' .. resourceName .. ' was stopped.')
 end)
 
-RegisterServerEvent('statebugupdate')
+RegisterServerEvent('statebugupdate') -- this will be removed once syncing of statebug from client is almost instant
 AddEventHandler('statebugupdate', function(name,value,net)
     local vehicle = NetworkGetEntityFromNetworkId(net)
     local ent = Entity(vehicle).state

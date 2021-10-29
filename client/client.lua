@@ -2843,7 +2843,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
             vp = GetVehicleProperties(vehicle)
             plate = vp.plate
             model = GetEntityModel(vehicle)
-            ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee)
+            ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
                 if stored and impound == 0 or not Config.EnableReturnVehicle or string.find(garageid, "impound") then
                     local tempcoord = garagecoord
                     if string.find(garageid, "impound") then tempcoord = impoundcoord end
@@ -2875,6 +2875,26 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     veh = v
                     DoScreenFadeIn(333)
                     TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, garageid, vp.model, vp)
+                    if sharedvehicle then
+                        local ent = Entity(v).state
+                        while ent.share == nil do Wait(100) end
+                        ent.haskeys = false
+                        ent.hotwired = false
+                        ent.unlock = true
+                        local share = ent.share or {}
+                        local add = true
+                        for k,v in pairs(share) do
+                            if k == v.PlayerData.identifier then
+                                add = false
+                            end
+                        end
+                        if add then
+                            share[PlayerData.identifier] = true
+                        end
+                        ent.share = share
+                        LocalPlayer.state:set('share', share, true)
+                        TriggerServerEvent('statebugupdate','share',share, VehToNet(v))
+                    end
                     for k,v in pairs(spawnedgarage) do
                         ReqAndDelete(v)
                     end
@@ -3327,7 +3347,7 @@ RegisterNUICallback(
             end
         end
         local veh = nil
-    ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee)
+    ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
         if stored and impound == 0 or ispolice and string.find(garageid, "impound") or not Config.EnableReturnVehicle and impound ~= 1 or impound == 1 and not Config.EnableImpound then
             local tempcoord = {}
             if propertygarage then
@@ -3396,7 +3416,27 @@ RegisterNUICallback(
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
             CloseNui()
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
-            SetVehicleEngineHealth(v,props.engineHealth)
+            SetVehicleEngineHealth(veh,props.engineHealth)
+            if sharedvehicle then
+                local ent = Entity(veh).state
+                while ent.share == nil do Wait(100) end
+                ent.haskeys = false
+                ent.hotwired = false
+                ent.unlock = true
+                local share = ent.share or {}
+                local add = true
+                for k,v in pairs(share) do
+                    if k == v.PlayerData.identifier then
+                        add = false
+                    end
+                end
+                if add then
+                    share[PlayerData.identifier] = true
+                end
+                ent.share = share
+                LocalPlayer.state:set('share', share, true)
+                TriggerServerEvent('statebugupdate','share',share, VehToNet(veh))
+            end
             Wait(100)
             i = 0
             min = 0
