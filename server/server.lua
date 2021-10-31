@@ -64,16 +64,21 @@ Citizen.CreateThread(function()
     print("^2 job prefixes plates data saved ^7")
     local tempvehicles = {}
     for k,v in ipairs(globalvehicles) do
-        local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
-        tempvehicles[plate] = v
-        tempvehicles[plate].name = 'NULL'
+        if v.plate then
+            v.vehicle = nil
+            local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
+            tempvehicles[plate] = v
+            tempvehicles[plate].name = 'NULL'
+        end
     end
     for k,v in pairs(tempvehicles) do
         for k2,v2 in pairs(vehicles) do
-            local prop = json.decode(v.vehicle) or {model = ''}
-            if prop.model == GetHashKey(v2.model) then
-                tempvehicles[k].name = v2.name
-                break
+            if v.vehicle then
+                local prop = json.decode(v.vehicle) or {model = ''}
+                if prop.model == GetHashKey(v2.model) then
+                    tempvehicles[k].name = v2.name
+                    break
+                end
             end
         end
     end
