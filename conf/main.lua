@@ -76,7 +76,7 @@ Config.AlertJob = 'police'
 Config.FailAlert = function() -- linden outlaw alert are preconfigured (please correct this , i might be wrong) https://github.com/thelindat/linden_outlawalert
   local data = {displayCode = '211', description = 'Carjacking', isImportant = 0, recipientList = {Config.AlertJob}, length = '10000', infoM = 'fa-info-circle', info = 'Ongoing Carnapping'}
   local dispatchData = {dispatchData = data, caller = 'Alarm', coords = GetEntityCoords(PlayerPedId())}
-  TriggerEvent('wf-alerts:svNotify', dispatchData)
+  TriggerServerEvent('wf-alerts:svNotify', dispatchData)
   print("SENT ALERT")
 end
 
