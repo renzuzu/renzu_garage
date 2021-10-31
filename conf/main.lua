@@ -60,6 +60,7 @@ Config.LockAllLocalVehicle = true -- lock all vehicles in area if not unlocked s
 Config.LockParkedLocalVehiclesOnly = true -- if this is true and Config.LockAllLocalVehicle is true, its useless, this is useful if Config.LockAllLocalVehicle is false and this is true
 Config.EnableLockpick = true -- enable lock pick item and command function
 Config.EnableDuplicateKeys = true -- Carlock Purpose and to bypass hotwired
+Config.GiveKeystoMissionEntity = true -- important if you dont want to hotwire mission vehicle, eg. trucker, taxi, delivery vehicles. (this will give car lock too)
 
 --Hotwire
 Config.EnableHotwire = true -- enable hotwire if keys is not present in state
@@ -80,4 +81,4 @@ Config.FailAlert = function() -- linden outlaw alert are preconfigured (please c
 end
 
 -- Carlock
-Config.CarlockKey = 'L' -- Keyboard (changable in keybinds FIVEM setting)
+Config.CarlockKey = 'J' -- Keyboard (changable in keybinds FIVEM setting)

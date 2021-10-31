@@ -97,7 +97,7 @@ Citizen.CreateThread(function()
     end
     print("^2 impound_data Import success ^7")
     Wait(100)
-    print("^2 -------- renzu_garage v1.71 Started ----------^7")
+    print("^2 -------- renzu_garage v1.72 Started ----------^7")
     if Config.UseRayZone then
         local garages = {} -- garage table
         garages['multi_zone'] = {} -- rayzone multizone
@@ -1286,14 +1286,24 @@ end)
 
 AddEventHandler('entityCreated', function(entity)
     local entity = entity
-    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then
-        Wait(4000)
+    local havekeys = false
+    Wait(1000)
+    if Config.GiveKeystoMissionEntity and DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if vehicle is created with player (missions) eg. trucker, deliveries etc.
+        local ped = GetPedInVehicleSeat(entity,-1) ~= 0 and GetPedInVehicleSeat(entity,-1) or GetPedInVehicleSeat(entity,1) -- server native says driver seat is 1 but in my test its -1 like the client
+        local owner = NetworkGetEntityOwner(entity)
+        if GetPlayerPed(owner) == ped or #(GetEntityCoords(GetPlayerPed(owner)) - GetEntityCoords(entity)) < 80 then -- check if driver is the owner of entity or if entity is nearby to owner of entity
+            havekeys = true
+        end
+    end
+    Wait(3000)
+    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
         local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
         local ent = Entity(entity).state
         ent.unlock = true
         ent.hotwired = false
         ent.havekeys = false
         ent.share = {}
+
         if not GlobalState.GVehicles[plate] then
             local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
@@ -1315,7 +1325,22 @@ AddEventHandler('entityCreated', function(entity)
                         GlobalState.GVehicles = tempvehicles
                         share[xPlayer.identifier] = true
                         ent.share = share
+                        havekeys = false -- remove pending vehicle key sharing , already shared vehicle
                     end
+                end
+            end
+            local share = {}
+            if havekeys and DoesEntityExist(entity) then -- if vehicle is not owned and not job vehicles, we will create a temporary vehicle key sharing for the player to avoid using hotwire eg. while in truck deliveries etc... which is created like a local vehicle
+                local owner = NetworkGetEntityOwner(entity)
+                local xPlayer = ESX.GetPlayerFromId(owner)
+                print(xPlayer.identifier)
+                if xPlayer then
+                    local tempvehicles = GlobalState.GVehicles
+                    tempvehicles[plate] = {plate = plate, name = "Vehicle", owner = xPlayer.identifier}
+                    GlobalState.GVehicles = tempvehicles
+                    share[xPlayer.identifier] = true
+                    ent.share = share
+                    print(plate,'Newly Mission Vehicles Found..Adding to Key system')
                 end
             end
         end
