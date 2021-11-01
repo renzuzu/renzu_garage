@@ -4579,7 +4579,7 @@ function GarageHousing_Adv(garageID,garagecoord,spawncoord)
     if IsPedInAnyVehicle(PlayerPedId()) then -- STORE
         TriggerEvent('renzu_garage:storeprivatehouse',garageID)
     else
-        local var = {ret.shell, {},false,garageID,spawncoord)}
+        local var = {ret.shell, {},false,garageID,spawncoord}
         TriggerServerEvent('renzu_garage:gotohousegarage',garageID,var)
     end
 end
