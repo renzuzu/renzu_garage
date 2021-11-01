@@ -30,11 +30,11 @@ Config.MarkerDistance = 20 -- distance to draw the marker
 --MARKER
 
 -- PROPERTY / HOUSING GARAGE
-Config.EnablePropertyCoordGarageCoord = false  -- set to false if you will use custom exports and events
+Config.EnablePropertyCoordGarageCoord = true  -- set to false if you will use custom exports and events
 Config.HousingBlips = false
 -- TriggerEvent('renzu_garage:property',"Forum Drive 11/Apt13", vector3(-1053.82, -933.09, 3.36)) -- example manual trigger
-Config.PropertyQuickPick = true -- quickpick
-Config.UniqueProperty = true -- if enable , only stored vehicles in this Property ID will be show
+Config.PropertyQuickPick = true -- quickpick -- deprecated method 1.72
+Config.UniqueProperty = true -- if enable , only stored vehicles in this Property ID will be show -- deprecated 1.72
 Config.PrivateHousingGarageEnable = true -- will use IPL garages , small, medium, large (same with private garage) if this is false, it will use normal garage function like Public garage, quick pick menu
 
 -- PARKING METER (WIP)
