@@ -171,109 +171,30 @@ Config.HousingBlips = false
 - Share Current Vehicle Keys (enable other player to lock / unlock your vehicle and bypass hotwiring system)
 - ![image](https://user-images.githubusercontent.com/82306584/139625932-a8d19053-0e04-4f86-9454-32a475c7d33c.png)
 
-
-
-
-# SAMPLE CONFIG
-```
-    {
-        garage = "A", --LEGION
-        Dist = 10, -- distance
-        Blip = {color = 38, sprite = 289, scale = 0.6},
-        garage_x = 241.1,
-        garage_y = -757.1,
-        garage_z = 34.639263153076, -- coordinates for this garage
-        spawn_x = 245.59975585938,
-        spawn_y = -743.73449707031,
-        spawn_z = 33.954160003662,
-        heading = 154.98515319824 -- Vehicle spawn location
-    }
-
-impoundcoord = {
-    {
-        garage = "impound", --mrpd
-        job = "police",
-        Dist = 10,
-        Blip = {color = 2, sprite = 289, scale = 0.6},
-        garage_x = 459.18936157227,
-        garage_y = -1008.4532470703,
-        garage_z = 28.264139175415,
-        spawn_x = 443.25286865234,
-        spawn_y = -1013.6952514648,
-        spawn_z = 27.927909851074,
-        heading = 89.990180969238
-    }
-}
-
-heli = {
-    -- chopper models for each jobs
-    ["police"] = {
-        -- job
-        {plate = "PDHELI", model = "maverick"},
-        {plate = "PDHELI", model = "frogger"},
-        {plate = "PDHELI", model = "havoc"},
-        {plate = "PDHELI", model = "polmav"},
-        {plate = "PDHELI", model = "valkyrie"},
-        {plate = "PDHELI", model = "akula"},
-        {plate = "PDHELI", model = "buzzard"},
-        {plate = "PDHELI", model = "cargobob2"}
-    }
-}
-
-helispawn = {
-    -- coordinates for jobs helicopters
-    ["police"] = {
-        [1] = {
-            garage = "Police Chopper A",
-            Blip = {color = 38, sprite = 43, scale = 0.6},
-            coords = vector3(449.27, -981.05, 43.69),
-            distance = 15
-        }
-    }
-}
-
---JOB GARAGE
-    {
-        garage = "Police Garage", --PALETO
-        job = "police",
-        Type = "car",
-        Dist = 10,
-        Blip = {color = 38, sprite = 289, scale = 0.6},
-        garage_x = 427.20556640625,
-        garage_y = -1011.4292602539,
-        garage_z = 28.954322814941,
-        spawn_x = 432.20071411133,
-        spawn_y = -1015.4301757813,
-        spawn_z = 28.840564727783,
-        heading = 85.93824005127
-    },
- ```
  
- # Events
- 
- - Open Garage
- ```
-    open the garage/impound/jobgarage/helicopter garage from targets or controlpressed etc...
-    TriggerEvent('opengarage')
- ```
- - Open Garage From Property (any coords - the vehicle spawn coords is Random using vehicleroadnode native)
-    ```
-    TriggerEvent('renzu_garage:property',"ANY PROPERTY NAME", vector3(coords)) -- coords = property location or current ped coords
-    ```
+ # Commands
+    
 - Impound 
 ```
 usage: /impound
 any nearest vehicle will be impound (distance 2-3 radius)
 ```
-- Transfer Vehicle to Another player
+
 ```
-    /transfer [USERID]
-    eg. /transfer 5
-    userid = 5
-```
-```
-Giveaccess to player owned garage
+Giveaccess to player private owned garage
 - /giveaccess PLAYERID
+```
+
+```
+- Open Vehicle Keys UI
+- /vehiclekeys
+```
+```
+- Open Garage Keys UI
+- /garagekeys 
+- /garagekeys manage
+- /garagekeys give
+
 ```
 # TODO
  - Fix some bug
