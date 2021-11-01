@@ -264,7 +264,7 @@ AddEventHandler('renzu_garage:GetVehiclesTableImpound', function()
     local xPlayer = ESX.GetPlayerFromId(src)
     local identifier = xPlayer.identifier
     --local Impounds = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE impound = 1', {})
-    local q = 'SELECT * FROM owned_vehicles WHERE stored = 0 OR impound = 1'
+    local q = 'SELECT * FROM owned_vehicles WHERE `stored` = 0 OR impound = 1'
     if not ImpoundedLostVehicle then
         q = 'SELECT * FROM owned_vehicles WHERE impound = 1'
     end
