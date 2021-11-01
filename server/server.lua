@@ -72,12 +72,13 @@ Citizen.CreateThread(function()
             tempvehicles[plate].name = 'NULL'
         end
     end
-    for k,v in pairs(tempvehicles) do
+    for k,v in pairs(globalvehicles) do
+        local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
         for k2,v2 in pairs(vehicles) do
             if v.vehicle then
                 local prop = json.decode(v.vehicle) or {model = ''}
                 if prop.model == GetHashKey(v2.model) then
-                    tempvehicles[k].name = v2.name
+                    tempvehicles[plate].name = v2.name
                     break
                 end
             end

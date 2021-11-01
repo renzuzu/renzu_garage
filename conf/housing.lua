@@ -2105,4 +2105,29 @@ HousingGarages = {
        shell = "small",
      },
 }
-  
+exports('GetHousingGarages', function() -- return housing garage coords
+	return HousingGarages
+end)
+
+exports('GetHousingShellType', function(coord) -- return applicable and preconfigured housing garage shell
+  if coord then
+    local nearestgarage = {}
+    local nearestdist = -1
+    for k,v in pairs(HousingGarages) do
+      local dist = #(coord - vector3(v.garage.x,v.garage.y,v.garage.z))
+      if nearestdist == -1 or dist < nearestdist then
+        nearestdist = dist
+        nearestgarage.dist = dist
+        nearestgarage.coord = v.garage
+        nearestgarage.shell = v.shell
+        nearestgarage.id = k
+      end
+    end
+    return nearestgarage
+  end
+end)
+
+RegisterCommand('getneargarage', function(source, args, rawCommand)
+  local ret = exports.renzu_garage:GetHousingShellType(GetEntityCoords(PlayerPedId()))
+  print(ret.dist,ret.coord,ret.shell)
+end)

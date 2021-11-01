@@ -30,7 +30,7 @@ Config.MarkerDistance = 20 -- distance to draw the marker
 --MARKER
 
 -- PROPERTY / HOUSING GARAGE
-Config.EnablePropertyCoordGarageCoord = true -- Enable / Disable Property Coordinates, Disable this if you already using a property and you want to trigger this manually example. from your housing script
+Config.EnablePropertyCoordGarageCoord = false  -- set to false if you will use custom exports and events
 Config.HousingBlips = false
 -- TriggerEvent('renzu_garage:property',"Forum Drive 11/Apt13", vector3(-1053.82, -933.09, 3.36)) -- example manual trigger
 Config.PropertyQuickPick = true -- quickpick

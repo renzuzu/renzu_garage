@@ -4547,3 +4547,47 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
         end
     end)
 end, false)
+
+RegisterNetEvent('renzu_garage:garagehousing_basic')
+AddEventHandler('renzu_garage:garagehousing_basic', function()
+    GarageHousing_Basic()
+end)
+
+RegisterNetEvent('renzu_garage:garagehousing_advanced')
+AddEventHandler('renzu_garage:garagehousing_advanced', function(garageID,garagecoord,spawncoord) -- spawncoord must be vector4 with headings
+    GarageHousing_Basic(garageID,garagecoord,spawncoord)
+end)
+
+function GarageHousing_Basic()
+    local ret = exports.renzu_garage:GetHousingShellType(GetEntityCoords(PlayerPedId()))
+    if ret.id then
+        local garageID = "garage_"..ret.id
+        if IsPedInAnyVehicle(PlayerPedId()) then -- STORE
+            TriggerEvent('renzu_garage:storeprivatehouse',garageID)
+        else
+            local var = {ret.shell, {},false,garageID,ret.coord}
+            TriggerServerEvent('renzu_garage:gotohousegarage',garageID,var)
+        end
+    else
+        TriggerEvent('renzu_notify:Notify', 'error','Garage', 'Garage is not available in this house')
+    end
+end
+
+function GarageHousing_Adv(garageID,garagecoord,spawncoord)
+    local ret = exports.renzu_garage:GetHousingShellType(garagecoord)
+    local garageID = "garage_"..garageID
+    if IsPedInAnyVehicle(PlayerPedId()) then -- STORE
+        TriggerEvent('renzu_garage:storeprivatehouse',garageID)
+    else
+        local var = {ret.shell, {},false,garageID,spawncoord)}
+        TriggerServerEvent('renzu_garage:gotohousegarage',garageID,var)
+    end
+end
+
+exports('GarageHousing_Adv', function(garageID,garagecoord,spawncoord)
+	return GarageHousing_Adv(garageID,garagecoord,spawncoord)
+end)
+
+exports('GarageHousing_Basic', function()
+	return GarageHousing_Basic()
+end)
