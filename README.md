@@ -207,6 +207,7 @@ Giveaccess to player private owned garage
 
 # Dependency for now
 - ESX
-https://github.com/renzuzu/renzu_popui
-https://github.com/renzuzu/renzu_contextmenu
-https://github.com/renzuzu/renzu_notify
+- https://github.com/renzuzu/renzu_popui
+- https://github.com/renzuzu/renzu_contextmenu
+- https://github.com/renzuzu/renzu_notify
+- https://github.com/renzuzu/renzu_lockgame
