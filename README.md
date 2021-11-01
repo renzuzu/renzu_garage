@@ -206,7 +206,7 @@ Giveaccess to player private owned garage
  - Add Fake Plate System
 
 # Dependency for now
-- ESX
+- ESX - ALL ESX <= LEGACY
 - https://github.com/renzuzu/renzu_popui
 - https://github.com/renzuzu/renzu_contextmenu
 - https://github.com/renzuzu/renzu_notify
