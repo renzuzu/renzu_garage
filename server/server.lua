@@ -65,9 +65,10 @@ Citizen.CreateThread(function()
     local tempvehicles = {}
     for k,v in ipairs(globalvehicles) do
         if v.plate then
-            v.vehicle = nil
             local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
-            tempvehicles[plate] = v
+            tempvehicles[plate] = {}
+            tempvehicles[plate].owner = v.owner
+            tempvehicles[plate].plate = v.plate
             tempvehicles[plate].name = 'NULL'
         end
     end
