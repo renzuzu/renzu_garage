@@ -9,6 +9,7 @@ local impound_G = {}
 local jobplates = {}
 local sharedgarage = {}
 local housegarage = {}
+local globalkeys = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
@@ -41,7 +42,16 @@ Citizen.CreateThread(function()
         end
         print("^2 garagekeys data saved ^7")
     end
-
+    --checking vehicle keys
+    local vkeys = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys', {})
+    if vkeys and vkeys[1] then
+        for k,v in pairs(vkeys) do
+            if v.plate and v.keys then
+                globalkeys[v.plate] = json.decode(v.keys or '[]') or {}
+            end
+        end
+        GlobalState.Gshare = globalkeys
+    end
     local housingtemp = {}
     local result_housing = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage', {})
     if result_housing and result_housing[1] then
@@ -796,6 +806,7 @@ ESX.RegisterServerCallback('renzu_garage:parkingmeter', function (source, cb, co
     local coord = coord
     local coord2 = coord2
     local prop = prop
+    local plate = string.gsub(tostring(json.decode(prop).plate), '^%s*(.-)%s*$', '%1'):upper()
     if xPlayer.getMoney() >= Config.MeterPayment then
         local canpark = true
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT coord FROM parking_meter', {})
@@ -808,8 +819,9 @@ ESX.RegisterServerCallback('renzu_garage:parkingmeter', function (source, cb, co
             end
         end
         if canpark then
+            print(globalkeys[plate],plate,globalkeys[plate] and globalkeys[plate][xPlayer.identifier])
             MysqlGarage(Config.Mysql,'execute','INSERT INTO parking_meter (identifier, coord, park_coord, vehicle, plate) VALUES (@identifier, @coord, @park_coord, @vehicle, @plate)', {
-                ['@identifier']   = xPlayer.identifier,
+                ['@identifier']   = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
                 ['@coord']   = json.encode(coord),
                 ['@park_coord']   = json.encode(coord2),
                 ['@vehicle'] = prop,
@@ -1002,7 +1014,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
     local xPlayer = ESX.GetPlayerFromId(source)
     if xPlayer then
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
-            ['@owner'] = xPlayer.identifier,
+            ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
             ['@plate'] = plate
         })
         if #result > 0 then
@@ -1013,7 +1025,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
                         ['@vehicle'] = json.encode(props),
                         ['@garage_id'] = 'PARKED',
                         ['@plate'] = plate:upper(),
-                        ['@owner'] = xPlayer.identifier,
+                        ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
                         ['@stored'] = 0,
                         ['@park_coord'] = json.encode(coord),
                         ['@isparked'] = state
@@ -1050,11 +1062,10 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
             if result[1].vehicle ~= nil then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
-                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle , park_coord = @park_coord, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate and owner = @owner', {
+                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle , park_coord = @park_coord, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate', {
                         ['vehicle'] = result[1].vehicle,
                         ['@garage_id'] = 'A',
                         ['@plate'] = plate:upper(),
-                        ['@owner'] = xPlayer.identifier,
                         ['@stored'] = 0,
                         ['@park_coord'] = json.encode(coord),
                         ['@isparked'] = 0
@@ -1084,7 +1095,7 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local ply = Player(source).state
-    local identifier = ply.garagekey or xPlayer.identifier
+    local identifier = ply.garagekey or globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier
     if xPlayer then
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
             ['@owner'] = identifier,
@@ -1294,6 +1305,25 @@ AddEventHandler('statebugupdate', function(name,value,net)
         end
         SetVehicleDoorsLocked(vehicle,tonumber(val))
     end
+    if name == 'share' then
+        local plate = string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1')
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys WHERE `plate` = @plate', {
+            ['@plate'] = plate
+        })
+        if result[1] then
+            MysqlGarage(Config.Mysql,'execute','UPDATE vehiclekeys SET `keys` = @keys WHERE identifier = @identifier', {
+                ['@keys'] = json.encode(ent.share),
+                ['@plate'] = plate,
+            })
+        else
+            MysqlGarage(Config.Mysql,'execute','INSERT INTO vehiclekeys (`plate`,`keys`) VALUES (@plate,@keys)', {
+                ['@plate']   = plate,
+                ['@keys']   = json.encode(ent.share),
+            })
+        end
+        globalkeys[plate] = ent.share
+        GlobalState.Gshare = globalkeys
+    end
 end)
 
 AddEventHandler('entityCreated', function(entity)
@@ -1315,14 +1345,25 @@ AddEventHandler('entityCreated', function(entity)
         ent.hotwired = false
         ent.havekeys = false
         ent.share = {}
+        globalkeys[plate] = ent.share
+        GlobalState.Gshare = globalkeys
 
-        if not GlobalState.GVehicles[plate] then
+        if not GlobalState.GVehicles[plate] then -- newly purchased from any vehicle shop
             local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
                 local tempvehicles = GlobalState.GVehicles
                 tempvehicles[plate] = new_spawned[1]
                 GlobalState.GVehicles = tempvehicles
                 print(plate,'Newly Owned Vehicles Found..Adding to Key system')
+            end
+        else -- owned vehicles
+            local sharing = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
+            if sharing[1] then
+                local shared_vehicles = json.decode(sharing[1].keys or '[]') or {}
+                ent.share = shared_vehicles
+                globalkeys[plate] = ent.share
+                GlobalState.Gshare = globalkeys
+                print("found vehicle keys")
             end
         end
         local plyid = NetworkGetEntityOwner(entity)
@@ -1335,8 +1376,10 @@ AddEventHandler('entityCreated', function(entity)
                         local tempvehicles = GlobalState.GVehicles
                         tempvehicles[plate] = {plate = plate, name = "Vehicle", owner = xPlayer.identifier}
                         GlobalState.GVehicles = tempvehicles
-                        share[xPlayer.identifier] = true
+                        share[xPlayer.identifier] = xPlayer.identifier
                         ent.share = share
+                        globalkeys[plate] = ent.share
+                        GlobalState.Gshare = globalkeys
                         havekeys = false -- remove pending vehicle key sharing , already shared vehicle
                     end
                 end
@@ -1345,13 +1388,14 @@ AddEventHandler('entityCreated', function(entity)
             if havekeys and DoesEntityExist(entity) then -- if vehicle is not owned and not job vehicles, we will create a temporary vehicle key sharing for the player to avoid using hotwire eg. while in truck deliveries etc... which is created like a local vehicle
                 local owner = NetworkGetEntityOwner(entity)
                 local xPlayer = ESX.GetPlayerFromId(owner)
-                print(xPlayer.identifier)
                 if xPlayer then
                     local tempvehicles = GlobalState.GVehicles
                     tempvehicles[plate] = {plate = plate, name = "Vehicle", owner = xPlayer.identifier}
                     GlobalState.GVehicles = tempvehicles
-                    share[xPlayer.identifier] = true
+                    share[xPlayer.identifier] = xPlayer.identifier
                     ent.share = share
+                    globalkeys[plate] = ent.share
+                    GlobalState.Gshare = globalkeys
                     print(plate,'Newly Mission Vehicles Found..Adding to Key system')
                 end
             end

@@ -1205,7 +1205,8 @@ CreateThread(function()
                             elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < 5 then
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],0)
                                 SetEntityCollision(spawned_cars[park.plate],true)
-                                if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park.owner then
+                                if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park.owner
+                                or GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and GlobalState.Gshare and GlobalState.Gshare[park.plate] and GlobalState.Gshare[park.plate][PlayerData.identifier] and GlobalState.Gshare[park.plate][PlayerData.identifier] then
                                     TriggerServerEvent("renzu_garage:unpark", park.plate, 0, tonumber(json.decode(park.vehicle).model))
                                     Wait(100)
                                     while DoesEntityExist(spawned_cars[park.plate]) do Wait(1) end
@@ -4079,7 +4080,8 @@ CreateThread(function()
                     end)
                     SetVehicleDoorsLocked(meter_cars[vehicle.plate],2)
                 end
-                if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and PlayerData.identifier == v.identifier then
+                if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and PlayerData.identifier == v.identifier -- originally owned
+                or #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and GlobalState.Gshare and GlobalState.Gshare[vehicle.plate] and GlobalState.Gshare[vehicle.plate][PlayerData.identifier] and GlobalState.Gshare[vehicle.plate][PlayerData.identifier] then -- shared vehicle keys
                     SetVehicleDoorsLocked(meter_cars[vehicle.plate],0)
                     while #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and meter_cars[vehicle.plate] ~= nil do
                         coord = GetEntityCoords(PlayerPedId())
@@ -4338,6 +4340,8 @@ function Keyless()
         if v.owner == PlayerData.identifier and near == -1  -- iterate 1st time checks if owned
         or near == -1 and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate 1st time check if shared
         or near > v.distance and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate distance checks and checked if shared
+        or near == -1 and GlobalState.Gshare and GlobalState.Gshare[v.plate] and GlobalState.Gshare[v.plate][PlayerData.identifier] and GlobalState.Gshare[v.plate][PlayerData.identifier] -- check if identifier included in global keys
+        or near > v.distance and GlobalState.Gshare and GlobalState.Gshare[v.plate] and GlobalState.Gshare[v.plate][PlayerData.identifier] and GlobalState.Gshare[v.plate][PlayerData.identifier] -- check if identifier included in global keys
         or near > v.distance and v.owner == PlayerData.identifier then -- iterate distance checks and checked if owned
             if v.owner and near > v.distance or v.owner and near == -1 then
                 near = v.distance
@@ -4352,7 +4356,8 @@ function Keyless()
     -- check nearest owned vehicle
     local ent = Entity(nearestveh).state
     if GlobalState.GVehicles[nearestplate] and GlobalState.GVehicles[nearestplate].owner == PlayerData.identifier -- player owned
-    or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] then -- shared vehicle
+    or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
+    or GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
         PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)
         if not IsPedInAnyVehicle(PlayerPedId(), false) then 
             playanimation('anim@mp_player_intmenu@key_fob@','fob_click')
