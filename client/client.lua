@@ -2852,7 +2852,8 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
             end
             TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
             veh = vehicle
-            TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, gid, vp.model, vp)
+            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+            end,vp.plate, 0, gid, vp.model, vp)
             spawnedgarage = {}
             TriggerEvent('renzu_popui:closeui')
             if property then
@@ -2938,7 +2939,8 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     TaskWarpPedIntoVehicle(PlayerPedId(), v, -1)
                     veh = v
                     DoScreenFadeIn(333)
-                    TriggerServerEvent("renzu_garage:changestate", vp.plate, 0, garageid, vp.model, vp)
+                    ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+                    end,vp.plate, 0, garageid, vp.model, vp)
                     if sharedvehicle then
                         local ent = Entity(v).state
                         while ent.share == nil do Wait(100) end
@@ -3140,11 +3142,11 @@ AddEventHandler('renzu_garage:store', function(i)
     if garageid == nil then
     garageid = 'A'
     end
-    -- if impound then
-    -- garageid = 'impound'
-    -- end
-    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps)
-    DeleteEntity(GetVehiclePedIsIn(PlayerPedId(), 0))
+    ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+        if ret then
+            DeleteEntity(GetVehiclePedIsIn(PlayerPedId(), 0))
+        end
+    end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps)
 end)
 
 function Storevehicle(vehicle,impound, impound_data)
@@ -3158,8 +3160,11 @@ function Storevehicle(vehicle,impound, impound_data)
     Wait(100)
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
     Wait(2000)
-    TriggerServerEvent("renzu_garage:changestate", vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {})
-    DeleteEntity(vehicle)
+    ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+        if ret then
+            DeleteEntity(vehicle)
+        end
+    end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {})
     neargarage = false
 end
 
@@ -3484,7 +3489,8 @@ RegisterNUICallback(
             while veh == nil do
                 Citizen.Wait(10)
             end
-            TriggerServerEvent("renzu_garage:changestate", props.plate, 0, garageid, props.model, props)
+            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+            end,props.plate, 0, garageid, props.model, props)
             LastVehicleFromGarage = nil
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
             CloseNui()
@@ -3680,7 +3686,8 @@ RegisterNUICallback(
                 while veh == nil do
                     Citizen.Wait(1)
                 end
-                TriggerServerEvent("renzu_garage:changestate", props.plate, 0, garageid, props.model, props)
+                ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+                end,props.plate, 0, garageid, props.model, props)
                 LastVehicleFromGarage = nil
                 Wait(111)
                 CloseNui()

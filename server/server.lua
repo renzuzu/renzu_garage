@@ -1074,8 +1074,7 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
     end
 end)
 
-RegisterServerEvent('renzu_garage:changestate')
-AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model,props,impound_cdata)
+ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, plate,state,garage_id,model,props,impound_cdata)
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -1132,8 +1131,10 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     else
                         TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Successfully Take out the vehicle')
                     end
+                    cb(true)
                 else
                     print('exploiting')
+                    cb(false)
                 end
             end
         elseif JobImpounder[xPlayer.job.name] ~= nil and string.find(garage_id, "impound") or state ~= 1 and string.find(garage_id, "impound") and Impoundforall and JobImpounder[xPlayer.job.name] == nil then
@@ -1213,15 +1214,19 @@ AddEventHandler('renzu_garage:changestate', function(plate,state,garage_id,model
                     else
                         TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Release the Vehicle')
                     end
+                    cb(true)
                 else
+                    cb(false)
                     print('exploiting')
                 end
             else
                 TriggerClientEvent('renzu_notify:Notify', source, 'error','Garage', 'Vehicle is not impoundable')
+                cb(false)
                 --xPlayer.showNotification("This Vehicle is local car", 1, 0)
             end
         else
             TriggerClientEvent('renzu_notify:Notify', source, 'info','Garage', 'Vehicle is not your property')
+            cb(false)
             --xPlayer.showNotification("This Vehicle is not your property", 1, 0)
         end
     end
