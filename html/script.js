@@ -178,8 +178,8 @@ window.addEventListener('message', function(event) {
           
         </div><!-- end .form-body section -->
         <div class="form-footer">
-          <button type="submit" class="button btn" style = "color:white; background-color: rgb(47, 109, 255);" id="give_vehkey"> Give </button>
-          <button type="submit" class="button btn" style = "color:white; background-color: rgb(17, 209, 155);color:grey;" id="dupe_vehkey"> Share (temp) </button>
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(255, 1, 1);" id="give_vehkey"> Transfer Vehicle </button>
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(17, 209, 155);color:grey;" id="dupe_vehkey"> Share Keys </button>
           <button type="reset" class="button" id="cancel_vehkeys"> Cancel </button>
         </div><!-- end .form-footer section -->
       </form>`
@@ -290,7 +290,7 @@ window.addEventListener('message', function(event) {
           
         </div><!-- end .form-body section -->
         <div class="form-footer">
-          <button type="submit" class="button btn" style = "color:white; background-color: rgb(47, 109, 255);" id="give_key"> Give </button>
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(47, 109, 255);" id="give_key"> Transfer Vehicle </button>
           <button type="reset" class="button" id="cancel_keys"> Cancel </button>
         </div><!-- end .form-footer section -->
       </form>`
