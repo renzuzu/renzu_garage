@@ -15,6 +15,9 @@ Config.GarageKeys = true -- Enable Player to Give Public Garage Keys to enable v
 Config.BlipNamesStatic = true -- if true no more garage a garage b blip names from MAP , only says  Garage
 --GENERAL SETTING
 
+-- VEHICLE IMAGES
+Config.use_renzu_vehthumb = false
+
 
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis

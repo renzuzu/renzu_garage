@@ -1701,7 +1701,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     end
 
     OwnedVehicles['garage'] = {}
-
+    local gstate = GlobalState and GlobalState.VehicleImages
     for _,value in pairs(tableVehicles) do
         local props = json.decode(value.vehicle)
         local vehicleModel = tonumber(props.model)  
@@ -1750,6 +1750,11 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             end
             --value.garage_id = jobgarages[value.job].garageid
         end
+        local default_thumb = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model)))
+        local img = 'https://cfx-nui-renzu_garage/imgs/uploads/'..default_thumb..'.jpg'
+        if Config.use_renzu_vehthumb and gstate[tostring(props.model)] then
+            img = gstate[tostring(props.model)]
+        end
         local VTable = 
         {
             brand = GetVehicleClassnamemodel(tonumber(props.model)),
@@ -1762,6 +1767,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             model = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model))),
             model2 = tonumber(props.model),
             plate = value.plate,
+            img = img,
             props = value.vehicle,
             fuel = props.fuelLevel or 100,
             bodyhealth = props.bodyHealth or 1000,
@@ -1794,7 +1800,13 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
         OwnedVehicles[job] = {}
     end
 
+    local gstate = GlobalState and GlobalState.VehicleImages
     for _,value in pairs(available) do
+        local default_thumb = string.lower(GetDisplayNameFromVehicleModel(value.model))
+        local img = 'https://cfx-nui-renzu_garage/imgs/uploads/'..default_thumb..'.jpg'
+        if Config.use_renzu_vehthumb and gstate[tostring(GetHashKey(value.model))] then
+            img = gstate[tostring(GetHashKey(value.model))]
+        end
         local vehicleModel = tonumber(value.model)  
         local label = nil
         if label == nil then
@@ -1818,6 +1830,7 @@ AddEventHandler('renzu_garage:getchopper', function(job, available)
             model = value.model,
             model2 = value.model,
             plate = value.plate,
+            img = img,
             props = value.vehicle,
             fuel = 100,
             bodyhealth = 1000,
@@ -1859,12 +1872,18 @@ end
 local patrolcars = {}
 function CreateDefault(default,jobonly,garage_type,garageid)
     patrolcars = {}
+    local gstate = GlobalState and GlobalState.VehicleImages
     for k,v in pairs(default) do
         if v.grade <= PlayerData.job.grade then
             local vehicleModel = GetHashKey(v.model)
             local pmult, tmult, handling, brake = 1000,800,GetPerformanceStats(vehicleModel).handling,GetPerformanceStats(vehicleModel).brakes
             if v.type == 'boat' or v.type == 'plane' then
                 pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
+            end
+            local default_thumb = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
+            local img = 'https://cfx-nui-renzu_garage/imgs/uploads/'..default_thumb..'.jpg'
+            if Config.use_renzu_vehthumb and gstate[tostring(vehicleModel)] then
+                img = gstate[tostring(vehicleModel)]
             end
             local genplate = v.plateprefix..' '..math.random(100,999)
             patrolcars[genplate] = true
@@ -1975,6 +1994,7 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                     torque = v.torque or 1.0,
                     model = v.model,
                     model2 = v.model2,
+                    img = v.img,
                     plate = v.plate,
                     --props = v.props,
                     fuel = v.fuel or 100.0,
@@ -2065,6 +2085,7 @@ function OpenHeli(garageid)
             torque = v.torque,
             model = v.model,
             model2 = v.model2,
+            img = v.img,
             plate = v.plate,
             --props = v.props,
             fuel = v.fuel,
@@ -2157,6 +2178,7 @@ function OpenImpound(garageid)
                 power = v.power or 1.0,
                 torque = v.torque or 1.0,
                 model = v.model,
+                img = v.img,
                 model2 = v.model2,
                 plate = v.plate,
                 --props = v.props,
