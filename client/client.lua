@@ -47,7 +47,6 @@ Citizen.CreateThread(function()
 	PlayerData = ESX.GetPlayerData()
     Wait(2000)
     if Config.Realistic_Parking then
-        while not LocalPlayer.state.loaded do Wait(100) end
         TriggerServerEvent('renzu_garage:GetParkedVehicles')
     end
     for k, v in pairs (garagecoord) do
@@ -293,7 +292,6 @@ function DrawZuckerburg(name,v,reqdist)
 end
 
 CreateThread(function()
-    while not LocalPlayer.state.loaded do Wait(100) end
     while PlayerData.job == nil do Wait(100) end
     Wait(500)
     if not Config.UsePopUI and Config.floatingtext then
@@ -1069,7 +1067,6 @@ end)
 
 CreateThread(function()
     Wait(500)
-    while not LocalPlayer.state.loaded do Wait(100) end
     while Config.Private_Garage do
         for k,v in pairs(private_garage) do
             local distance = #(GetEntityCoords(PlayerPedId()) - vector3(v.buycoords.x,v.buycoords.y,v.buycoords.z))
@@ -1100,7 +1097,15 @@ end)
 
 CreateThread(function()
     Wait(2500)
-    while not LocalPlayer.state.loaded do Wait(100) end
+    local c = 0
+    while not LocalPlayer.state.loaded do 
+        Wait(1000) 
+        c = c + 1 
+        if c >= 10 then  -- support badhabit of developers
+            LocalPlayer.state:set( 'loaded', true, true)
+            LocalPlayer.state.loaded = true
+        end
+    end
     while Config.Realistic_Parking do
         for k,v in pairs(parking) do
             local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
