@@ -176,6 +176,21 @@ garagecoord = {
             [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1, plateprefix = 'LSPD'}, -- minimum grade
         },
     },
+    {
+        garage = "Police Public Garage", -- public garage job
+        garage_type = 'public', -- public = every police job can acccess the garage vehicle list
+        job = "police",
+        Type = "car",
+        Dist = 10,
+        Blip = {color = 38, sprite = 662, scale = 0.6},
+        garage_x = 450.5574645996, -- 450.55746459961,-1025.3254394531,28.56488609314,52.594207763672
+        garage_y = -1025.3254394531,
+        garage_z = 28.56488609314,
+        spawn_x = 443.62295532227, -- 443.62295532227,-1019.6309814453,27.948703765869,91.976776123047
+        spawn_y = -1019.6309814453,
+        spawn_z = 27.948703765869,
+        heading = 91.976776123047,
+    },
     --JOB GARAGE
     {
         garage = "Sheriff Garage", --PALETO

@@ -21,6 +21,7 @@ local propertyspawn = {}
 local lastcat = nil
 local deleting = false
 local housingcustom = nil
+local garage_public = false
 meter_cars = {}
 Citizen.CreateThread(function()
     Wait(1000)
@@ -31,6 +32,7 @@ Citizen.CreateThread(function()
             jobgarages[v.garage].coord = vector3(v.garage_x,v.garage_y,v.garage_z)
             jobgarages[v.garage].garageid = v.garage
             jobgarages[v.garage].job = v.job
+            jobgarages[v.garage].garage_type = v.garage_type ~= nil and v.garage_type or 'personal'
         end
     end
 	while ESX == nil do
@@ -477,8 +479,8 @@ AddEventHandler('renzu_garage:ingarage', function(table,garage,garage_id, vehicl
             local count = 0
             if not HasModelLoaded(hash) then
                 RequestModel(hash)
-                while not HasModelLoaded(hash) and count < 2000 do
-                    count = count + 101
+                while not HasModelLoaded(hash) do
+                    RequestModel(hash)
                     Citizen.Wait(10)
                 end
             end
@@ -920,8 +922,8 @@ AddEventHandler('renzu_garage:choose', function(table,garage)
     local count = 0
     if not HasModelLoaded(hash) then
         RequestModel(hash)
-        while not HasModelLoaded(hash) and count < 2000 do
-            count = count + 101
+        while not HasModelLoaded(hash) do
+            RequestModel(hash)
             Citizen.Wait(10)
         end
     end
@@ -1180,8 +1182,8 @@ CreateThread(function()
                                 local count = 0
                                 if not HasModelLoaded(hash) then
                                     RequestModel(hash)
-                                    while not HasModelLoaded(hash) and count < 2000 do
-                                        count = count + 101
+                                    while not HasModelLoaded(hash) do
+                                        RequestModel(hash)
                                         Citizen.Wait(10)
                                     end
                                 end
@@ -1221,8 +1223,8 @@ CreateThread(function()
                                     while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                                     if not HasModelLoaded(hash) then
                                         RequestModel(hash)
-                                        while not HasModelLoaded(hash) and count < 111 do
-                                            count = count + 1
+                                        while not HasModelLoaded(hash) do
+                                            RequestModel(hash)
                                             Citizen.Wait(1)
                                         end
                                     end
@@ -1281,7 +1283,7 @@ AddEventHandler('opengarage', function()
                 local req_dist = v.Store_dist or v.Dist
                 if dist <= req_dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and not string.find(v.garage, "impound") then
                     garageid = v.garage
-                    Storevehicle(vehiclenow)
+                    Storevehicle(vehiclenow,false,false,v.garage_type == 'public' or false)
                     break
                 end
             elseif not DoesEntityExist(vehiclenow) then
@@ -1289,8 +1291,9 @@ AddEventHandler('opengarage', function()
                     garageid = v.garage
                     tid = k
                     TriggerEvent('renzu_notify:Notify', 'info','Garage', "Opening Garage...Please wait..")
-                    TriggerServerEvent("renzu_garage:GetVehiclesTable",garageid)
+                    TriggerServerEvent("renzu_garage:GetVehiclesTable",garageid,v.garage_type == 'public' or false)
                     fetchdone = false
+                    garage_public = v.garage_type == 'public' or false
                     while not fetchdone do
                         Wait(0)
                     end
@@ -1298,6 +1301,7 @@ AddEventHandler('opengarage', function()
                     if jobgarage then
                         garagejob = v.job
                     end
+                    print(garagejob)
                     propertygarage = false
                     OpenGarage(v.garage,v.Type,garagejob or false,v.default_vehicle or {})
                     break
@@ -1704,82 +1708,89 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     local gstate = GlobalState and GlobalState.VehicleImages
     for _,value in pairs(tableVehicles) do
         local props = json.decode(value.vehicle)
-        local vehicleModel = tonumber(props.model)  
-        local label = nil
-        if label == nil then
-            label = 'Unknown'
-        end
-
-        local vehname = nil
-        for _,value in pairs(vehdata) do -- fetch vehicle names from vehicles sql table
-            if tonumber(props.model) == GetHashKey(value.model) then
-                vehname = value.name
-                break
+        if IsModelInCdimage(props.model) then
+            local vehicleModel = tonumber(props.model)  
+            local label = nil
+            if label == nil then
+                label = 'Unknown'
             end
-        end
 
-        --local vehname = vehicle_data[GetDisplayNameFromVehicleModel(tonumber(props.model))]
-
-        if vehname == nil then
-            vehname = GetLabelText(GetDisplayNameFromVehicleModel(tonumber(props.model)):lower())
-        end
-        if props ~= nil and props.engineHealth ~= nil and props.engineHealth < 100 then
-            props.engineHealth = 200
-        end
-        local pmult, tmult, handling, brake = 1000,800,GetPerformanceStats(vehicleModel).handling,GetPerformanceStats(vehicleModel).brakes
-        if value.type == 'boat' or value.type == 'plane' then
-            pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
-        end
-        if value.job == '' then
-            value.job = nil
-        end
-        local havejob = false
-        for k,v in pairs(jobgarages) do
-            if value.job ~= nil and v.job == value.job then
-                havejob = true
-            end
-        end
-        if value.job ~= nil and not havejob then -- fix incompatibility with vehicles with job column as a default from sql eg. civ fck!
-            value.job = nil
-        end
-        if value.garage_id ~= nil then -- fix blank job column, seperate the car to other non job garages
-            for k,v in pairs(jobgarages) do 
-                if v.job ~= nil and value.job ~= nil and v.job == value.job and v.garageid == value.garage_id and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
-                    value.job = v.job
+            local vehname = nil
+            for _,value in pairs(vehdata) do -- fetch vehicle names from vehicles sql table
+                if tonumber(props.model) == GetHashKey(value.model) then
+                    vehname = value.name
+                    break
                 end
             end
-            --value.garage_id = jobgarages[value.job].garageid
+
+            --local vehname = vehicle_data[GetDisplayNameFromVehicleModel(tonumber(props.model))]
+
+            if vehname == nil then
+                vehname = GetLabelText(GetDisplayNameFromVehicleModel(tonumber(props.model)):lower())
+            end
+            if props ~= nil and props.engineHealth ~= nil and props.engineHealth < 100 then
+                props.engineHealth = 200
+            end
+            local pmult, tmult, handling, brake = 1000,800,GetPerformanceStats(vehicleModel).handling,GetPerformanceStats(vehicleModel).brakes
+            if value.type == 'boat' or value.type == 'plane' then
+                pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
+            end
+            if value.job == '' then
+                value.job = nil
+            end
+            local havejob = false
+            for k,v in pairs(jobgarages) do
+                if value.job ~= nil and v.job == value.job then
+                    havejob = true
+                end
+            end
+            if value.job ~= nil and not havejob then -- fix incompatibility with vehicles with job column as a default from sql eg. civ fck!
+                value.job = nil
+            end
+            if value.garage_id ~= nil then -- fix blank job column, seperate the car to other non job garages
+                for k,v in pairs(jobgarages) do 
+                    if v.job ~= nil and value.job ~= nil and v.job == value.job and v.garageid == value.garage_id and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
+                        value.job = v.job
+                    end
+                    if v.garage_type and v.garage_type == 'public' and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
+                        value.garage_type = 'public'
+                        value.job = v.job
+                    end
+                end
+                --value.garage_id = jobgarages[value.job].garageid
+            end
+            local default_thumb = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model)))
+            local img = 'https://cfx-nui-renzu_garage/imgs/uploads/'..default_thumb..'.jpg'
+            if Config.use_renzu_vehthumb and gstate[tostring(props.model)] then
+                img = gstate[tostring(props.model)]
+            end
+            local VTable = 
+            {
+                brand = GetVehicleClassnamemodel(tonumber(props.model)),
+                name = vehname:upper(),
+                brake = brake,
+                handling = handling,
+                topspeed = math.ceil(GetVehicleModelEstimatedMaxSpeed(vehicleModel)*4.605936),
+                power = math.ceil(GetVehicleModelAcceleration(vehicleModel)*pmult),
+                torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*tmult),
+                model = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model))),
+                model2 = tonumber(props.model),
+                plate = value.plate,
+                img = img,
+                props = value.vehicle,
+                fuel = props.fuelLevel or 100,
+                bodyhealth = props.bodyHealth or 1000,
+                enginehealth = props.engineHealth or 1000,
+                garage_id = value.garage_id,
+                impound = value.impound,
+                stored = value.stored,
+                identifier = value.owner,
+                type = value.type,
+                garage_type = value.garage_type ~= nil and value.garage_type or 'personal',
+                job = value.job ~= nil,
+            }
+            table.insert(OwnedVehicles['garage'], VTable)
         end
-        local default_thumb = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model)))
-        local img = 'https://cfx-nui-renzu_garage/imgs/uploads/'..default_thumb..'.jpg'
-        if Config.use_renzu_vehthumb and gstate[tostring(props.model)] then
-            img = gstate[tostring(props.model)]
-        end
-        local VTable = 
-        {
-            brand = GetVehicleClassnamemodel(tonumber(props.model)),
-            name = vehname:upper(),
-            brake = brake,
-            handling = handling,
-            topspeed = math.ceil(GetVehicleModelEstimatedMaxSpeed(vehicleModel)*4.605936),
-            power = math.ceil(GetVehicleModelAcceleration(vehicleModel)*pmult),
-            torque = math.ceil(GetVehicleModelAcceleration(vehicleModel)*tmult),
-            model = string.lower(GetDisplayNameFromVehicleModel(tonumber(props.model))),
-            model2 = tonumber(props.model),
-            plate = value.plate,
-            img = img,
-            props = value.vehicle,
-            fuel = props.fuelLevel or 100,
-            bodyhealth = props.bodyHealth or 1000,
-            enginehealth = props.engineHealth or 1000,
-            garage_id = value.garage_id,
-            impound = value.impound,
-            stored = value.stored,
-            identifier = value.owner,
-            type = value.type,
-            job = value.job ~= nil,
-        }
-        table.insert(OwnedVehicles['garage'], VTable)
     end
     fetchdone = true
 end)
@@ -1941,7 +1952,11 @@ function OpenGarage(garageid,garage_type,jobonly,default)
         for k2,v in pairs(v2) do
             if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
             or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
+            -- personal job garage
             or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            -- public job garage
+            or v.garage_type == 'public' and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            --
             or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
             or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
             or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
@@ -1970,7 +1985,11 @@ function OpenGarage(garageid,garage_type,jobonly,default)
         for k2,v in pairs(v2) do
             if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
             or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
+            -- personal job garage
             or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            -- public job garage
+            or v.garage_type == 'public' and not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            --
             or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
             or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
             or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
@@ -2288,8 +2307,8 @@ function CreateGarageShell()
     local count = 0
     local model = GetHashKey('garage')
     RequestModel(model)
-    while not HasModelLoaded(model) and count < 2000 do
-        count = count + 101
+    while not HasModelLoaded(model) do
+        RequestModel(model)
         Citizen.Wait(10)
     end
     shell = CreateObject(model, garage_coords.x, garage_coords.y, garage_coords.z, false, false, false)
@@ -2482,8 +2501,9 @@ function GotoGarage(garageid, property, propertycoord, job)
         local model = GetHashKey('garage')
         local count = 0
         RequestModel(model)
-        while not HasModelLoaded(model) and count < 2000 do
-            count = count + 101
+        while not HasModelLoaded(model) do
+            RequestModel(hash)
+            RequestModel(model)
             Citizen.Wait(10)
         end
         shell = CreateObject(model, garage_coords.x, garage_coords.y-7.0, garage_coords.z, false, false, false)
@@ -2525,8 +2545,7 @@ function GotoGarage(garageid, property, propertycoord, job)
                 local count = 0
                 if not HasModelLoaded(hash) then
                     RequestModel(hash)
-                    while not HasModelLoaded(hash) and count < 2000 do
-                        count = count + 101
+                    while not HasModelLoaded(hash) do
                         Citizen.Wait(10)
                     end
                 end
@@ -2588,6 +2607,7 @@ function GotoGarage(garageid, property, propertycoord, job)
         end
         Citizen.Wait(1000)
     end
+    garage_public = false
 end
 
 
@@ -2687,12 +2707,9 @@ function GarageVehicle()
                             local count = 0
                             if not HasModelLoaded(hash) then
                                 RequestModel(hash)
-                                while not HasModelLoaded(hash) and count < 10000 do
-                                    count = count + 10
+                                while not HasModelLoaded(hash) do
+                                    RequestModel(hash)
                                     Citizen.Wait(1)
-                                    if count > 9999 then
-                                    return
-                                    end
                                 end
                             end
                             local indexnew = tonumber('1'..i2..'')
@@ -2800,12 +2817,9 @@ function GarageVehicle()
                                 local count = 0
                                 if not HasModelLoaded(hash) then
                                     RequestModel(hash)
-                                    while not HasModelLoaded(hash) and count < 10000 do
-                                        count = count + 10
+                                    while not HasModelLoaded(hash) do
+                                        RequestModel(hash)
                                         Citizen.Wait(1)
-                                        if count > 9999 then
-                                        return
-                                        end
                                     end
                                 end
                                 local indexnew = tonumber('2'..i2..'')
@@ -2863,8 +2877,7 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
             local hash = tonumber(vp.model)
             local count = 0
             RequestModel(hash)
-            while not HasModelLoaded(hash) and count < 500 do
-                count = count + 1
+            while not HasModelLoaded(hash) do
                 Citizen.Wait(10)
                 RequestModel(hash)
             end
@@ -2880,8 +2893,28 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
             end
             TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
             veh = vehicle
-            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
-            end,vp.plate, 0, gid, vp.model, vp)
+            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret,garage_public)
+                if ret and garage_public then
+                    local ent = Entity(veh).state
+                    while ent.share == nil do Wait(100) end
+                    ent.haskeys = false
+                    ent.hotwired = false
+                    ent.unlock = true
+                    local share = ent.share or {}
+                    local add = true
+                    for k,v in pairs(share) do
+                        if k == v.PlayerData.identifier then
+                            add = false
+                        end
+                    end
+                    if add then
+                        share[PlayerData.identifier] = true
+                    end
+                    ent.share = share
+                    ent:set('share', share, true)
+                    TriggerServerEvent('statebugupdate','share',share, VehToNet(veh))
+                end
+            end,vp.plate, 0, gid, vp.model, vp, false, garage_public)
             spawnedgarage = {}
             TriggerEvent('renzu_popui:closeui')
             if property then
@@ -2950,12 +2983,9 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     local count = 0
                     if not HasModelLoaded(hash) then
                         RequestModel(hash)
-                        while not HasModelLoaded(hash) and count < 1111 do
-                            count = count + 10
+                        while not HasModelLoaded(hash) do
+                            RequestModel(hash)
                             Citizen.Wait(10)
-                            if count > 9999 then
-                            return
-                            end
                         end
                     end
                     v = CreateVehicle(model, tempcoord[tid].spawn_x,tempcoord[tid].spawn_y,tempcoord[tid].spawn_z, tempcoord[tid].heading, 1, 1)
@@ -2967,8 +2997,29 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                     TaskWarpPedIntoVehicle(PlayerPedId(), v, -1)
                     veh = v
                     DoScreenFadeIn(333)
-                    ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
-                    end,vp.plate, 0, garageid, vp.model, vp)
+                    ESX.TriggerServerCallback("renzu_garage:changestate",function(ret,garage_public)
+                        if ret and garage_public then
+                            local ent = Entity(veh).state
+                            while ent.share == nil do Wait(100) end
+                            ent.haskeys = false
+                            ent.hotwired = false
+                            ent.unlock = true
+                            local share = ent.share or {}
+                            local add = true
+                            for k,v in pairs(share) do
+                                if k == v.PlayerData.identifier then
+                                    add = false
+                                end
+                            end
+                            if add then
+                                share[PlayerData.identifier] = true
+                            end
+                            ent.share = share
+                            ent:set('share', share, true)
+                            TriggerServerEvent('statebugupdate','share',share, VehToNet(veh))
+                        end
+                    end,vp.plate, 0, garageid, vp.model, vp,false,garage_public)
+                    garage_public = false
                     if sharedvehicle then
                         local ent = Entity(v).state
                         while ent.share == nil do Wait(100) end
@@ -3177,7 +3228,7 @@ AddEventHandler('renzu_garage:store', function(i)
     end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps)
 end)
 
-function Storevehicle(vehicle,impound, impound_data)
+function Storevehicle(vehicle,impound, impound_data, public)
     local vehicleProps = GetVehicleProperties(vehicle)
     if garageid == nil then
         garageid = 'A'
@@ -3193,7 +3244,7 @@ function Storevehicle(vehicle,impound, impound_data)
         if ret or ent.share[PlayerData.identifier] then
             DeleteEntity(vehicle)
         end
-    end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {})
+    end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {}, public)
     neargarage = false
 end
 
@@ -3241,12 +3292,8 @@ function SpawnVehicleLocal(model, props)
                 FreezeEntityPosition(PlayerPedId(),true)
                 if not HasModelLoaded(hash) then
                     RequestModel(hash)
-                    while not HasModelLoaded(hash) and count < 1111 do
-                        count = count + 10
+                    while not HasModelLoaded(hash) do
                         Citizen.Wait(10)
-                        if count > 9999 then
-                        return
-                        end
                     end
                 end
                 LastVehicleFromGarage = CreateVehicle(hash, actualShop.garage_x,actualShop.garage_y,zaxis + 20, 42.0, 0, 1)
@@ -3270,12 +3317,8 @@ function SpawnVehicleLocal(model, props)
                 FreezeEntityPosition(PlayerPedId(),true)
                 if not HasModelLoaded(hash) then
                     RequestModel(hash)
-                    while not HasModelLoaded(hash) and count < 1111 do
-                        count = count + 10
+                    while not HasModelLoaded(hash) do
                         Citizen.Wait(10)
-                        if count > 9999 then
-                        return
-                        end
                     end
                 end
                 LastVehicleFromGarage = CreateVehicle(hash, actualShop.garage_x,actualShop.garage_y,zaxis + 20, 42.0, 0, 1)
@@ -3310,13 +3353,9 @@ function SpawnChopperLocal(model, props)
             local count = 0
             if not HasModelLoaded(hash) then
                 RequestModel(hash)
-                while not HasModelLoaded(hash) and count < 1111 do
+                while not HasModelLoaded(hash) do
                     RequestModel(hash)
-                    count = count + 10
                     Citizen.Wait(10)
-                    if count > 9999 then
-                    return
-                    end
                 end
             end
             LastVehicleFromGarage = CreateVehicle(hash, actualShop.x,actualShop.y,zaxis+0.3, 42.0, 0, 1)
@@ -3490,12 +3529,9 @@ RegisterNUICallback(
                     local count = 0
                     if not HasModelLoaded(hash) then
                         RequestModel(hash)
-                        while not HasModelLoaded(hash) and count < 1111 do
+                        while not HasModelLoaded(hash) do
                             count = count + 10
                             Citizen.Wait(1)
-                            if count > 9999 then
-                            return
-                            end
                         end
                     end
                     local vehicle = CreateVehicle(tonumber(props.model), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
@@ -3518,8 +3554,29 @@ RegisterNUICallback(
             while veh == nil do
                 Citizen.Wait(10)
             end
-            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
-            end,props.plate, 0, garageid, props.model, props)
+            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret, garage_public)
+                if ret and garage_public then
+                    local ent = Entity(veh).state
+                    while ent.share == nil do Wait(100) end
+                    ent.haskeys = false
+                    ent.hotwired = false
+                    ent.unlock = true
+                    local share = ent.share or {}
+                    local add = true
+                    for k,v in pairs(share) do
+                        if k == v.PlayerData.identifier then
+                            add = false
+                        end
+                    end
+                    if add then
+                        share[PlayerData.identifier] = true
+                    end
+                    ent.share = share
+                    ent:set('share', share, true)
+                    TriggerServerEvent('statebugupdate','share',share, VehToNet(veh))
+                    print("SHARED VEHICLE")
+                end
+            end,props.plate, 0, garageid, props.model, props,false,garage_public)
             LastVehicleFromGarage = nil
             TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
             CloseNui()
@@ -3612,12 +3669,8 @@ RegisterNUICallback(
                 local count = 0
                 if not HasModelLoaded(hash) then
                     RequestModel(hash)
-                    while not HasModelLoaded(hash) and count < 1111 do
-                        count = count + 10
+                    while not HasModelLoaded(hash) do
                         Citizen.Wait(1)
-                        if count > 9999 then
-                        return
-                        end
                     end
                 end
                 v = CreateVehicle(hash, actualShop.x,actualShop.y,actualShop.z, 256.0, 1, 1)
@@ -3690,12 +3743,9 @@ RegisterNUICallback(
                         local count = 0
                         if not HasModelLoaded(hash) then
                             RequestModel(hash)
-                            while not HasModelLoaded(hash) and count < 1111 do
-                                count = count + 10
+                            while not HasModelLoaded(hash) do
+                                RequestModel(hash)
                                 Citizen.Wait(1)
-                                if count > 9999 then
-                                return
-                                end
                             end
                         end
                         vehicle = CreateVehicle(tonumber(data.modelcar), actualShop.spawn_x,actualShop.spawn_y,actualShop.spawn_z, actualShop.heading, 1, 1)
@@ -3715,8 +3765,28 @@ RegisterNUICallback(
                 while veh == nil do
                     Citizen.Wait(1)
                 end
-                ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
-                end,props.plate, 0, garageid, props.model, props)
+                ESX.TriggerServerCallback("renzu_garage:changestate",function(ret,garage_public)
+                    if ret and garage_public then
+                        local ent = Entity(veh).state
+                        while ent.share == nil do Wait(100) end
+                        ent.haskeys = false
+                        ent.hotwired = false
+                        ent.unlock = true
+                        local share = ent.share or {}
+                        local add = true
+                        for k,v in pairs(share) do
+                            if k == v.PlayerData.identifier then
+                                add = false
+                            end
+                        end
+                        if add then
+                            share[PlayerData.identifier] = true
+                        end
+                        ent.share = share
+                        ent:set('share', share, true)
+                        TriggerServerEvent('statebugupdate','share',share, VehToNet(veh))
+                    end
+                end,props.plate, 0, garageid, props.model, props,false,garage_public)
                 LastVehicleFromGarage = nil
                 Wait(111)
                 CloseNui()
@@ -3818,6 +3888,7 @@ function CloseNui()
     drawtext = false
     indist = false
     propertyspawn = {}
+    garage_public = false
 end
 
 function ReqAndDelete(object, detach)
@@ -4076,8 +4147,7 @@ CreateThread(function()
                     local count = 0
                     if not HasModelLoaded(hash) then
                         RequestModel(hash)
-                        while not HasModelLoaded(hash) and count < 2000 do
-                            count = count + 101
+                        while not HasModelLoaded(hash) do
                             Citizen.Wait(10)
                         end
                     end
@@ -4125,8 +4195,8 @@ CreateThread(function()
                             while IsAnyVehicleNearPoint(parkcoord.x,parkcoord.y,parkcoord.z,1.1) do local nearveh = GetClosestVehicle(vector3(parkcoord.x,parkcoord.y,parkcoord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                             if not HasModelLoaded(hash) then
                                 RequestModel(hash)
-                                while not HasModelLoaded(hash) and count < 111 do
-                                    count = count + 1
+                                while not HasModelLoaded(hash) do
+                                    RequestModel(hash)
                                     Citizen.Wait(1)
                                 end
                             end

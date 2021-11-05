@@ -242,13 +242,13 @@ function MysqlGarage(plugin,type,query,var)
 end
 
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
-AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid)
+AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
     local src = source 
     local xPlayer = ESX.GetPlayerFromId(src)
     local ply = Player(src).state
     local identifier = ply.garagekey or xPlayer.identifier
     local sharegarage = false
-    if ply.garagekey and garageid and sharedgarage[xPlayer.identifier] and sharedgarage[xPlayer.identifier][ply.garagekey] then
+    if not public and ply.garagekey and garageid and sharedgarage[xPlayer.identifier] and sharedgarage[xPlayer.identifier][ply.garagekey] then
         for k,v in pairs(sharedgarage[xPlayer.identifier][ply.garagekey]) do
             if garageid == v then
                 sharegarage = v
@@ -260,11 +260,14 @@ AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid)
         end
     end
     --local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
-    if sharegarage then
+    if not public and sharegarage then
         local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner AND garage_id = @garage_id', {['@owner'] = identifier, ['@garage_id'] = sharegarage})
         TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
-    else
+    elseif not public then
         local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = identifier})
+        TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
+    elseif public then
+        local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE garage_id = @garage_id', {['@garage_id'] = garageid})
         TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
     end
 end)
@@ -281,6 +284,14 @@ AddEventHandler('renzu_garage:GetVehiclesTableImpound', function()
     end
     local Impounds = MysqlGarage(Config.Mysql,'fetchAll',q, {})
     TriggerClientEvent("renzu_garage:receive_vehicles", src , Impounds,vehicles)
+end)
+
+ESX.RegisterServerCallback('renzu_garage:getjobgarages',function(source, cb, job)
+    local garage = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM jobgarages WHERE `job` = @job', {['@job'] = job})
+    if garage and garage[1] then
+        cb(garage[1])
+    end
+    cb(false)
 end)
 
 ESX.RegisterServerCallback('renzu_garage:getowner',function(source, cb, identifier, plate, garage)
@@ -1085,7 +1096,7 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
     end
 end)
 
-ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, plate,state,garage_id,model,props,impound_cdata)
+ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, plate,state,garage_id,model,props,impound_cdata, public)
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -1096,6 +1107,17 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
     local xPlayer = ESX.GetPlayerFromId(source)
     local ply = Player(source).state
     local identifier = ply.garagekey or globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier
+    if public then
+        local r = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
+            ['@plate'] = plate
+        })
+        if r and r[1] then
+            identifier = r[1].owner
+        else
+            TriggerClientEvent('renzu_notify:Notify', source, 'info','Garage', 'Vehicle is not owned')
+            cb(false,public)
+        end
+    end
     if xPlayer then
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
             ['@owner'] = identifier,
@@ -1116,14 +1138,16 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
             if result[1].vehicle ~= nil then
                 local veh = json.decode(result[1].vehicle)
                 if veh.model == model then
-                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate and owner = @owner', {
-                        ['vehicle'] = json.encode(props),
+                    local var = {
+                        ['@vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
                         ['@plate'] = plate:upper(),
                         ['@owner'] = identifier,
                         ['@stored'] = state,
-                        ['@isparked'] = 0
-                    })
+                        ['@isparked'] = 0,
+                        ['@job'] = state == 1 and public and xPlayer.job.name or state == 1 and result[1].job ~= nil and result[1].job or 'civ',
+                    }
+                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle, isparked = @isparked, `job` = @job WHERE TRIM(UPPER(plate)) = @plate and owner = @owner', var)
                     if updatepark then
                         Wait(300)
                         parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
@@ -1142,10 +1166,10 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
                     else
                         TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Successfully Take out the vehicle')
                     end
-                    cb(true)
+                    cb(true,public)
                 else
                     print('exploiting')
-                    cb(false)
+                    cb(false,public)
                 end
             end
         elseif JobImpounder[xPlayer.job.name] ~= nil and string.find(garage_id, "impound") or state ~= 1 and string.find(garage_id, "impound") and Impoundforall and JobImpounder[xPlayer.job.name] == nil then
@@ -1225,9 +1249,9 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
                     else
                         TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Release the Vehicle')
                     end
-                    cb(true)
+                    cb(true,public)
                 else
-                    cb(false)
+                    cb(false,public)
                     print('exploiting')
                 end
             else
