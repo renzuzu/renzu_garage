@@ -2908,7 +2908,7 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
                         end
                     end
                     if add then
-                        share[PlayerData.identifier] = true
+                        share[PlayerData.identifier] = PlayerData.identifier
                     end
                     ent.share = share
                     ent:set('share', share, true)
@@ -3012,7 +3012,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                                 end
                             end
                             if add then
-                                share[PlayerData.identifier] = true
+                                share[PlayerData.identifier] = PlayerData.identifier
                             end
                             ent.share = share
                             ent:set('share', share, true)
@@ -3034,7 +3034,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
                             end
                         end
                         if add then
-                            share[PlayerData.identifier] = true
+                            share[PlayerData.identifier] = PlayerData.identifier
                         end
                         ent.share = share
                         ent:set('share', share, true)
@@ -3569,7 +3569,7 @@ RegisterNUICallback(
                         end
                     end
                     if add then
-                        share[PlayerData.identifier] = true
+                        share[PlayerData.identifier] = PlayerData.identifier
                     end
                     ent.share = share
                     ent:set('share', share, true)
@@ -3596,7 +3596,7 @@ RegisterNUICallback(
                     end
                 end
                 if add then
-                    share[PlayerData.identifier] = true
+                    share[PlayerData.identifier] = PlayerData.identifier
                 end
                 ent.share = share
                 ent:set('share', share, true)
@@ -3780,7 +3780,7 @@ RegisterNUICallback(
                             end
                         end
                         if add then
-                            share[PlayerData.identifier] = true
+                            share[PlayerData.identifier] = PlayerData.identifier
                         end
                         ent.share = share
                         ent:set('share', share, true)

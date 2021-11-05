@@ -832,7 +832,7 @@ ESX.RegisterServerCallback('renzu_garage:parkingmeter', function (source, cb, co
         if canpark then
             print(globalkeys[plate],plate,globalkeys[plate] and globalkeys[plate][xPlayer.identifier])
             MysqlGarage(Config.Mysql,'execute','INSERT INTO parking_meter (identifier, coord, park_coord, vehicle, plate) VALUES (@identifier, @coord, @park_coord, @vehicle, @plate)', {
-                ['@identifier']   = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
+                ['@identifier']   = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
                 ['@coord']   = json.encode(coord),
                 ['@park_coord']   = json.encode(coord2),
                 ['@vehicle'] = prop,
@@ -1025,7 +1025,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
     local xPlayer = ESX.GetPlayerFromId(source)
     if xPlayer then
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
-            ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
+            ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
             ['@plate'] = plate
         })
         if #result > 0 then
@@ -1036,7 +1036,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
                         ['@vehicle'] = json.encode(props),
                         ['@garage_id'] = 'PARKED',
                         ['@plate'] = plate:upper(),
-                        ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
+                        ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
                         ['@stored'] = 0,
                         ['@park_coord'] = json.encode(coord),
                         ['@isparked'] = state
@@ -1106,7 +1106,7 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local ply = Player(source).state
-    local identifier = ply.garagekey or globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier
+    local identifier = ply.garagekey or globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier
     if public then
         local r = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
             ['@plate'] = plate
