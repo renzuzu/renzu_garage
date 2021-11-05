@@ -1,5 +1,6 @@
 # renzu_garage 1.72
 - FIVEM - Garage HUD Advanced Vehicle Garage
+- REQUIRES ONE SYNC ENABLE!
 
 ![image](https://user-images.githubusercontent.com/82306584/137624593-8b423a15-560e-45be-988e-d0211ac29977.png)
 
@@ -227,18 +228,19 @@ ADD impound int(1) NOT NULL DEFAULT 0;
 
 ```
 
+- This one needs backtick `, ex.`  ``` `stored` ``` in mysql 8.0 and lower
 >
 >ALTER TABLE owned_vehicles
->ADD `stored` int(1) NOT NULL DEFAULT 0;
+>ADD ``` `stored` ``` int(1) NOT NULL DEFAULT 0;
 
 
 >ALTER TABLE owned_vehicles
->ADD `type` varchar(32) NOT NULL DEFAULT 'car';
+>ADD ``` `type` ``` varchar(32) NOT NULL DEFAULT 'car';
 
 
 
 >ALTER TABLE owned_vehicles
->ADD `job` varchar(32) NOT NULL DEFAULT 'civ';
+>ADD ``` `job` ``` varchar(32) NOT NULL DEFAULT 'civ';
 
 ```
 ALTER TABLE owned_vehicles
