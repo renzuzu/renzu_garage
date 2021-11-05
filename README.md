@@ -314,3 +314,16 @@ COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;
 ```
+
+# FOLDER NAME
+- must be renzu_garage
+- not renzu_garage_v.172
+- not renzu_garage_main
+
+```
+ensure renzu_garage
+ensure renzu_contextmenu
+ensure renzu_popui
+ensure renzu_lockgame
+ensure renzu_notify
+```
