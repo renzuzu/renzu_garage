@@ -1,5 +1,6 @@
 # renzu_garage 1.72
 - FIVEM - Garage HUD Advanced Vehicle Garage
+- REQUIRES ONE SYNC ENABLE!
 
 ![image](https://user-images.githubusercontent.com/82306584/137624593-8b423a15-560e-45be-988e-d0211ac29977.png)
 
