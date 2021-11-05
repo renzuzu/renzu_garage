@@ -228,6 +228,7 @@ ADD impound int(1) NOT NULL DEFAULT 0;
 
 ```
 
+- This one needs backtick `, ex. `stored` in mysql 8.0 and lower
 >
 >ALTER TABLE owned_vehicles
 >ADD `stored` int(1) NOT NULL DEFAULT 0;
