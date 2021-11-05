@@ -178,7 +178,7 @@ garagecoord = {
     },
     {
         garage = "Police Public Garage", -- public garage job
-        garage_type = 'public', -- public = every police job can acccess the garage vehicle list
+        garage_type = 'public', -- public = every police job can acccess the garage vehicle list (this can be used in other job garages too)
         job = "police",
         Type = "car",
         Dist = 10,
