@@ -1335,7 +1335,7 @@ AddEventHandler('statebugupdate', function(name,value,net)
             ['@plate'] = plate
         })
         if result[1] then
-            MysqlGarage(Config.Mysql,'execute','UPDATE vehiclekeys SET `keys` = @keys WHERE identifier = @identifier', {
+            MysqlGarage(Config.Mysql,'execute','UPDATE vehiclekeys SET `keys` = @keys WHERE `plate` = @plate', {
                 ['@keys'] = json.encode(ent.share),
                 ['@plate'] = plate,
             })
