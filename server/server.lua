@@ -67,7 +67,9 @@ Citizen.CreateThread(function()
     for k,v in pairs(garagecoord) do
         if v.job and v.default_vehicle then
             for k2,v2 in pairs(v.default_vehicle) do
-                jobplates[v2.plateprefix] = true
+                if v2.plateprefix then
+                    jobplates[v2.plateprefix] = true
+                end
             end
         end
     end
