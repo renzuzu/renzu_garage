@@ -2182,7 +2182,7 @@ function OpenImpound(garageid)
                 v.garage_id = impoundcoord[1].garage
             end
             local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
-            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice or not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
+            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice or v.garage_id ~= 'private' not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
                 c = c + 1
                 if vehtable[v.impound] == nil then
                     vehtable[v.impound] = {}
