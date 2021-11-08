@@ -1257,7 +1257,7 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
                     print('exploiting')
                 end
             else
-                TriggerClientEvent('renzu_notify:Notify', source, 'error','Garage', 'Vehicle is not impoundable')
+                TriggerClientEvent('renzu_notify:Notify', source, 'error','Garage', 'Vehicle was impounded but is unowned.')
                 cb(false)
                 --xPlayer.showNotification("This Vehicle is local car", 1, 0)
             end
