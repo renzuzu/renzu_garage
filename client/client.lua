@@ -3243,9 +3243,13 @@ function Storevehicle(vehicle,impound, impound_data, public)
         local ent = Entity(vehicle).state
         if ret or ent.share[PlayerData.identifier] then
             DeleteEntity(vehicle)
+					
         end
     end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {}, public)
     neargarage = false
+	DeleteEntity(vehicle)
+	
+	
 end
 
 function helidel(vehicle)
