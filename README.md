@@ -306,16 +306,7 @@ COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;
 ```
-```
-CREATE TABLE IF NOT EXISTS `jobgarages` (
-	`job` VARCHAR(64) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
-	`garage` LONGTEXT NULL COLLATE 'utf8mb4_general_ci',
-	PRIMARY KEY (`job`) USING BTREE
-)
-COLLATE='utf8mb4_general_ci'
-ENGINE=InnoDB
-;
-```
+
 
 # FOLDER NAME
 - must be renzu_garage

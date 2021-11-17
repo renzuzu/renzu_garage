@@ -2182,7 +2182,7 @@ function OpenImpound(garageid)
                 v.garage_id = impoundcoord[1].garage
             end
             local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
-            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice or not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
+            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
                 c = c + 1
                 if vehtable[v.impound] == nil then
                     vehtable[v.impound] = {}
@@ -3243,9 +3243,13 @@ function Storevehicle(vehicle,impound, impound_data, public)
         local ent = Entity(vehicle).state
         if ret or ent.share[PlayerData.identifier] then
             DeleteEntity(vehicle)
+					
         end
     end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {}, public)
     neargarage = false
+	DeleteEntity(vehicle)
+	
+	
 end
 
 function helidel(vehicle)
