@@ -4234,6 +4234,16 @@ function isVehicleUnlocked()
     local p = PlayerPedId()
     local mycoords = GetEntityCoords(p)
     local veh = nil
+    if IsPedInAnyVehicle(p) then
+        local v = GetVehiclePedIsIn(p)
+        local r = GetIsVehicleEngineRunning(v)
+        TaskLeaveVehicle(p,v,0)
+        Wait(1000)
+        if r then
+            SetVehicleEngineOn(v,true,true,false)
+        end
+        return
+    end
     if not IsPedInAnyVehicle(p) and IsAnyVehicleNearPoint(mycoords.x,mycoords.y,mycoords.z,10.0) then
         --print("ENTERING")
         veh = GetVehiclePedIsEntering(p)
@@ -4247,7 +4257,7 @@ function isVehicleUnlocked()
             Wait(0)
         end
     end
-    if not DoesEntityExist(veh) or entering then return end
+    if not DoesEntityExist(veh) or entering or GetIsVehicleEngineRunning(veh) then return end
     entering = true
     CreateThread(function()
         while Config.EnableKeySystem do
@@ -4455,8 +4465,19 @@ function Keyless()
     if GlobalState.GVehicles[nearestplate] and GlobalState.GVehicles[nearestplate].owner == PlayerData.identifier -- player owned
     or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
     or GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
+        ent.unlock = not ent.unlock
         PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)
         if not IsPedInAnyVehicle(PlayerPedId(), false) then 
+            if ent.unlock then 
+                local attempt = 1000
+                while not NetworkHasControlOfEntity(nearestveh) and attempt < 100 and DoesEntityExist(nearestveh) do
+                    NetworkRequestControlOfEntity(nearestveh)
+                    Citizen.Wait(1)
+                    attempt = attempt + 1
+                end
+                SetEntityAsMissionEntity(nearestveh,true,true)
+                SetVehicleEngineOn(nearestveh,false,true,false) 
+            end
             playanimation('anim@mp_player_intmenu@key_fob@','fob_click')
             SetVehicleLights(nearestveh, 2);Citizen.Wait(100);SetVehicleLights(nearestveh, 0);Citizen.Wait(200);SetVehicleLights(nearestveh, 2)
         end
@@ -4469,7 +4490,6 @@ function Keyless()
         if not IsPedInAnyVehicle(PlayerPedId(), false) then
             SetVehicleEngineOn(nearestveh,false,true,false)
         end
-        ent.unlock = not ent.unlock
         if ent.unlock then
             ent.havekeys = true
             ent:set('unlock', true, true)

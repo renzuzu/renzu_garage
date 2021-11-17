@@ -1380,6 +1380,11 @@ AddEventHandler('entityCreated', function(entity)
                 local tempvehicles = GlobalState.GVehicles
                 tempvehicles[plate] = new_spawned[1]
                 GlobalState.GVehicles = tempvehicles
+                local share = {}
+                share[new_spawned[1].owner] = new_spawned[1].owner
+                ent.share = share
+                globalkeys[plate] = ent.share
+                GlobalState.Gshare = globalkeys
                 print(plate,'Newly Owned Vehicles Found..Adding to Key system')
             end
         else -- owned vehicles
@@ -1393,11 +1398,11 @@ AddEventHandler('entityCreated', function(entity)
             end
         end
         local plyid = NetworkGetEntityOwner(entity)
+        local xPlayer = ESX.GetPlayerFromId(plyid)
         if plyid and not GlobalState.GVehicles[plate] then
             for k,v in pairs(jobplates) do
                 if string.find(plate, k) then
                     local share = {}
-                    local xPlayer = ESX.GetPlayerFromId(plyid)
                     if xPlayer then
                         local tempvehicles = GlobalState.GVehicles
                         tempvehicles[plate] = {plate = plate, name = "Vehicle", owner = xPlayer.identifier}
@@ -1425,6 +1430,13 @@ AddEventHandler('entityCreated', function(entity)
                     print(plate,'Newly Mission Vehicles Found..Adding to Key system')
                 end
             end
+        elseif plyid and xPlayer and GlobalState.GVehicles[plate] and xPlayer.identifier ~= GlobalState.GVehicles[plate].owner then
+            -- another extra checks for vehicle sharing, garage sharing, eg. player 1 dont owned vehicle and he can spawned it.
+            local share = ent.share or {}
+            share[xPlayer.identifier] = xPlayer.identifier
+            globalkeys[plate] = share
+            GlobalState.Gshare = globalkeys
+            print(plate, 'Already Owned Vehicles Spawned by other identifier... giving keys to network entity owner')
         end
     end
 end)
