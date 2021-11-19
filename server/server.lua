@@ -18,6 +18,9 @@ Citizen.CreateThread(function()
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
     print("^2 vehicles ok ^7")
     GlobalState.VehicleinDb = vehicles
+    if not GlobalState.VehiclesState then
+        GlobalState.VehiclesState = {}
+    end
     print("^2 Checking owned_vehicles isparked column table ^7")
     parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE isparked = 1', {}) or {}
     print("^2 owned_vehicles isparked column ok ^7")
@@ -1318,6 +1321,13 @@ AddEventHandler('onResourceStop', function(resourceName)
         SetPlayerRoutingBucket(k,0)
     end
     print('The resource ' .. resourceName .. ' was stopped.')
+end)
+
+RegisterServerEvent('renzu_garage:SetPropState')
+AddEventHandler('renzu_garage:SetPropState', function(data)
+    local State = GlobalState.VehiclesState
+    State[data.plate] = data.props
+    GlobalState.VehiclesState = State
 end)
 
 RegisterServerEvent('statebugupdate') -- this will be removed once syncing of statebug from client is almost instant

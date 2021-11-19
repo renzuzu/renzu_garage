@@ -1403,6 +1403,16 @@ end
 function SetVehicleProp(vehicle, mods)
     local mods = mods
     if Config.ReturnDamage then
+        local State = GlobalState.VehiclesState
+        if State[mods.plate] then
+            mods.wheel_tires = State[mods.plate].wheel_tires
+            mods.vehicle_window = State[mods.plate].vehicle_window
+            mods.vehicle_doors = State[mods.plate].vehicle_doors
+            mods.bodyHealth = State[mods.plate].bodyHealth
+            mods.engineHealth = State[mods.plate].engineHealth
+            mods.tankHealth = State[mods.plate].tankHealth
+            mods.dirtLevel = State[mods.plate].dirtLevel
+        end
         if mods.wheel_tires then
             for tireid = 1, 7 do
                 if mods.wheel_tires[tireid] ~= false then
@@ -4240,12 +4250,22 @@ function isVehicleUnlocked()
     local veh = nil
     if IsPedInAnyVehicle(p) then
         local v = GetVehiclePedIsIn(p)
+        local plate = GetVehicleNumberPlateText(v)
+        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
         local r = GetIsVehicleEngineRunning(v)
         TaskLeaveVehicle(p,v,0)
         Wait(1000)
         if r then
             SetVehicleEngineOn(v,true,true,false)
         end
+        local props = GetVehicleProperties(v)
+        local Visual = {}
+        for k,v in pairs(props) do
+            if k == 'tankHealth' or  k == 'dirtLevel' or  k == 'bodyHealth' or  k == 'engineHealth' or k == 'wheel_tires' or k == 'vehicle_window' or k == 'vehicle_doors' then
+                Visual[k] = v
+            end
+        end
+        TriggerServerEvent('renzu_garage:SetPropState',{props = Visual, plate = plate})
         return
     end
     if not IsPedInAnyVehicle(p) and IsAnyVehicleNearPoint(mycoords.x,mycoords.y,mycoords.z,10.0) then
