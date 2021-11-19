@@ -678,7 +678,7 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
     if share and not DoiOwnthis(xPlayer,id) then
         identifier = v.owner
     end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
+    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE `identifier` = @identifier and garage = @garage', {
         ['@identifier'] = identifier,
         ['@garage'] = id
     })
@@ -710,7 +710,8 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
     Wait(1000)
     lastgarage[source] = id
 	local vehicle_ = {}
-	for k,v in pairs(json.decode(result[1].vehicles)) do
+    local private_cars = result[1] and result[1].vehicles or '[]'
+	for k,v in pairs(json.decode(private_cars) or {}) do
 		vehicle_[k] = v
 	end
     TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],id, vehicle_)
