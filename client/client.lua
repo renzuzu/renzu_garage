@@ -1579,7 +1579,7 @@ function GetVehicleProperties(vehicle)
                     plate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1')
                 end
                 local modlivery = GetVehicleLivery(vehicle)
-                if modlivery == -1 then
+                if modlivery == -1 or GetVehicleMod(vehicle, 48) ~= -1 then
                     modlivery = GetVehicleMod(vehicle, 48)
                 end
                 local mods = {
