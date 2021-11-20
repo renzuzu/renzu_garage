@@ -2,17 +2,19 @@ fx_version 'cerulean'
 games {'common'}
 ui_page 'html/index.html'
 
-server_scripts {
-	'@mysql-async/lib/MySQL.lua',	
+shared_scripts {
+	'conf/locale/*.lua',
 	'conf/main.lua',
 	'conf/*.lua',
+}
+
+server_scripts {
+	'@mysql-async/lib/MySQL.lua',	
 	'server/server.lua'
 }
 
 client_scripts {
-	'conf/main.lua',
-	'conf/*.lua',
-	'client/client.lua'
+	'client/*.lua'
 }
 
 files {

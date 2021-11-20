@@ -1,0 +1,7 @@
+you can name the lua ex. 
+en.lua
+es.lua
+pl.lua
+vn.lua
+Just change the first line
+Locale['en'] to Locale['es'] for example if es.

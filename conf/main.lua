@@ -1,7 +1,7 @@
 Config = {}
-Config.Locale = "en"
+Config.Locale = "en" -- en,es, or any language support
 --GENERAL SETTING
-Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async", "oxmysql"
+Config.Mysql = 'ghmattisql' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
 Config.ReturnDamage = true -- return visual damage when restoring vehicle from garage
 Config.ReturnPayment = 1000 -- a value to pay if vehicle is not in garage
@@ -16,7 +16,7 @@ Config.BlipNamesStatic = true -- if true no more garage a garage b blip names fr
 --GENERAL SETTING
 
 -- VEHICLE IMAGES
-Config.use_renzu_vehthumb = false
+Config.use_renzu_vehthumb = true
 
 
 Config.EnableImpound = true -- enable/disable impound
@@ -85,3 +85,9 @@ end
 
 -- Carlock
 Config.CarlockKey = 'J' -- Keyboard (changable in keybinds FIVEM setting)
+
+-- Variables
+Message = Locale[Config.Locale]
+if not IsDuplicityVersion() then
+  LastVehicleFromGarage = nil garageid = 'A' inGarage = false ingarage = false garage_coords = {} shell = nil ESX = nil fetchdone = false PlayerData = {} playerLoaded = false canpark = false spawned_cars = {} vtype = 'car' vehiclesdb = {} tid = 0 propertygarage = false parkmeter = {} jobgarages = {} coordcache = {} propertyspawn = {} lastcat = nil deleting = false housingcustom = nil garage_public = false shell = nil i = 0 vehtable = {} garage_id = 'A' meter_cars = {} inshell = false patrolcars = {} cat = nil OwnedVehicles = {} VTable = {} owned_veh = {} neargarage = false markers = {} drawsleep = 1 drawtext = false indist = false jobgarage = false garagejob = nil ispolice = false vhealth = 1000 myoldcoords = nil spawnedgarage = {} shell = nil i = 0 vehtable = {} garage_id = 'A' min = 0 max = 10 plus = 0 countspawn = 0 opened = false newprop = nil object = nil insidegarage = true private_garages = {} activeshare = nil currentprivate = nil carrymode = false carrymod = false tostore = {} vehicleinarea = {} impoundata = nil parkedvehicles = {} vehiclekeysdata = nil entering = false garagekeysdata = nil
+end

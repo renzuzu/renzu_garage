@@ -120,95 +120,6 @@ Citizen.CreateThread(function()
     print("^2 impound_data Import success ^7")
     Wait(100)
     print("^2 -------- renzu_garage v1.72 Started ----------^7")
-    if Config.UseRayZone then
-        local garages = {} -- garage table
-        garages['multi_zone'] = {} -- rayzone multizone
-        for k,v in pairs(garagecoord) do -- repack the coordinates to new table
-            garages['multi_zone'][tostring(v.garage)] = {
-                coord = vector3(v.garage_x,v.garage_y,v.garage_z),
-                custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
-                custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
-                custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
-                arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
-                custom_ped = `g_m_importexport_01`, -- custom ped for this zone
-                custom_heading = 100.0,
-                server_event = false,
-                min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
-                max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
-            }
-        end
-        if Config.EnableImpound then
-            for k,v in pairs(impoundcoord) do -- repack the coordinates to new table
-                garages['multi_zone'][tostring(v.garage)] = {
-                    coord = vector3(v.garage_x,v.garage_y,v.garage_z),
-                    custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
-                    custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
-                    custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
-                    arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
-                    custom_ped = `g_m_importexport_01`, -- custom ped for this zone
-                    custom_heading = 100.0,
-                    server_event = false,
-                    min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
-                    max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
-                }
-            end
-        end
-
-        if Config.EnableHeliGarage then
-            for k,t in pairs(helispawn) do -- repack the coordinates to new table
-                for k,v in pairs(t) do
-                    garages['multi_zone'][tostring(v.garage)] = {
-                        coord = vector3(v.coords.x,v.coords.y,v.coords.z),
-                        custom_title = 'Garage '..v.garage, -- custom title and it wont used the ['title'] anymore
-                        custom_event = 'opengarage', -- if custom_event is being used , the event ( ['event'] ) will not be used.
-                        custom_arg = { 1, 2, 4, 3}, -- sample only , ordering is important on this table
-                        arg_unpack = false, -- if true this will return the array as unpack to your event handler example: AddEventHandler("renzu_rayzone:test",function(a,b,c) the ,a will return the 1 ,b for 2, c for 4 ( as example config here) custom_arg = { 1, 2, 4, 3}, elseif false will return as a table.
-                        custom_ped = `g_m_importexport_01`, -- custom ped for this zone
-                        custom_heading = 100.0,
-                        server_event = false,
-                        min_z = -25.0, -- you can use this if you want the zone can be trigger only within this minimum height level
-                        max_z = 240.0, -- you can use this if you want the zone can be trigger only within this maximum height level
-                    }
-                end
-            end
-        end
-
-        garage = {
-            ['zone_cooldown'] = 1, -- event cooldown
-            ['popui'] = true, -- show pop ui by default, manual trigger event.
-            ['multi_zone'] = garages['multi_zone'], -- insert table to the array
-            -- global setting for each multi zone
-            ['title'] = '🚗 My Garage', -- ignored if multizone
-            ['confirm'] = '[ENTER]',
-            ['reject'] = '[BACK]',
-            ['thread_dist'] = 10,
-            ['event_dist'] = 5,
-            ['drawmarker'] = true,
-            ['marker_type'] = 36,
-            ['event'] = 'opengarage',
-            ['invehicle_title'] = 'Store Vehicle', -- title to show instead of the ['title']
-            ['spawnped'] = `g_m_importexport_01`, -- set to false if no spawnpeds else `g_m_importexport_01` (model)
-        }
-        zoneadd = exports['renzu_rayzone']:AddZone('Garage Zone Multi', garage) -- export!
-        Wait(100)
-        parking_prop = { -- Example using parking prop for parking garage
-            ['type'] = 'object',
-            ['job'] = 'all',
-            ['model'] = {"prop_parking_hut_2","prop_parking_hut_2b","ch_prop_parking_hut_2","prop_parkingpay","dt1_21_parkinghut","prop_parking_sign_07"},
-            ['dist'] = 7,
-            --['target'] = 'bone',
-            uidata = {
-                ['garagepublic'] = {
-                    ['title'] = 'Public Garage',
-                    ['type'] = 'event', -- event / export
-                    ['content'] = 'renzu_garage:property',
-                    ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {`street`,`coord`}, arg_unpack = true}, -- `street` = send current street name, `coord` = send current coordinates ( this is a shorcut function for custom args )
-                },
-            },
-        }
-
-        add = exports['renzu_rayzone']:AddRayCastTarget("Parking Target",parking_prop)
-    end
 end)
 
 function MysqlGarage(plugin,type,query,var)
@@ -337,6 +248,7 @@ function DoiOwnthis(xPlayer,id)
     for k,v in pairs(current_routing) do
         if tonumber(v) == tonumber(xPlayer.source) and GetPlayerRoutingBucket(xPlayer.source) == tonumber(k) then
             owned = true
+            success = true
         end
     end
     return owned
@@ -471,9 +383,9 @@ AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,
         share = false
         save = nil
         savepartsonly = nil
-        TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully store the parts ('..mod.name..')')
+        TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[63]..' ('..mod.name..')')
     else
-        TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'this vehicle mod does not exist in your garage')
+        TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[64])
     end
 end)
 
@@ -513,12 +425,12 @@ AddEventHandler('renzu_garage:buygarage', function(id,v)
                 ['@vehicles'] = '[]'
             })
             xPlayer.removeMoney(cost)
-            TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Purchase this Garage ('..id..')')
+            TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[65]..' ('..id..')')
             local housingtemp = GlobalState.HousingGarages or {}
             housingtemp[id] = xPlayer.identifier
             GlobalState.HousingGarages = housingtemp
         else
-            TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'not enough money')
+            TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[66])
         end
     end
 end)
@@ -559,7 +471,7 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
         ['@owner'] = xPlayer.identifier,
         ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1')
     })
-    if not Config.Allowednotowned and result[1] == nil then TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'You dont owned the vehicle') return end
+    if not Config.Allowednotowned and result[1] == nil then TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[69]) return end
     local garage = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
         ['@identifier'] = xPlayer.identifier,
         ['@garage'] = id
@@ -607,12 +519,11 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
             ['@garage'] = id,
             ['@identifier'] = xPlayer.identifier,
         })
-        TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Stored this vehicle')
+        TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[67])
         vehiclesgarage = {}
         pgarage = {}
-        --ever wonder why need to declare this? i dont know too, but without this, it cause a data duplicate, must be fx version bug! happens only on > recommended like 4680 or > 4680
     else
-        TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'There is not enough space in this garage')
+        TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[68])
     end
 end)
 
@@ -623,7 +534,7 @@ AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
     if share and not DoiOwnthis(xPlayer,houseid) then
-        identifier = v.owner
+        identifier = v.owner or xPlayer.identifier
     end
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
         ['@identifier'] = identifier,
@@ -679,7 +590,7 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
     if share and not DoiOwnthis(xPlayer,id) then
-        identifier = v.owner
+        identifier = v.owner or xPlayer.identifier
     end
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE `identifier` = @identifier and garage = @garage', {
         ['@identifier'] = identifier,
@@ -764,7 +675,7 @@ AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
             ['@garage'] = id,
             ['@identifier'] = identifier,
         })
-        TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Successfully Take out the vehicle')
+        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[70])
         --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
         TriggerClientEvent('renzu_garage:exitgarage',source, table, true)
         Wait(500)
@@ -813,7 +724,7 @@ RegisterCommand(Config.GiveAccessCommand, function(source, args, rawCommand)
             end
         end
     else
-        TriggerClientEvent('renzu_notify:Notify', source, 'warning','Garage', 'You must be in garage to invite')
+        TriggerClientEvent('renzu_notify:Notify', source, 'warning',Message[2], Message[71])
     end
 end)
 
@@ -846,18 +757,18 @@ ESX.RegisterServerCallback('renzu_garage:parkingmeter', function (source, cb, co
                 ['@plate'] = json.decode(prop).plate
             })
             xPlayer.removeMoney(Config.MeterPayment)
-            TriggerClientEvent('renzu_notify:Notify', src, 'success','Garage', 'You Successfully Park the vehicle')
+            TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[72])
             Wait(300)
             parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
             Wait(200)
             TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,json.decode(prop).plate,parkmeter)
             cb(true)
         else
-            TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'Parking is occupied')
+            TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[73])
             cb(false)
         end
     else
-        TriggerClientEvent('renzu_notify:Notify', src, 'error','Garage', 'Not Enough Money to pay parking')
+        TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[74])
         cb(false)
     end
 end)
@@ -918,10 +829,10 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
             local money = impound_G[garage] ~= nil and impound_G[garage][plate] ~= nil and impound_G[garage][plate].fine or ImpoundPayment
             if xPlayer.getMoney() >= money then
                 xPlayer.removeMoney(money)
-                TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'Successfully Retrieve Owned vehicle')
+                TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[75])
                 cb(1,0)
             else
-                TriggerClientEvent('renzu_notify:Notify', source, 'error','Garage', 'Fail to retrieve vehicle, not enough money cabron')
+                TriggerClientEvent('renzu_notify:Notify', source, 'error',Message[2], Message[76])
                 cb(false,1,garage_impound,impound_fee)
             end
         elseif result and result[1].stored ~= nil then
@@ -997,7 +908,7 @@ AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
                 ['@keys']   = json.encode(result),
             })
         end
-        TriggerClientEvent('renzu_notify:Notify',xPlayer.source, 'success','Garage', 'You receive a Garage Key from '..sender.name)
+        TriggerClientEvent('renzu_notify:Notify',xPlayer.source, 'success',Message[2], 'You receive a Garage Key from '..sender.name)
     elseif action == 'del' then
         local xPlayer = ESX.GetPlayerFromId(source)
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
@@ -1058,7 +969,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
                 end
             end
         else
-            xPlayer.showNotification("This Vehicle is not your property", 1, 0)
+            xPlayer.showNotification(Message[77], 1, 0)
         end
     end
 end)
@@ -1098,7 +1009,7 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
                 end
             end
         else
-            xPlayer.showNotification("This Vehicle is not your property", 1, 0)
+            xPlayer.showNotification(Message[77], 1, 0)
         end
     end
 end)
@@ -1121,7 +1032,7 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
         if r and r[1] then
             identifier = r[1].owner
         else
-            TriggerClientEvent('renzu_notify:Notify', source, 'info','Garage', 'Vehicle is not owned')
+            TriggerClientEvent('renzu_notify:Notify', source, 'info',Message[2], 'Vehicle is not owned')
             cb(false,public)
         end
     end
@@ -1169,9 +1080,9 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     if state == 1 then
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Successfully Store the vehicle')
+                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[78])
                     else
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Successfully Take out the vehicle')
+                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[79])
                     end
                     cb(true,public)
                 else
@@ -1252,9 +1163,9 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     if state == 1 then
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Impound the Vehicle')
+                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[80])
                     else
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success','Garage', 'You Release the Vehicle')
+                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[81])
                     end
                     cb(true,public)
                 else
@@ -1262,12 +1173,12 @@ ESX.RegisterServerCallback('renzu_garage:changestate', function (source, cb, pla
                     print('exploiting')
                 end
             else
-                TriggerClientEvent('renzu_notify:Notify', source, 'error','Garage', 'Vehicle was impounded but is unowned.')
+                TriggerClientEvent('renzu_notify:Notify', source, 'error',Message[2], Message[82])
                 cb(false)
                 --xPlayer.showNotification("This Vehicle is local car", 1, 0)
             end
         else
-            TriggerClientEvent('renzu_notify:Notify', source, 'info','Garage', 'Vehicle is not your property')
+            TriggerClientEvent('renzu_notify:Notify', source, 'info',Message[2], Message[77])
             cb(false)
             --xPlayer.showNotification("This Vehicle is not your property", 1, 0)
         end
@@ -1304,12 +1215,10 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
                     print(plate,'Newly Transfer Vehicles Found..Updating Key system')
                 end
             else
-                xPlayer.showNotification("This Vehicle is not your property", 1, 0)
+                xPlayer.showNotification(Message[77], 1, 0)
             end
         elseif not transfer then
-            xPlayer.showNotification("User Does not Exist!", 1, 0)
-        else
-            xPlayer.showNotification("Invalid Plate number! (Must be Digits only)", 1, 0)
+            xPlayer.showNotification(Message[83], 1, 0)
         end
     end
 end)
