@@ -713,8 +713,9 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
     Wait(1000)
     lastgarage[source] = id
 	local vehicle_ = {}
-    local private_cars = result[1] and result[1].vehicles or '[]'
-	for k,v in pairs(json.decode(private_cars) or {}) do
+    local private_cars = result and result[1] and result[1].vehicles or '[]'
+    local cars = json.decode(private_cars) or {}
+	for k,v in pairs(cars) do
 		vehicle_[k] = v
 	end
     TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],id, vehicle_)
