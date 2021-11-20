@@ -347,7 +347,7 @@ CreateThread(function()
                 for k,v in pairs(helispawn[PlayerData.job.name]) do
                     local vec = vector3(v.coords.x,v.coords.y,v.coords.z)
                     local dist = #(vec - mycoord)
-                    if dist < 10 then
+                    if dist < 5 then
                         tid = k
                         garageid = v.garage
                         neargarage = true
@@ -366,7 +366,7 @@ CreateThread(function()
                     local vec = vector3(v.garage.x,v.garage.y,v.garage.z)
                     local req_dis = 3
                     local dist = #(vec - mycoord)
-                    if dist < 10 then
+                    if dist < 3 then
                         tid = k
                         garageid = 'garage_'..k
                         neargarage = true
