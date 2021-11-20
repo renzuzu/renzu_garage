@@ -269,7 +269,7 @@ garagecoord = {
     {
         garage = "Plane Hangar A", --Devin Westons Hangar
         --job = "all", -- uncomment if job
-        Type = "plane",
+        Type = "air",
         Dist = 10,
         Store_dist = 50,
         Blip = {color = 38, sprite = 423, scale = 0.8},

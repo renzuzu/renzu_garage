@@ -1742,7 +1742,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
                 props.engineHealth = 200
             end
             local pmult, tmult, handling, brake = 1000,800,GetPerformanceStats(vehicleModel).handling,GetPerformanceStats(vehicleModel).brakes
-            if value.type == 'boat' or value.type == 'plane' then
+            if value.type == 'boat' or value.type == 'air' then
                 pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
             end
             if value.job == '' then
@@ -1898,7 +1898,7 @@ function CreateDefault(default,jobonly,garage_type,garageid)
         if v.grade <= PlayerData.job.grade then
             local vehicleModel = GetHashKey(v.model)
             local pmult, tmult, handling, brake = 1000,800,GetPerformanceStats(vehicleModel).handling,GetPerformanceStats(vehicleModel).brakes
-            if v.type == 'boat' or v.type == 'plane' then
+            if v.type == 'boat' or v.type == 'air' then
                 pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
             end
             local default_thumb = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
