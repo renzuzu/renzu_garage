@@ -807,6 +807,8 @@ end)
 ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, cb, plate, id, ispolice, patrol)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
+    local garage_impound = nil
+    local impound_fee = 0
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -819,8 +821,8 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
             ['@plate'] = plate
         })
         if string.find(id, "impound") then
-            local garage_impound = impoundcoord[1].garage
-            local impound_fee = ImpoundPayment
+            garage_impound = impoundcoord[1].garage
+            impound_fee = ImpoundPayment
             if result[1] and result[1].impound then
                 for k,v in pairs(impound_G) do
                     for k2,v2 in pairs(v) do
