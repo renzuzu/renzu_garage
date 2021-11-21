@@ -416,14 +416,14 @@
 
       .container .modal {
           position:absolute;
-          top:23vh;
-          left:35vw;
+          top: 1%;
+          left: 40vw;
           z-index:0;
-          font-family: 'azonixregular';  
+          font-family: 'azonixregular';
           width: 50vh;
           height: 20vh;
           max-width: 350px;
-          max-height: 220px !important;
+          max-height: 12.5vh !important;
           border-radius:15px;
           padding: 2vh 0;
           background:white;
@@ -434,17 +434,19 @@
       }
 
       .container .modal .modal-content{
+          position: absolute;
           z-index:2;
           padding:10px 15px;
-          width:90%;
-          height:55%;
+          width: 100%;
+          /* height: 35%; */
+          top: 10px;
       }
       .container .modal .modal-content .title{
           font-weight: 200;
-          font-size: 1.2em;
+          font-size: 0.7em;
           line-height: 0.5;
-          margin:0;            
-          margin-top:-1px;
+          margin:0;
+          margin-top: -10px;
           margin-bottom:10px;
       }
 
@@ -469,10 +471,14 @@
           z-index:2;
           padding:10px 15px;
           width:90%;
-          height:45%;
-          display:flex;
-          align-items: flex-end;
-          justify-content: space-between;
+          height: 100%;
+          display: inline-block;
+          /* align-items: flex-end; */
+          /* justify-content: space-between; */
+          /* margin-top: 20px; */
+          position: absolute;
+          top: 39%;
+          left: 25%;
       }
       .container .modal .modal-footer .modal-price{
           width:55%;
@@ -492,8 +498,8 @@
       }   
 
       .container .modal .modal-footer .modal-buttons{
-          width:45%;
-          display:flex;            
+          width: 50%;
+          display:flex;
           flex-direction: row;
           align-items: center;
           justify-content: space-between;
@@ -508,13 +514,13 @@
           border: 0px solid;
           width: 9vh;
           height: 7vh;
-          max-width: 60px;
-          max-height:45px;
+          max-width: 70px;
+          max-height: 40px;
           font-family:"azonixregular";
           font-size: 1.6em;
           color:white;
           border-radius:5px;
-          background:black;
+          background: #363c42;
       }
       .container .modal .modal-footer .modal-buttons span{            
           font-size:0.7em;
@@ -523,11 +529,11 @@
       .container .modal .background-circle{
           border-radius:15px 15px 0 0;
           position:absolute;
-          background: #01223eed;
+          background: #2e3031;
           top: 0px;
           left: 0px;
           right: 0px;
-          bottom: 100px;
+          bottom: 60px;
           z-index:1;
       }
 
@@ -670,7 +676,7 @@
 .w-100{width:100%!important}
 .w3-greyscale-max,.w3-grayscale-max,.w3-hover-greyscale:hover,.w3-hover-grayscale:hover{filter:grayscale(100%)}
 .w3-greyscale,.w3-grayscale{filter:grayscale(75%)}.w3-greyscale-min,.w3-grayscale-min{filter:grayscale(50%)}
-.w3-grey,.w3-hover-grey:hover,.w3-gray,.w3-hover-gray:hover{color:#000!important;background-color: #2483e4!important;transition: width 2s ease-in-out;height: 15px;height: 15px !important;}
+.w3-grey,.w3-hover-grey:hover,.w3-gray,.w3-hover-gray:hover{color:#000!important;background-color: #e4e4e4!important;transition: width 2s ease-in-out;height: 15px;height: 15px !important;}
 .w3-border-0{border:0!important}.w3-border{border: 1px solid #cccccc8c !important;max-width: 99%;}
 .w3-border-top{border-top:1px solid #ccc!important}.w3-border-bottom{border-bottom:1px solid #ccc!important}
 .w3-border-left{border-left:1px solid #ccc!important}.w3-border-right{border-right:1px solid #ccc!important}
@@ -683,41 +689,27 @@ box-sizing: border-box;
 body {
 font-family: &quot;Roboto Condensed&quot;, sans-serif;
 }
-body .right {
-float: right;
-position: relative;
-height: 200vh;
-top:20%;
-right:1%;
-}
+body .right {/* left: auto; *//* float: right; */position: relative;/* height: 100vh; */top: 15%;/* right: 0; */width: 100vw;/* margin-left: 50%; *//* margin-top: 20%; */}
 
-.app::-webkit-scrollbar {
-width: 1em;
-}
+.app::-webkit-scrollbar {width: 0.4em;}
 
-.app::-webkit-scrollbar-track {
-box-shadow: inset 0 0 6px rgba(3, 117, 170, 0.3);
-}
+.app::-webkit-scrollbar-track {box-shadow: inset 0 0 6px rgb(87 88 88 / 30%);}
 
 .app::-webkit-scrollbar-thumb {
   background-color: rgb(24 24 25 / 35%);
   outline: 1px solid rgb(80 80 80 / 64%);
 }
-.app {font-size: 20px;border-radius: 10px;width: 30vw;margin: 0 auto;height: auto;max-height: 70vh;position: absolute;right: 0;top: 14.5%;overflow-y: scroll;overflow-x: hidden;/* box-shadow: 4px 5px 5px 5px rgb(64 47 47 / 11%); */-webkit-animation: intro 0.34s 0.4s cubic-bezier(1, 1.4, 0.41, 1.01) forwards;animation: intro 0.34s 0.4s cubic-bezier(1, 1.4, 0.41, 1.01) forwards;transform: translateY(-50%) scale(0) rotateX(10deg) rotateY(10deg) rotateZ(10deg);margin: auto;font-family: &quot;Roboto Condensed&quot;,sans-serif;}
+.app {FONT-VARIANT: JIS83;font-size: 20px;border-radius: 10px;width: 30vw;margin: 0 auto;height: auto;right:35vw;max-height: 70vh;position: absolute;/* top: 50%; *//* left: auto; */overflow-y: scroll;overflow-x: hidden;/* box-shadow: 4px 5px 5px 5px rgb(64 47 47 / 11%); *//* -webkit-animation: intro 0.34s 0.4s cubic-bezier(1, 1.4, 0.41, 1.01) forwards; *//* animation: intro 0.34s 0.4s cubic-bezier(1, 1.4, 0.41, 1.01) forwards; *//* transform: translateY(-50%) scale(0) rotateX(10deg) rotateY(10deg) rotateZ(10deg); */margin: auto;}
 
 @media only screen and (min-width: 1900px) {
-.app {
-width: 22vw;
-}
+.app {width: 25vw;}
 }
 @media only screen and (min-width: 2400px) {
 .app {
 width: 17vw;
 }
 }
-.app_inner {
-position: relative;
-}
+.app_inner {position: relative;background: #222729;}
 .app_inner input[type=radio] {
 display: none;
 }
@@ -730,8 +722,8 @@ transition: all 0.3s 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 .app_inner input[type=radio]:not(checked) + label .app_inner__tab {
   height: 80px;
-  border-left: 7px solid rgb(0 0 0 / 60%) !important;
-  border: 2px solid rgb(10 10 10 / 50%);
+  /* border-left: 7px solid rgb(0 0 0 / 60%) !important; */
+  border: 2px solid rgb(196 200 204 / 56%);
   border-style: outset;
 }
 .app_inner input[type=radio]:not(checked) + label .app_inner__tab .tab_right {
@@ -751,14 +743,14 @@ left:10px !important;
 }
 .app_inner input[type=radio]:checked + label .app_inner__tab .tab_left .big {
 #left: 260px;top: -31px;opacity: 0.8;}
-.app_inner input[type=radio]:checked + label .app_inner__tab .tab_left .imageborder {background: rgb(0 0 0 / 50%);padding:2px;border-radius: 20px;margin-left:0.5vw;margin-bottom:-40px !important;}
+.app_inner input[type=radio]:checked + label .app_inner__tab .tab_left .imageborder {background: rgb(224 229 234 / 67%);padding:2px;border-radius: 20px;margin-left:0.5vw;margin-bottom:-40px !important;}
 
 .app_inner input[type=radio]:checked + label .app_inner__tab {
   /* background-color: rgb(0 0 0 / 78%); */
   /* background: rgb(4,38,71); */
   /* background: linear-gradient(90deg, rgb(10 10 10 / 65%) 0%, rgb(20 22 23 / 92%) 35%, rgb(16 16 16 / 85%) 100%); */
   /* background-color: rgba(0, 0, 0, 0.42); */
-  background-color: rgb(14 16 19 / 95%);
+  background-color: rgb(27 28 29 / 42%);
 }
 
 .app_inner input[type=radio]:not(checked) + label .app_inner__tab .tab_left .big {
@@ -777,15 +769,17 @@ width: 100%;
 .app_inner label:nth-of-type(1) .app_inner__tab {
   /* background: #121315ed; */
   height: 200px;
-  background: linear-gradient( 
+  /* background: linear-gradient( 
     90deg
-     , rgb(26 27 29 / 92%) 0%, rgb(11 13 14 / 79%) 35%, rgb(3 4 4 / 79%) 100%);
+     , rgb(26 27 29 / 92%) 0%, rgb(11 13 14 / 79%) 35%, rgb(3 4 4 / 79%) 100%); */
+  background: #1f222369;
 }
 .app_inner label:nth-of-type(1) .app_inner__tab:hover {
   transition: all 0.2s;
   background: #000000e0;
   background: rgb(4,38,71);
-  background: linear-gradient(90deg, rgb(23 24 25 / 87%) 0%, rgb(11 12 14 / 93%) 35%, rgb(2 2 2 / 95%) 100%);
+  background: linear-gradient(90deg, rgb(49 51 53 / 18%) 0%, rgb(58 60 64 / 45%) 35%, rgb(75 81 86 / 41%) 100%);
+  /* background: #1a1d1c; */
 }
 .app_inner label:nth-of-type(1) .app_inner__tab .tab_left__image {
 background: #EA495F;

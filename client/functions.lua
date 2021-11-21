@@ -1180,7 +1180,8 @@ function OpenGarage(garageid,garage_type,jobonly,default)
             {
                 garage_id = garageid,
                 data = vehtable,
-                type = "display"
+                type = "display",
+                view = Config.Quickpick,
             }
         )
 

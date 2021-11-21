@@ -414,6 +414,10 @@ window.addEventListener('message', function(event) {
         }
         OpenGarage(VehicleArr)
         ShowVehicle(0);
+        $("#appdiv").css("display","block")
+        if (!event.data.view) {
+            $("#appdiv").css("right","0")
+        }
     }
 
     if (event.data.type == "hide") {
@@ -467,7 +471,20 @@ $(document).ready(function() {
 
     var app = '<div class="container">\
     <div class="right">\
-      <div class="app">\
+      <div style="display:none;" class="app" id="appdiv">\
+      <div style="\
+    padding: 10px;\
+    background: #222;\
+    /* width: 100%; */\
+    color: #fefefe;\
+"><input id="SearchData" oninput="Search()" placeholder="Search - Plate, Model, Brand, Category" type="text" style="\
+    color: #a2a5a9;\
+    width: 100%;\
+    border-radius: 5px;\
+    height: 25px;\
+    background: #505356;\
+    text-align: center;\
+"></div>\
         <div class="app_inner" id="vehlist">\
         </div>\
       </div>\
@@ -480,7 +497,7 @@ $(document).ready(function() {
       <div class="column" id="nameBrand">\
       </div>\
       <div class="column menu-modifications" style="right:50px; position:absolute;top:-20px;">\
-          <div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE;color:#fff !important; border-radius: 10px;" onclick="garage()"> <i class="fad fa-garage"></i> Go to Garage </button> </div>\
+          <div class="row" id="confirm"> <button class="confirm_out" style="background:#24262773;color:#fff !important; border-radius: 10px;" onclick="garage()"> <i class="fad fa-garage"></i> Go to Garage </button> </div>\
       </div>\
   </div>\
   <div class="middle-left2-container">\
@@ -695,7 +712,7 @@ function ShowConfirm(){
         <div class="modal-content">
             <i style="    position: absolute;
             right: 20%;
-            font-size: 40px;" class="fas fa-garage-car"></i>
+            font-size: 30px; top:-2px;" class="fas fa-garage-car"></i>
             <p class="title">Impound:</p>
             <p class="vehicle">Vehicle is Unavailable</p>
         </div>
@@ -731,7 +748,7 @@ function ShowConfirm(){
         <div class="modal-content">
             <i style="    position: absolute;
             right: 20%;
-            font-size: 40px;" class="fas fa-garage-car"></i>
+            font-size: 30px; top:-2px;" class="fas fa-garage-car"></i>
             <p class="title">Confirm:</p>
             <p class="vehicle">Release Vehicle</p>
             <p style="display:none;" id="finediv">FINE: $ <span id="fineamount">0</span></p>
@@ -798,7 +815,7 @@ function onimpound(){
         <div class="modal-content">
             <i style="    position: absolute;
             right: 20%;
-            font-size: 40px;" class="fas fa-garage-car"></i>
+            font-size: 30px; top:-2px;" class="fas fa-garage-car"></i>
             <p class="title">Impound:</p>
             <p class="vehicle">Vehicle is Impounded</p>
         </div>
@@ -894,8 +911,28 @@ $(document).on('keydown', function(event) {
             var modelUper = data[i].model;
             inGarageVehicle[i] = data[i]
             var img = data[i].img
-            $(".app_inner").append('<label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:7px;color: #e2e2e2;;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:8px;color:#75ffb9;">Garage: '+ data[i].garage_id +'</span><h2 style="font-size:11px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="min-width: 120px;height: 70px;border-radius: 10px;max-width: 120px;border-color: #c7c7c7;;" onerror="this.src=`https://i.imgur.com/Jdz2ZMK.png`;" src="'+img+'"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#0454FE" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> </div> </div> </label></input></label>');    
+            var plate = data[i].plate.replace(' ','');
+            var cats = data[i].brand.replace(' ','');
+            var name = data[i].name.replace(' ','');
+            $(".app_inner").append('<content class="datas" data-'+modelUper.toLowerCase()+''+plate.toLowerCase()+''+cats.toLowerCase()+''+name.toLowerCase()+'="'+modelUper+' '+data[i].plate+' '+data[i].brand+'"><label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:7px;color: #e2e2e2;;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:8px;color:#fefefe;">Garage: '+ data[i].garage_id +'</span><h2 style="font-size:11px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="min-width: 120px;height: 70px;border-radius: 10px;max-width: 120px;border-color: #c7c7c7;padding:2px;background:#d2dce266;" onerror="this.src=`https://i.imgur.com/Jdz2ZMK.png`;" src="'+img+'"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#191b1f87" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> </div> </div> </label></input></label></content>');    
         }     
     }
     $("#garage").fadeOut();
-    //OpenGarage(VehicleArr)
+
+    function Search(string) {
+        var val = document.getElementById('SearchData').value
+        val = val.replace(' ','')
+        var allEl = document.querySelectorAll('.datas');
+        var regex = new RegExp('^(.*)'+val+'(.*)$');
+
+        for (var i = 0; i < allEl.length; i++) {
+            var data = Object.keys(allEl[i].dataset);
+            for (var j = 0; j < data.length; j++) {
+                if (!regex.test(data[j])) {
+                        allEl[i].style.display = 'none'
+                } else {
+                    allEl[i].style.display = 'block'
+                }
+            }
+        }
+    }
