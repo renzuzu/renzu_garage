@@ -13,7 +13,15 @@ local globalkeys = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 Citizen.CreateThread(function()
     Wait(1000)
-    print("^2 -------- renzu_garage v1.72 Starting.. ----------^7")
+    print("^2 -------- renzu_garage v1.726 Starting.. ----------^7")
+    local OneSync = GetConvar('onesync_enabled', false) == 'true'
+	local Infinity = GetConvar('onesync_enableInfinity', false) == 'true'
+	if not OneSync and not Infinity then
+        while true do
+            print('^1One Sync is Disable: This garage need ^2OneSync^7 ^5Enable^5 ^7')
+            Wait(1000)
+        end
+	elseif Infinity then print('^2Server is running OneSync Infinity^7') else print('^2Server is running OneSync Legacy^7') end
     print("^2 Checking vehicles table ^7")
     vehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehicles', {})
     print("^2 vehicles ok ^7")
@@ -99,7 +107,7 @@ Citizen.CreateThread(function()
             end
         end
     end
-    GlobalState.GVehicles = tempvehicles 
+    GlobalState.GVehicles = tempvehicles
     tempvehicles = nil
     print("^2 Checking parking_meter table ^7")
     parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
@@ -119,7 +127,7 @@ Citizen.CreateThread(function()
     end
     print("^2 impound_data Import success ^7")
     Wait(100)
-    print("^2 -------- renzu_garage v1.72 Started ----------^7")
+    print("^2 -------- renzu_garage v1.726 Started ----------^7")
 end)
 
 function MysqlGarage(plugin,type,query,var)
