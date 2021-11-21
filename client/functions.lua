@@ -176,13 +176,14 @@ function Storevehicle(vehicle,impound, impound_data, public)
     Wait(2000)
     ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
         local ent = Entity(vehicle).state
-        if ret or ent.share[PlayerData.identifier] then
-            DeleteEntity(vehicle)
-					
+        if ret or ent.share and ent.share[PlayerData.identifier] then
+            DeleteEntity(vehicle)	
         end
     end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {}, public)
     neargarage = false
-	DeleteEntity(vehicle)
+        if impound then
+	   DeleteEntity(vehicle)
+        end
 	
 	
 end
