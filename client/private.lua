@@ -449,20 +449,18 @@ AddEventHandler('renzu_garage:choose', function(table,garage)
 	DoScreenFadeOut(1)
     insidegarage = false
     local closestplayer, dis = GetClosestPlayer()
-    if closestplayer == -1 and dis < 30 then
-        local empty = true
-        for k,v in pairs(private_garages) do
-            empty = false
+    local empty = true
+    for k,v in pairs(private_garages) do
+        empty = false
+        ReqAndDelete(v)
+    end
+    if empty then
+        for k,v in pairs(vehicleinarea) do
             ReqAndDelete(v)
         end
-        if empty then
-            for k,v in pairs(vehicleinarea) do
-                ReqAndDelete(v)
-            end
-        end
-        vehicleinarea = {}
-        private_garages = {}
     end
+    vehicleinarea = {}
+    private_garages = {}
 	Wait(2000)
     local hash = tonumber(table.model)
     local count = 0

@@ -219,14 +219,14 @@ CreateThread(function()
                             if IsPedInAnyVehicle(PlayerPedId()) then
                                 print("in vehicle")
                                 msg = Message[7]..' [E] '..Message[6]
-                                DrawInteraction(garageid,vec,{10,15},msg,'renzu_garage:storeprivatehouse',false,garageid,false)
+                                DrawInteraction(garageid,vec,{3,5},msg,'renzu_garage:storeprivatehouse',false,garageid,false)
                             else
                                 msg = Message[7]..' [E] '..Message[5]..' #'..k
-                                DrawInteraction(garageid,vec,{10,15},msg,'renzu_garage:gotohousegarage',true,{v.shell, {},false,garageid,vector4(v.garage.x,v.garage.y,v.garage.z,v.garage.w)},false)
+                                DrawInteraction(garageid,vec,{3,5},msg,'renzu_garage:gotohousegarage',true,{v.shell, {},false,garageid,vector4(v.garage.x,v.garage.y,v.garage.z,v.garage.w)},false)
                             end
                         else
                             msg = Message[7]..' [E] '..Message[9]..' #'..k
-                            DrawInteraction(garageid,vec,{10,15},msg,'renzu_garage:buygarage',true,garageid,false)
+                            DrawInteraction(garageid,vec,{3,5},msg,'renzu_garage:buygarage',true,garageid,false)
                         end
                         --PopUI(v.garage,vec)
                     end

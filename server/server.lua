@@ -459,13 +459,13 @@ function deepcopy(orig)
 end
 
 RegisterServerEvent('renzu_garage:storeprivate')
-AddEventHandler('renzu_garage:storeprivate', function(id,v,prop)
+AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
     if not private_garage[id] then
-        local shelltype = 'small'
+        local shelltype = shell or 'small'
         local houseid = string.gsub(id, 'garage_', '')
         for k,v in pairs(HousingGarages) do
             if tonumber(houseid) == tonumber(k) then
-                shelltype = v.shell
+                shelltype = shell or v.shell
             end
         end
         housegarage[id] = {shell = shelltype, id = id, housing = housing}
@@ -577,7 +577,8 @@ AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
     elseif share then
         routing = v.route
     end
-    SetPlayerRoutingBucket(source,routing)
+    garagehouseid = houseid:gsub('garage_','')
+    SetPlayerRoutingBucket(source,tonumber(garagehouseid) or routing)
     if not share and not haveworld then
         current_routing[routing] = source
     end

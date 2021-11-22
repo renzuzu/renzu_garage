@@ -1,9 +1,8 @@
 RegisterNetEvent('renzu_garage:storeprivatehouse')
-AddEventHandler('renzu_garage:storeprivatehouse', function(i, propertycoord, index, spawncoord)
+AddEventHandler('renzu_garage:storeprivatehouse', function(i, shell)
     local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
     ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
-    print("store private")
-    TriggerServerEvent('renzu_garage:storeprivate',i,v, prop)
+    TriggerServerEvent('renzu_garage:storeprivate',i,{}, prop, shell)
 end)
 
 RegisterNetEvent('renzu_garage:property')
@@ -49,8 +48,8 @@ AddEventHandler('renzu_garage:garagehousing_basic', function()
 end)
 
 RegisterNetEvent('renzu_garage:garagehousing_advanced')
-AddEventHandler('renzu_garage:garagehousing_advanced', function(garageID,garagecoord,spawncoord) -- spawncoord must be vector4 with headings
-    GarageHousing_Basic(garageID,garagecoord,spawncoord)
+AddEventHandler('renzu_garage:garagehousing_advanced', function(garageID,garagecoord,spawncoord,shell) -- spawncoord must be vector4 with headings
+    GarageHousing_Adv(garageID,garagecoord,spawncoord,shell)
 end)
 
 function GarageHousing_Basic()
@@ -68,19 +67,20 @@ function GarageHousing_Basic()
     end
 end
 
-function GarageHousing_Adv(garageID,garagecoord,spawncoord)
+function GarageHousing_Adv(gid,garagecoord,spawncoord,shell)
     local ret = exports.renzu_garage:GetHousingShellType(garagecoord)
-    local garageID = "garage_"..garageID
+    gid = gid:gsub('garage_','')
+    local garageID = "garage_"..gid
     if IsPedInAnyVehicle(PlayerPedId()) then -- STORE
-        TriggerEvent('renzu_garage:storeprivatehouse',garageID)
+        TriggerEvent('renzu_garage:storeprivatehouse',garageID, shell)
     else
-        local var = {ret.shell, {},false,garageID,spawncoord}
+        local var = {shell or ret.shell, {},false,garageID,spawncoord}
         TriggerServerEvent('renzu_garage:gotohousegarage',garageID,var)
     end
 end
 
-exports('GarageHousing_Adv', function(garageID,garagecoord,spawncoord)
-	return GarageHousing_Adv(garageID,garagecoord,spawncoord)
+exports('GarageHousing_Adv', function(garageID,garagecoord,spawncoord,shell)
+	return GarageHousing_Adv(garageID,garagecoord,spawncoord,shell)
 end)
 
 exports('GarageHousing_Basic', function()
