@@ -1,6 +1,8 @@
 fx_version 'cerulean'
 games {'common'}
 ui_page 'html/index.html'
+lua54 'yes'
+use_fxv2_oal 'yes'
 
 shared_scripts {
 	'conf/locale/*.lua',

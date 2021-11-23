@@ -2,7 +2,7 @@ function AntiDupe(coords, hash,x,y,z,w,prop)
     Wait(10)
     local move_coords = coords
     local vehicle = IsAnyVehicleNearPoint(coords.x,coords.y,coords.z,1.1)
-	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,true) private_garages[v] = v SetVehicleProp(v, prop) SetVehicleBobo(v) SetEntityCollision(v,true) FreezeEntityPosition(v, false) end
+	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,false) private_garages[v] = v SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) SetVehicleAsNoLongerNeeded(v) end
 end
 
 RegisterNetEvent('renzu_garage:ingarage')
@@ -448,17 +448,6 @@ RegisterNetEvent('renzu_garage:choose')
 AddEventHandler('renzu_garage:choose', function(table,garage)
 	DoScreenFadeOut(1)
     insidegarage = false
-    local closestplayer, dis = GetClosestPlayer()
-    local empty = true
-    for k,v in pairs(private_garages) do
-        empty = false
-        ReqAndDelete(v)
-    end
-    if empty then
-        for k,v in pairs(vehicleinarea) do
-            ReqAndDelete(v)
-        end
-    end
     vehicleinarea = {}
     private_garages = {}
 	Wait(2000)
@@ -509,31 +498,45 @@ function GetClosestPlayer()
 end
 
 RegisterNetEvent('renzu_garage:exitgarage')
-AddEventHandler('renzu_garage:exitgarage', function(table,exit)
+AddEventHandler('renzu_garage:exitgarage', function(t,exit)
     if not exit then
-    insidegarage = false
-    local closestplayer, dis = GetClosestPlayer()
-    if closestplayer == -1 and dis < 33 then
-        local empty = true
-        for k,v in pairs(private_garages) do
-            empty = false
-            ReqAndDelete(v)
-        end
-        if empty then
-            for k,v in pairs(vehicleinarea) do
+        insidegarage = false
+        local closestplayer, dis = GetClosestPlayer()
+        if closestplayer == -1 and dis < 33 then
+            local empty = true
+            for k,v in pairs(private_garages) do
+                empty = false
                 ReqAndDelete(v)
+            end
+            if empty then
+                for k,v in pairs(vehicleinarea) do
+                    ReqAndDelete(v)
+                end
+            end
+            vehicleinarea = {}
+            private_garages = {}
+        end
+        TriggerServerEvent('renzu_garage:exitgarage',t)
+    else
+        local empty = true
+        local closestplayer, dis = GetClosestPlayer()
+        if closestplayer == -1 and dis > 33 or closestplayer ~= -1 and dis > 33 then
+            for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
+                vehicleinarea[string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1'):upper()] = vehicle
+            end
+            if empty then
+                for k,v in pairs(vehicleinarea) do
+                    ReqAndDelete(v)
+                end
             end
         end
         vehicleinarea = {}
         private_garages = {}
-    end
-    TriggerServerEvent('renzu_garage:exitgarage',table)
-    else
         DoScreenFadeOut(1)
         if housingcustom then
             SetEntityCoords(PlayerPedId(),housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z,true)
         else
-            SetEntityCoords(PlayerPedId(),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
+            SetEntityCoords(PlayerPedId(),t.buycoords.x,t.buycoords.y,t.buycoords.z,true)
         end
         Wait(3500)
         housingcustom = nil
@@ -543,9 +546,9 @@ end)
 
 RegisterNetEvent('renzu_garage:opengaragemenu')
 AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
-    local garage,table = garageid,v
+    local garage,t = garageid,v
+    print(garage,t)
     ESX.TriggerServerCallback("renzu_garage:isgarageowned",function(owned,share)
-        print(owned,share)
         local multimenu = {}
         if not owned then
             firstmenu = {
@@ -554,7 +557,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
                     ['fa'] = '<i class="fad fa-question-square"></i>',
                     ['type'] = 'event', -- event / export
                     ['content'] = 'renzu_garage:buygarage',
-                    ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,table}, arg_unpack = true},
+                    ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,t}, arg_unpack = true},
                 },
             }
             multimenu[Message[29]] = firstmenu
@@ -588,7 +591,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
                     ['fa'] = '<i class="fad fa-garage"></i>',
                     ['type'] = 'event', -- event / export
                     ['content'] = 'renzu_garage:gotogarage',
-                    ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,table}, arg_unpack = true},
+                    ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,t,false}, arg_unpack = true},
                 },
             }
             multimenu['My Garage'] = secondmenu

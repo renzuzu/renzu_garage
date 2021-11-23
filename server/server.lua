@@ -88,7 +88,8 @@ Citizen.CreateThread(function()
     print("^2 Checking parking_meter table ^7")
     parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
     print("^2 parking_meter table ok ^7")
-    print("^2 Caching Vehicles Please Wait.. ^7")
+    print("^2 Caching #"..#globalvehicles.." Vehicles Please Wait.. ^7")
+    local vehiclescount = #globalvehicles
     local tempvehicles = {}
     for k,v in ipairs(globalvehicles) do
         if v.plate then
@@ -98,7 +99,9 @@ Citizen.CreateThread(function()
             tempvehicles[plate].plate = v.plate
             tempvehicles[plate].name = 'NULL'
         end
-        Wait(0) -- neccessary for large table avoid hitch
+        if vehiclescount > 5000 then
+            Wait(0) -- neccessary for large table avoid hitch
+        end
     end
     for k,v in pairs(globalvehicles) do
         local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
@@ -111,7 +114,9 @@ Citizen.CreateThread(function()
                 end
             end
         end
-        Wait(0) -- neccessary for large table avoid hitch
+        if vehiclescount > 5000 then
+            Wait(0) -- neccessary for large table avoid hitch
+        end
     end
     GlobalState.GVehicles = tempvehicles
     tempvehicles = nil
@@ -435,7 +440,6 @@ AddEventHandler('renzu_garage:buygarage', function(id,v)
             local houseid = string.gsub(id, 'garage_', '')
             for k,v in pairs(HousingGarages) do
                 if tonumber(houseid) == tonumber(k) then
-                    print(v.shell,HouseGarageCost[v.shell])
                     shellcost = HouseGarageCost[v.shell] or 10000
                 end
             end
@@ -477,6 +481,9 @@ end
 
 RegisterServerEvent('renzu_garage:storeprivate')
 AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
+    local src = source  
+    local xPlayer = ESX.GetPlayerFromId(src)
+    local identifier = xPlayer.identifier
     if not private_garage[id] then
         local shelltype = shell or 'small'
         local houseid = string.gsub(id, 'garage_', '')
@@ -486,19 +493,22 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
             end
         end
         housegarage[id] = {shell = shelltype, id = id, housing = housing}
+        local owned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
+            ['@garage'] = id
+        })
+        if owned[1] and owned[1].identifier then
+            identifier = owned[1].identifier
+        end
     end
     local id = housegarage[id] ~= nil and housegarage[id].id or id
     local prop = prop
-    local src = source  
-    local xPlayer = ESX.GetPlayerFromId(src)
-    local identifier = xPlayer.identifier
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
         ['@owner'] = xPlayer.identifier,
         ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1')
     })
     if not Config.Allowednotowned and result[1] == nil then TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[69]) return end
     local garage = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-        ['@identifier'] = xPlayer.identifier,
+        ['@identifier'] = identifier,
         ['@garage'] = id
     })
     local vehiclesgarage = {}
@@ -532,17 +542,16 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
         end
     end
     if success and not newgarage or newgarage then
-        MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE TRIM(UPPER(plate)) = @plate and owner = @owner', {
+        MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE TRIM(UPPER(plate)) = @plate', {
             ['@vehicle'] = json.encode(prop),
             ['@garage_id'] = 'private',
             ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),
-            ['@owner'] = xPlayer.identifier,
             ['@stored'] = 0
         })
         MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles WHERE garage = @garage and identifier = @identifier', {
             ['@vehicles'] = json.encode(vehiclesgarage),
             ['@garage'] = id,
-            ['@identifier'] = xPlayer.identifier,
+            ['@identifier'] = identifier,
         })
         TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[67])
         vehiclesgarage = {}
@@ -561,8 +570,7 @@ AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
     if share and not DoiOwnthis(xPlayer,houseid) then
         identifier = v.owner or xPlayer.identifier
     end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-        ['@identifier'] = identifier,
+    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
         ['@garage'] = houseid
     })
     if not result[1] then
@@ -591,7 +599,7 @@ AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
                 break
             end
         end
-    elseif share then
+    elseif share and v and v.route then
         routing = v.route
     end
     garagehouseid = houseid:gsub('garage_','')
@@ -607,7 +615,8 @@ AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
 	end
     housegarage[houseid] = {shell = id, id = houseid, housing = housing}
     TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],houseid, vehicle_,housegarage[houseid])
-
+    result = {}
+    vehicle_ = {}
 end)
 
 RegisterServerEvent('renzu_garage:gotogarage')
@@ -640,8 +649,8 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
                 break
             end
         end
-    elseif share then
-        routing = v.route
+    elseif share and v and v.route and not DoiOwnthis(xPlayer,id) then
+        routing = v.route or routing
     end
     SetPlayerRoutingBucket(source,routing)
     if not share and not haveworld then
@@ -660,17 +669,26 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
 end)
 
 RegisterServerEvent('renzu_garage:exitgarage')
-AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
+AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local id = id
+    local identifier = xPlayer.identifier
+    if not private_garage[id] then -- housing garages
+        local owned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
+            ['@garage'] = id
+        })
+        if owned[1] and owned[1].identifier then
+            identifier = owned[1].identifier
+        end
+    end
     if not choose then
         --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
-        TriggerClientEvent('renzu_garage:exitgarage',source, table, true)
+        TriggerClientEvent('renzu_garage:exitgarage',source, t, true)
+        Wait(1000)
         SetPlayerRoutingBucket(source,default_routing[source])
         --current_routing[default_routing[source]] = nil
     else
-        local identifier = xPlayer.identifier
         if share and not DoiOwnthis(xPlayer,id) then
             identifier = share.owner
         end
@@ -689,11 +707,10 @@ AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
                 break
             end
         end
-        local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE TRIM(UPPER(plate)) = @plate and owner = @owner', {
+        local result = MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored, garage_id = @garage_id, vehicle = @vehicle WHERE TRIM(UPPER(plate)) = @plate', {
             ['@vehicle'] = json.encode(prop),
             ['@garage_id'] = 'A',
             ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),
-            ['@owner'] = identifier,
             ['@stored'] = 0
         })
         local result = MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles WHERE garage = @garage and identifier = @identifier', {
@@ -703,13 +720,16 @@ AddEventHandler('renzu_garage:exitgarage', function(table,prop,id,choose,share)
         })
         TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[70])
         --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
-        TriggerClientEvent('renzu_garage:exitgarage',source, table, true)
+        TriggerClientEvent('renzu_garage:exitgarage',source, t, true)
         Wait(500)
         --current_routing[default_routing[source]] = nil
-        TriggerClientEvent('renzu_garage:choose',source,prop,table)
-		Wait(1000)
+        TriggerClientEvent('renzu_garage:choose',source,prop,t)
+		Wait(2000)
 		SetPlayerRoutingBucket(source,default_routing[source])
         TriggerClientEvent('renzu_garage:syncstate',-1,string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),source)
+        t = {}
+        vehicles = {}
+        result = {}
     end
     lastgarage[source] = nil
 end)
@@ -774,7 +794,6 @@ ESX.RegisterServerCallback('renzu_garage:parkingmeter', function (source, cb, co
             end
         end
         if canpark then
-            print(globalkeys[plate],plate,globalkeys[plate] and globalkeys[plate][xPlayer.identifier])
             MysqlGarage(Config.Mysql,'execute','INSERT INTO parking_meter (identifier, coord, park_coord, vehicle, plate) VALUES (@identifier, @coord, @park_coord, @vehicle, @plate)', {
                 ['@identifier']   = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
                 ['@coord']   = json.encode(coord),
