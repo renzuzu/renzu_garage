@@ -85,6 +85,10 @@ Citizen.CreateThread(function()
         end
     end
     print("^2 job prefixes plates data saved ^7")
+    print("^2 Checking parking_meter table ^7")
+    parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+    print("^2 parking_meter table ok ^7")
+    print("^2 Caching Vehicles Please Wait.. ^7")
     local tempvehicles = {}
     for k,v in ipairs(globalvehicles) do
         if v.plate then
@@ -94,6 +98,7 @@ Citizen.CreateThread(function()
             tempvehicles[plate].plate = v.plate
             tempvehicles[plate].name = 'NULL'
         end
+        Wait(0) -- neccessary for large table avoid hitch
     end
     for k,v in pairs(globalvehicles) do
         local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
@@ -106,12 +111,11 @@ Citizen.CreateThread(function()
                 end
             end
         end
+        Wait(0) -- neccessary for large table avoid hitch
     end
     GlobalState.GVehicles = tempvehicles
     tempvehicles = nil
-    print("^2 Checking parking_meter table ^7")
-    parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
-    print("^2 parking_meter table ok ^7")
+    print("^2 Cache Saved ^7")
     print("^2 Checking impound_garage table ^7")
     impoundget = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM impound_garage', {})
     print("^2 impound_garage table ok ^7")
@@ -165,6 +169,19 @@ function MysqlGarage(plugin,type,query,var)
 	return Citizen.Await(wait)
 end
 
+LuaBoolShitLogic = function(val) -- tiny int vs int structure ( lua read int as a real number while tiny int a bool if 0 or 1)
+    local t = val
+    for k,v in pairs(t) do
+        if v.stored ~= nil and tonumber(v.stored) == 1 then
+            t[k].stored = true
+        end
+        if v.stored ~= nil and tonumber(v.stored) == 0 then
+            t[k].stored = false
+        end
+    end
+    return t
+end
+
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
 AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
     local src = source 
@@ -186,13 +203,13 @@ AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
     --local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = xPlayer.identifier})
     if not public and sharegarage then
         local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner AND garage_id = @garage_id', {['@owner'] = identifier, ['@garage_id'] = sharegarage})
-        TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
+        TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Owned_Vehicle) or {},vehicles or {})
     elseif not public then
         local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE owner = @owner', {['@owner'] = identifier})
-        TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
+        TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Owned_Vehicle) or {},vehicles or {})
     elseif public then
         local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM owned_vehicles WHERE garage_id = @garage_id', {['@garage_id'] = garageid})
-        TriggerClientEvent("renzu_garage:receive_vehicles", src , Owned_Vehicle or {},vehicles or {})
+        TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Owned_Vehicle) or {},vehicles or {})
     end
 end)
 
@@ -207,7 +224,7 @@ AddEventHandler('renzu_garage:GetVehiclesTableImpound', function()
         q = 'SELECT * FROM owned_vehicles WHERE impound = 1'
     end
     local Impounds = MysqlGarage(Config.Mysql,'fetchAll',q, {})
-    TriggerClientEvent("renzu_garage:receive_vehicles", src , Impounds,vehicles)
+    TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Impounds),vehicles)
 end)
 
 ESX.RegisterServerCallback('renzu_garage:getjobgarages',function(source, cb, job)
@@ -848,7 +865,21 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
             end
         elseif result and result[1].stored ~= nil then
             local stored = result[1].stored
+            -- start shitty logic
+            if stored == 1 then
+                stored = true
+            end
+            if stored == 0 then
+                stored = false
+            end
             local impound = result[1].impound
+            if impound == true then
+                impound = 1
+            end
+            if impound == false then
+                impound = 0
+            end
+            -- end shitty logic
             local sharedvehicle = false
             if stored then
                 local ply = Player(source).state

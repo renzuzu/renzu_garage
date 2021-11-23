@@ -5,7 +5,7 @@ ALTER TABLE owned_vehicles
 ADD impound int(1) NOT NULL DEFAULT 0;
 
 ALTER TABLE owned_vehicles
-ADD `stored` int(1) NOT NULL DEFAULT 0;
+ADD `stored` tinyint(1) NOT NULL DEFAULT 0;
 
 ALTER TABLE owned_vehicles
 ADD `type` varchar(32) NOT NULL DEFAULT 'car';

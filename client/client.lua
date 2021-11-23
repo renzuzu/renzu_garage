@@ -328,7 +328,6 @@ AddEventHandler('opengarage', function()
                     if jobgarage then
                         garagejob = v.job
                     end
-                    print(garagejob)
                     propertygarage = false
                     OpenGarage(v.garage,v.Type,garagejob or false,v.default_vehicle or {})
                     break

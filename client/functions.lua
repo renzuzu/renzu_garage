@@ -1106,6 +1106,12 @@ function OpenGarage(garageid,garage_type,jobonly,default)
             or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
             or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
                 v.brand = v.brand:upper()
+                if v.stored == 1 then
+                    v.stored = true
+                end
+                if v.stored == 0 then
+                    v.stored = false
+                end
                 if v.stored and ImpoundedLostVehicle or not ImpoundedLostVehicle then
                     if cats[v.brand] == nil then
                         cats[v.brand] = 0
@@ -1138,6 +1144,12 @@ function OpenGarage(garageid,garage_type,jobonly,default)
             or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
             or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
             or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
+                if v.stored == 1 then
+                    v.stored = true
+                end
+                if v.stored == 0 then
+                    v.stored = false
+                end
                 if cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() and not ImpoundedLostVehicle or totalcats == 1 and not ImpoundedLostVehicle or cat == nil and not ImpoundedLostVehicle 
                 or cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() and ImpoundedLostVehicle and v.stored or totalcats == 1 and ImpoundedLostVehicle and v.stored or cat == nil and ImpoundedLostVehicle and v.stored then
                     cars = cars + 1

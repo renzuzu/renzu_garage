@@ -47,7 +47,7 @@ CreateThread(function()
             local coord = GetEntityCoords(PlayerPedId())
             local vehicle = json.decode(v.vehicle)
             vehicle.plate = string.gsub(vehicle.plate, '^%s*(.-)%s*$', '%1')
-            if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 50 then
+            if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 50 and IsModelInCdimage(vehicle.model) then
                 if meter_cars[vehicle.plate] == nil then
                     local hash = tonumber(vehicle.model)
                     local count = 0
@@ -136,7 +136,7 @@ CreateThread(function()
 end)
 
 RegisterNetEvent('renzu_garage:update_parked')
-AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
+AddEventHandler('renzu_garage:update_parked', function(t,plate,p)
     deleting = true
     Wait(1500)
     if p then
@@ -150,7 +150,7 @@ AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
             end
         end
     end
-	parkedvehicles = table
+	parkedvehicles = t
     Wait(100)
     if plate ~= nil then
         for k,v in pairs(spawned_cars) do
@@ -163,7 +163,7 @@ AddEventHandler('renzu_garage:update_parked', function(table,plate,p)
     end
     deleting = false
 end)
-
+  
 CreateThread(function()
     Wait(500)
     while not LocalPlayer.state.loaded do Wait(100) end
@@ -177,15 +177,17 @@ CreateThread(function()
                 local mycoord = GetEntityCoords(PlayerPedId())
                 while dist < v.Dist do
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
-                    local parked = parkedvehicles
-                    for k,park in pairs(parked) do
+                    local bobo = parkedvehicles
+                    for i = 1, #bobo do
+                        local park = bobo[i]
                         local coord = json.decode(park.park_coord)
                         local vehicle_coord = vector3(coord.x,coord.y,coord.z)
                         park.plate = string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1')
-                        if #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < v.Dist then
+                        local vdata = json.decode(park.vehicle)
+                        if #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < v.Dist and IsModelInCdimage(tonumber(vdata.model)) then
                             if spawned_cars[park.plate] == nil then
                                 while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
-                                local hash = tonumber(json.decode(park.vehicle).model)
+                                local hash = tonumber(vdata.model)
                                 local count = 0
                                 if not HasModelLoaded(hash) then
                                     RequestModel(hash)
