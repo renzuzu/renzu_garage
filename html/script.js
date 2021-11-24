@@ -67,6 +67,7 @@ window.addEventListener('message', function(event) {
         if (document.getElementById("fineamount")) {
             document.getElementById("fineamount").innerHTML = impound_fine;
         }
+        impound_fine = 0
     }
     if (event.data.garage_id) {
         garage_id = event.data.garage_id
@@ -418,6 +419,9 @@ window.addEventListener('message', function(event) {
         if (!event.data.view) {
             $("#appdiv").css("right","0")
         }
+        if (document.getElementById("finediv")) {
+            document.getElementById("finediv").style.display = 'none';
+        }
     }
 
     if (event.data.type == "hide") {
@@ -703,7 +707,9 @@ function garage() {
 function ShowConfirm(){
     document.getElementById("closemenu").innerHTML = '';
     $("#vehicle_cat").html('')
-
+    if (document.getElementById("finediv")) {
+        document.getElementById("finediv").style.display = 'none';
+    }
     $('.modal').css("display","flex");
     if (impound_left !== '0') {
         
@@ -741,7 +747,7 @@ function ShowConfirm(){
         `);
         const deadline = new Date(impound_left);
         initializeClock('clockdiv', deadline);
-          //# sourceURL=pen.js
+          //# sourceURL=renzu_garage
     } else {
         $('#closemenu').append(`
         <div class="background-circle"></div>
@@ -772,7 +778,9 @@ function ShowConfirm(){
             document.getElementById("fineamount").innerHTML = impound_fine;
             document.getElementById("finediv").style.display = 'block';
         }
+        impound_fine = 0
     }
+    
     
 }
 
@@ -810,7 +818,6 @@ function onimpound(){
     $('.modal').css("display","flex");
 
     $('#closemenu').append(`
-
         <div class="background-circle"></div>
         <div class="modal-content">
             <i style="    position: absolute;
@@ -822,15 +829,16 @@ function onimpound(){
 
         <div class="modal-footer">
             <p style="font-size: 12px;
-            color: red;
+            color: #76f5cc;
             display: block;
             margin: 20px;
             text-align: center;
             position: absolute;
-            top: 50%;
-            background: #101113c7;
+            top: -2vh;
+            left: -5.5vw;
+            width: 100%;
             padding: 20px;
-            border-radius: 10px;"> Require to Pay at <span id="impoundloc" style="color:#ffffff !important;"></span>: <br> <br>
+            border-radius: 10px;"> Required to Pay in <span id="impoundloc" style="color:#ffffff !important;"></span>: <br> <br>
             Fine $ `+impound_fine+`</p>
         </div>
     `);

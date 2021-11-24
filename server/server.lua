@@ -851,7 +851,7 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
     local source = source
     local xPlayer = ESX.GetPlayerFromId(source)
     local garage_impound = nil
-    local impound_fee = 0
+    local impound_fee = ImpoundPayment
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -860,7 +860,7 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
     if patrol then
         cb(true,0)
     else
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored` ,impound FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate', {
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `stored`, `garage_id`, impound FROM owned_vehicles WHERE TRIM(UPPER(plate)) = @plate', {
             ['@plate'] = plate
         })
         if string.find(id, "impound") then
@@ -903,6 +903,9 @@ ESX.RegisterServerCallback('renzu_garage:isvehicleingarage', function (source, c
             end
             if impound == false then
                 impound = 0
+            end
+            if impound and not garage_impound then
+                garage_impound = result[1].garage_id
             end
             -- end shitty logic
             local sharedvehicle = false
