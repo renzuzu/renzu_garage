@@ -28,7 +28,7 @@ RegisterCommand('impound', function(source, args, rawCommand)
                     TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[47])
                 end
             else
-                ESX.ShowNotification(Message[46])
+                ShowNotification(Message[46])
             end
         end
         impoundata = nil
@@ -57,6 +57,12 @@ function OpenImpound(garageid)
     end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
+            if v.stored == 0 then
+                v.stored = false
+            end
+            if v.stored == 1 then
+                v.stored = true
+            end
             if v.garage_id == 'impound' then
                 v.garage_id = impoundcoord[1].garage
             end
@@ -65,12 +71,12 @@ function OpenImpound(garageid)
                 v.garage_id = impoundcoord[1].garage
             end
             local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
-            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
+            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice 
+            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
                 c = c + 1
                 if vehtable[v.impound] == nil then
                     vehtable[v.impound] = {}
                 end
-                print(v.type)
                 if v.type ~= 'air' and v.type ~= 'boat' then
                     veh = {
                         brand = v.brand or 1.0,

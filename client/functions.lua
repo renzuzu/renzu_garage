@@ -30,7 +30,6 @@ end
 function GetAvailableSpots(veh,spawns)
     for k,v in ipairs(spawns) do
         local available = IsAnyVehicleNearPoint(v.x,v.y,v.z,2.1)
-        print(available,k)
         if not available then return k end
     end
     return false
@@ -41,7 +40,7 @@ function Spawn_Vehicle_Forward(veh, coords, spawns)
     local move_coords = coords
     local vehicle = IsAnyVehicleNearPoint(move_coords.x,move_coords.y,move_coords.z,2.1)
     if countspawn == 0 then countspawn = countspawn + 1 end
-    if spawns and spawns[1] then
+    if spawns and spawns[countspawn] then
         if IsAnyVehicleNearPoint(spawns[countspawn].x,spawns[countspawn].y,spawns[countspawn].z,2.1) then
             countspawn = GetAvailableSpots(veh,spawns)
         end
@@ -197,7 +196,7 @@ function Storevehicle(vehicle,impound, impound_data, public)
     Wait(100)
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
     Wait(2000)
-    ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+    TriggerServerCallback_("renzu_garage:changestate",function(ret)
         local ent = Entity(vehicle).state
         if ret or ent.share and ent.share[PlayerData.identifier] then
             DeleteEntity(vehicle)	
@@ -213,24 +212,6 @@ end
 
 function helidel(vehicle)
     DeleteEntity(vehicle)
-end
-
-function SpawnVehicle(vehicle, plate ,coord)
-    local veh = nil
-	ESX.Game.SpawnVehicle(vehicle.model, {
-		x = coord.x,
-		y = coord.y,
-		z = coord.z + 1
-	}, coord.h, function(callback_vehicle)
-		SetVehicleProp(callback_vehicle, vehicle)
-		TaskWarpPedIntoVehicle(PlayerPedId(), callback_vehicle, -1)
-        veh = callback_vehicle
-	end)
-    while not veh do
-        Citizen.Wait(10)
-    end
-    return veh
-
 end
 
 function SpawnVehicleLocal(model, props)
@@ -411,6 +392,18 @@ function GetAllVehicleFromPool()
     return list
 end
 
+GetClosestVehicle = function(coord,distance)
+    local entity = 0
+    local nearest = -1
+    for k,vehicle in pairs(GetGamePool('CVehicle')) do
+        local dist = #(GetEntityCoords(vehicle) - coord)
+        if dist < distance and nearest == -1 or nearest > dist then
+            nearest = dist
+            entity = vehicle
+        end
+    end
+    return entity
+end
 function GarageVehicle()
     Citizen.CreateThread(function()
         while ingarage do
@@ -657,7 +650,7 @@ function GotoGarage(garageid, property, propertycoord, job)
             or not Config.UniqueCarperGarage and garageid ~= nil and vtype == v.type and job == false and not v.job and v.garage_id ~= 'private' 
             or not Config.UniqueCarperGarage and garageid ~= nil and vtype == v.type and job == PlayerData.job.name and v.job ~= nil and v.job and garageid == v.garage_id and v.garage_id ~= 'impound' and v.garage_id ~= 'private' 
             or ispolice and string.find(garageid, "impound") and string.find(v.garage_id, "impound") and vtype == v.type or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and vtype == v.type and Impoundforall and v.identifier == PlayerData.identifier then
-                if lastcat == nil or v.brand:upper() == lastcat:upper() then
+                if lastcat == nil and v.impound == 0 or v.brand:upper() == lastcat:upper() and v.impound == 0 then
                     if vehtable[tostring(garageid)] == nil and not property then
                         vehtable[tostring(garageid)] = {}
                     end
@@ -779,6 +772,7 @@ function GotoGarage(garageid, property, propertycoord, job)
                 spawnedgarage[i] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
                 SetVehicleProp(spawnedgarage[i], props)
                 SetEntityNoCollisionEntity(spawnedgarage[i], shell, false)
+                SetEntityAsMissionEntity(spawnedgarage[i])
                 SetModelAsNoLongerNeeded(hash)
                 if i <=5 then
                     SetEntityHeading(spawnedgarage[i], lefthead)
@@ -795,7 +789,7 @@ function GotoGarage(garageid, property, propertycoord, job)
         VehiclesinGarage(GetEntityCoords(ped), 3.0, property or false, propertycoord or false, garageid)
         local dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(PlayerPedId()))
         while dist2 < 5 and ingarage do
-            DrawMarker(36, shell_door_coords.x,shell_door_coords.y,shell_door_coords.z+1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7, 200, 10, 10, 100, 0, 0, 1, 1, 0, 0, 0)
+            DrawMarker(36, shell_door_coords.x,shell_door_coords.y,shell_door_coords.z+1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7,  255,255,255, math.random(1,255), 0, 0, 1, 1, 0, 0, 0)
             dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(PlayerPedId()))
             if IsControlJustPressed(0, 38) then
                 local ped = PlayerPedId()
@@ -1118,6 +1112,7 @@ function OpenGarage(garageid,garage_type,jobonly,default)
     local totalcats = 0
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
+            if string.find(v.type, "car") then v.type = 'car' end
             if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
             or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
             -- personal job garage
@@ -1251,9 +1246,9 @@ function OpenGarage(garageid,garage_type,jobonly,default)
         end
     else
         TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[38])
-        if not propertyspawn.x then
+        if not propertyspawn.x and #(GetEntityCoords(PlayerPedId()) - vector3(garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z)) > 15 then
             SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
-        else
+        elseif propertyspawn.x and #(GetEntityCoords(PlayerPedId()) - vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)) > 15 then
             SetEntityCoords(PlayerPedId(), propertyspawn.x,propertyspawn.y,propertyspawn.z, false, false, false, true)
         end
         CloseNui()
@@ -1342,8 +1337,7 @@ function CreateDefault(default,jobonly,garage_type,garageid)
             if v.type == 'boat' or v.type == 'air' then
                 pmult,tmult,handling, brake = 10,8,GetPerformanceStats(vehicleModel).handling * 0.1, GetPerformanceStats(vehicleModel).brakes * 0.1
             end
-            local default_thumb = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
-            local img = 'https://cfx-nui-renzu_garage/imgs/uploads/'..default_thumb..'.jpg'
+            local img = 'https://cfx-nui-renzu_garage/imgs/uploads/'..v.model..'.jpg'
             if Config.use_renzu_vehthumb and gstate[tostring(vehicleModel)] then
                 img = gstate[tostring(vehicleModel)]
             end
@@ -1362,6 +1356,7 @@ function CreateDefault(default,jobonly,garage_type,garageid)
                 plate = genplate,
                 props = json.encode({model = vehicleModel, plate = genplate}),
                 fuel = 100,
+                img = img,
                 bodyhealth = 1000,
                 enginehealth = 1000,
                 garage_id = garageid,
@@ -1413,9 +1408,9 @@ end
 
 function SetVehicleProp(vehicle, mods)
     local mods = mods
-    if Config.ReturnDamage then
+    if Config.ReturnDamage and DoesEntityExist(vehicle) then
         local State = GlobalState.VehiclesState
-        if State[mods.plate] then
+        if State and State[mods.plate] then
             mods.wheel_tires = State[mods.plate].wheel_tires
             mods.vehicle_window = State[mods.plate].vehicle_window
             mods.vehicle_doors = State[mods.plate].vehicle_doors
@@ -1426,21 +1421,21 @@ function SetVehicleProp(vehicle, mods)
         end
         if mods.wheel_tires then
             for tireid = 1, 7 do
-                if mods.wheel_tires[tireid] ~= false then
+                if mods.wheel_tires[tireid] and mods.wheel_tires[tireid] ~= false then
                     SetVehicleTyreBurst(vehicle, tireid, true, 1000)
                 end
             end
         end
         if mods.vehicle_window then
             for windowid = 0, 5, 1 do
-                if mods.vehicle_window[windowid] ~= false then
+                if mods.vehicle_window[windowid] and mods.vehicle_window[windowid] ~= false then
                     RemoveVehicleWindow(vehicle, windowid)
                 end
             end
         end
         if mods.vehicle_doors then
             for doorid = 0, 5, 1 do
-                if mods.vehicle_doors[doorid] ~= false then
+                if mods.vehicle_doors[doorid] and mods.vehicle_doors[doorid] ~= false then
                     SetVehicleDoorBroken(vehicle, doorid-1, true)
                 end
             end
@@ -1598,12 +1593,12 @@ function GetVehicleProperties(vehicle)
                     plate             = plate,
                     plateIndex        = GetVehicleNumberPlateTextIndex(vehicle),
 
-                    bodyHealth        = ESX.Math.Round(GetVehicleBodyHealth(vehicle), 1),
-                    engineHealth      = ESX.Math.Round(GetVehicleEngineHealth(vehicle), 1),
-                    tankHealth        = ESX.Math.Round(GetVehiclePetrolTankHealth(vehicle), 1),
+                    bodyHealth        = MathRound(GetVehicleBodyHealth(vehicle), 1),
+                    engineHealth      = MathRound(GetVehicleEngineHealth(vehicle), 1),
+                    tankHealth        = MathRound(GetVehiclePetrolTankHealth(vehicle), 1),
 
-                    fuelLevel         = ESX.Math.Round(GetVehicleFuelLevel(vehicle), 1),
-                    dirtLevel         = ESX.Math.Round(GetVehicleDirtLevel(vehicle), 1),
+                    fuelLevel         = MathRound(GetVehicleFuelLevel(vehicle), 1),
+                    dirtLevel         = MathRound(GetVehicleDirtLevel(vehicle), 1),
                     color1            = colorPrimary,
                     color2            = colorSecondary,
                     rgb				  = table.pack(GetVehicleCustomPrimaryColour(vehicle)),
@@ -1711,9 +1706,20 @@ function DrawZuckerburg(name,v,reqdist)
     CreateThread(function()
         local reqdist = reqdist
         dist = #(v - GetEntityCoords(PlayerPedId()))
+        r,g,b = 0,100,200
         while dist < reqdist and neargarage and not inGarage do
             dist = #(v - GetEntityCoords(PlayerPedId()))
-            DrawMarker(36, v.x,v.y,v.z+0.5, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7, 200, 10, 10, 100, 0, 0, 1, 1, 0, 0, 0)
+            r,g,b = r + 0.1,g + 0.1,b + 0.1
+            if r >= 255 then
+                r = 0
+            end
+            if g >= 255 then
+                g = 0
+            end
+            if b >= 255 then
+                b = 0
+            end
+            DrawMarker(36, v.x,v.y,v.z+0.5, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5,  r,g,b, 255, 0, 0, 1, 1, 0, 0, 0)
             Wait(1)
         end
         Config.UseMarker = true
@@ -1736,9 +1742,6 @@ function DrawInteraction(i,v,reqdist,msg,event,server,var,disablemarker)
                 end
                 drawsleep = 1
                 dist = #(GetEntityCoords(ped) - coord)
-                if not disablemarker then
-                    DrawMarker(27, coord.x,coord.y,coord.z-0.8, 0, 0, 0, 0, 0, 0, 0.7, 0.7, 0.7, 200, 255, 255, 255, 0, 0, 1, 1, 0, 0, 0)
-                end
                 if dist < reqdist[1] then ShowFloatingHelpNotification(msg, coord, disablemarker , i) end
                 if dist < reqdist[1] and IsControlJustReleased(1, 51) then
                     ShowFloatingHelpNotification(msg, coord, disablemarker , i)
@@ -1760,7 +1763,7 @@ end
 
 function PopUI(name,v,reqdist,event)
     if reqdist == nil then reqdist = 9 end
-    local table = {
+    local t = {
         ['event'] = 'opengarage',
         ['title'] = Message[2]..' '..name,
         ['server_event'] = false,
@@ -1771,7 +1774,7 @@ function PopUI(name,v,reqdist,event)
         ['custom_arg'] = {}, -- example: {1,2,3,4}
         ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
     }
-    TriggerEvent('renzu_popui:showui',table)
+    TriggerEvent('renzu_popui:showui',t)
     local dist = #(v - GetEntityCoords(PlayerPedId()))
     while dist < reqdist and neargarage do
         dist = #(v - GetEntityCoords(PlayerPedId()))
@@ -1782,7 +1785,7 @@ end
 
 function ShowFloatingHelpNotification(msg, coords, disablemarker, i)
     AddTextEntry('FloatingHelpNotificationsc'..i, msg)
-    SetFloatingHelpTextWorldPosition(1, coords.x,coords.y,coords.z+0.3)
+    SetFloatingHelpTextWorldPosition(1, coords.x,coords.y,coords.z+0.8)
     SetFloatingHelpTextStyle(1, 1, 2, -1, 3, 0)
     BeginTextCommandDisplayHelp('FloatingHelpNotificationsc'..i)
     EndTextCommandDisplayHelp(2,0, 0, -1)

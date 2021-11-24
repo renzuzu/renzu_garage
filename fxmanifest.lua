@@ -8,14 +8,17 @@ shared_scripts {
 	'conf/locale/*.lua',
 	'conf/main.lua',
 	'conf/*.lua',
+	'vehicles.lua',
 }
 
 server_scripts {
-	'@mysql-async/lib/MySQL.lua',	
+	'@mysql-async/lib/MySQL.lua',
+	'framework/sv_wrapper.lua',
 	'server/server.lua'
 }
 
 client_scripts {
+	'framework/cl_wrapper.lua',
 	'client/*.lua'
 }
 

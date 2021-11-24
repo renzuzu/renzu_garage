@@ -772,7 +772,7 @@ width: 100%;
   /* background: linear-gradient( 
     90deg
      , rgb(26 27 29 / 92%) 0%, rgb(11 13 14 / 79%) 35%, rgb(3 4 4 / 79%) 100%); */
-  background: #1f222369;
+  background: #1d1f2187;
 }
 .app_inner label:nth-of-type(1) .app_inner__tab:hover {
   transition: all 0.2s;

@@ -4,7 +4,7 @@ RegisterNUICallback("receive_garagekeys", function(data, cb)
 end)
 
 RegisterCommand(Config.GarageKeysCommand, function(source, args, rawCommand)
-    ESX.TriggerServerCallback("renzu_garage:getgaragekeys",function(sharedkeys,players)
+    TriggerServerCallback_("renzu_garage:getgaragekeys",function(sharedkeys,players)
         if Config.GarageKeys and PlayerData.job ~= nil then
             local ped = PlayerPedId()
             local coords = GetEntityCoords(ped)
@@ -91,7 +91,7 @@ function isVehicleUnlocked()
                 local ent = Entity(veh).state
                 --ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or false
                 if not ent.havekeys then
-                    ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] or false
+                    ent.havekeys = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate][owner] == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] or false
                     if ent.hotwired and ent.havekeys then
                         ent.hotwired = false
                         ent:set('hotwired', false, true)
@@ -104,7 +104,7 @@ function isVehicleUnlocked()
                         SetVehicleNeedsToBeHotwired(veh,false)
                         Wait(100)
                     end
-                elseif GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
+                elseif GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate][owner] == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
                     SetVehicleEngineOn(veh,false,true,false)
                     SetVehicleNeedsToBeHotwired(veh,false)
                     if ent.hotwired then
@@ -259,7 +259,7 @@ function Keyless()
         vehiclesinarea[plate].entity = v
         vehiclesinarea[plate].plate = plate
         vehiclesinarea[plate].distance = #(mycoords - GetEntityCoords(v, false))
-        vehiclesinarea[plate].owner = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate].owner or false
+        vehiclesinarea[plate].owner = GlobalState.GVehicles[plate] ~= nil and GlobalState.GVehicles[plate][owner] or false
     end
     local near = -1
     local nearestveh = nil
@@ -430,13 +430,13 @@ RegisterNUICallback("receive_vehiclekeys", function(data, cb)
 end)
 
 RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
-    ESX.TriggerServerCallback("renzu_garage:getgaragekeys",function(sharedkeys,players)
+    TriggerServerCallback_("renzu_garage:getgaragekeys",function(sharedkeys,players)
         if Config.GarageKeys and PlayerData.job ~= nil then
             local ped = PlayerPedId()
             local coords = GetEntityCoords(ped)
             local vehicles = {}
             for k,v in pairs(GlobalState.GVehicles) do
-                if v.owner == PlayerData.identifier then
+                if v[owner] == PlayerData.identifier then
                     vehicles[k] = {}
                     vehicles[k].plate = v.plate
                     vehicles[k].name = v.name
@@ -459,7 +459,7 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
                 local owned = false
                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
                 for k,v in pairs(GlobalState.GVehicles) do
-                    if vehiclekeysdata.data and string.gsub(v.plate, '^%s*(.-)%s*$', '%1') == string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1') and v.owner == PlayerData.identifier then
+                    if vehiclekeysdata.data and string.gsub(v.plate, '^%s*(.-)%s*$', '%1') == string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1') and v[owner] == PlayerData.identifier then
                         owned = true
                         plate = string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1')
                         break
@@ -474,7 +474,7 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
                 local owned = false
                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
                 for k,v in pairs(GlobalState.GVehicles) do
-                    if string.gsub(v.plate, '^%s*(.-)%s*$', '%1') == string.gsub(p, '^%s*(.-)%s*$', '%1') and v.owner == PlayerData.identifier then
+                    if string.gsub(v.plate, '^%s*(.-)%s*$', '%1') == string.gsub(p, '^%s*(.-)%s*$', '%1') and v[owner] == PlayerData.identifier then
                         owned = true
                         break
                     end

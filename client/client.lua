@@ -1,7 +1,9 @@
 -- Renzu Garage
 Citizen.CreateThread(function()
     Wait(1000)
-    TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+    Framework()
+	SetJob()
+	Playerloaded()
     coordcache = garagecoord
     for k,v in pairs(garagecoord) do -- create job garage
         if v.job ~= nil and jobgarages[v.garage] == nil then
@@ -12,16 +14,6 @@ Citizen.CreateThread(function()
             jobgarages[v.garage].garage_type = v.garage_type ~= nil and v.garage_type or Message[1]
         end
     end
-	while ESX == nil do
-		Citizen.Wait(100)
-	end
-
-	while PlayerData.job == nil do
-		PlayerData = ESX.GetPlayerData()
-		Citizen.Wait(111)
-	end
-
-	PlayerData = ESX.GetPlayerData()
     Wait(2000)
     if Config.Realistic_Parking then
         TriggerServerEvent('renzu_garage:GetParkedVehicles')
@@ -94,50 +86,6 @@ Citizen.CreateThread(function()
     end
 end)
 
-RegisterNetEvent('esx:playerLoaded')
-AddEventHandler('esx:playerLoaded', function(xPlayer)
-    playerloaded = true
-    Wait(1000)
-    LocalPlayer.state:set( 'loaded', true, true)
-    LocalPlayer.state.loaded = true
-    if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
-        for k, v in pairs (helispawn[PlayerData.job.name]) do
-            local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
-            SetBlipSprite (blip, v.Blip.sprite)
-            SetBlipDisplay(blip, 4)
-            SetBlipScale  (blip, v.Blip.scale)
-            SetBlipColour (blip, v.Blip.color)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName(""..v.garage.."")
-            EndTextCommandSetBlipName(blip)
-        end
-    end
-    if Config.Realistic_Parking then
-        TriggerServerEvent('renzu_garage:GetParkedVehicles')
-    end
-end)
-
-
-RegisterNetEvent('esx:setJob')
-AddEventHandler('esx:setJob', function(job)
-	PlayerData.job = job
-	playerjob = PlayerData.job.name
-    if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
-        for k, v in pairs (helispawn[PlayerData.job.name]) do
-            local blip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
-            SetBlipSprite (blip, v.Blip.sprite)
-            SetBlipDisplay(blip, 4)
-            SetBlipScale  (blip, v.Blip.scale)
-            SetBlipColour (blip, v.Blip.color)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName(Message[2]..": "..v.garage.."")
-            EndTextCommandSetBlipName(blip)
-        end
-    end
-end)
-
 CreateThread(function()
     while PlayerData.job == nil do Wait(100) end
     Wait(500)
@@ -153,11 +101,11 @@ CreateThread(function()
                     req_dis = v.Store_dist
                 end
                 local dist = #(vec - mycoord)
-                if Config.UseMarker and dist < Config.MarkerDistance then
+                if Config.UseMarker and dist < Config.MarkerDistance and not v.job or Config.UseMarker and dist < Config.MarkerDistance and v.job and PlayerData.job and PlayerData.job.name == v.job then
                     Config.UseMarker = false
                     DrawZuckerburg(v.garage,vec,Config.MarkerDistance)
                 end
-                if dist < req_dis then
+                if dist < req_dis and not v.job or dist < req_dis and v.job and PlayerData.job and PlayerData.job.name == v.job then
                     tid = k
                     garageid = v.garage
                     neargarage = true
@@ -165,7 +113,7 @@ CreateThread(function()
                     if IsPedInAnyVehicle(PlayerPedId()) then
                         msg = Message[7]..' [E] '..Message[6]
                     else
-                        msg = Message[7]..' [E] 🏚️ '..Message[2]..' '..v.garage
+                        msg = '🅿 '..Message[7]..' [E] '..Message[2]..' '..v.garage
                     end
                     DrawInteraction(v.garage,vec,{req_dis,req_dis*3},msg,'opengarage',false,false,false)
                 end
@@ -431,7 +379,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     OwnedVehicles['garage'] = {}
     local gstate = GlobalState and GlobalState.VehicleImages or {}
     for _,value in pairs(tableVehicles) do
-        local props = json.decode(value.vehicle)
+        local props = json.decode(value[vehiclemod])
         if IsModelInCdimage(props.model) then
             local vehicleModel = tonumber(props.model)  
             local label = nil
@@ -471,9 +419,9 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             if value.job ~= nil and not havejob then -- fix incompatibility with vehicles with job column as a default from sql eg. civ fck!
                 value.job = nil
             end
-            if value.garage_id ~= nil then -- fix blank job column, seperate the car to other non job garages
+            if value[garage__id] ~= nil then -- fix blank job column, seperate the car to other non job garages
                 for k,v in pairs(jobgarages) do 
-                    if v.job ~= nil and value.job ~= nil and v.job == value.job and v.garageid == value.garage_id and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
+                    if v.job ~= nil and value.job ~= nil and v.job == value.job and v.garageid == value[garage__id] and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
                         value.job = v.job
                     end
                     if v.garage_type and v.garage_type == 'public' and #(v.coord - GetEntityCoords(PlayerPedId())) < 20 then
@@ -501,14 +449,14 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
                 model2 = tonumber(props.model),
                 plate = value.plate,
                 img = img,
-                props = value.vehicle,
+                props = value[vehiclemod],
                 fuel = props.fuelLevel or 100,
                 bodyhealth = props.bodyHealth or 1000,
                 enginehealth = props.engineHealth or 1000,
-                garage_id = value.garage_id,
+                garage_id = value[garage__id],
                 impound = value.impound,
-                stored = value.stored,
-                identifier = value.owner,
+                stored = value[stored],
+                identifier = value[owner],
                 type = value.type,
                 garage_type = value.garage_type ~= nil and value.garage_type or 'personal',
                 job = value.job ~= nil,
@@ -591,7 +539,7 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
     local vp = vp
     local v = v
     FreezeEntityPosition(PlayerPedId(),true)
-    ESX.TriggerServerCallback("renzu_garage:returnpayment",function(canreturn)
+    TriggerServerCallback_("renzu_garage:returnpayment",function(canreturn)
         if canreturn then
             DoScreenFadeOut(0)
             for k,v in pairs(spawnedgarage) do
@@ -623,7 +571,7 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
             end
             TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
             veh = vehicle
-            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret,garage_public)
+            TriggerServerCallback_("renzu_garage:changestate",function(ret,garage_public)
                 if ret and garage_public then
                     local ent = Entity(veh).state
                     while ent.share == nil do Wait(100) end
@@ -696,7 +644,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
     vp = GetVehicleProperties(vehicle)
     plate = vp.plate
     model = GetEntityModel(vehicle)
-    ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
+    TriggerServerCallback_("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
         if stored and impound == 0 or not Config.EnableReturnVehicle or string.find(garageid, "impound") then
             local tempcoord = garagecoord
             if string.find(garageid, "impound") then tempcoord = impoundcoord end
@@ -724,7 +672,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
             TaskWarpPedIntoVehicle(PlayerPedId(), v, -1)
             veh = v
             DoScreenFadeIn(333)
-            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret,garage_public)
+            TriggerServerCallback_("renzu_garage:changestate",function(ret,garage_public)
                 if ret and garage_public then
                     local ent = Entity(veh).state
                     while ent.share == nil do Wait(100) end
@@ -840,7 +788,7 @@ AddEventHandler('renzu_garage:store', function(i)
     if garageid == nil then
     garageid = 'A'
     end
-    ESX.TriggerServerCallback("renzu_garage:changestate",function(ret)
+    TriggerServerCallback_("renzu_garage:changestate",function(ret)
         if ret then
             DeleteEntity(GetVehiclePedIsIn(PlayerPedId(), 0))
         end
@@ -867,7 +815,7 @@ RegisterNUICallback(
 )
 
 RegisterNUICallback("ownerinfo",function(data, cb)
-    ESX.TriggerServerCallback("renzu_garage:getowner",function(a,data)
+    TriggerServerCallback_("renzu_garage:getowner",function(a,data)
         if a ~= nil then
         SendNUIMessage(
             {
@@ -918,7 +866,7 @@ RegisterNUICallback(
             end
         end
         local veh = nil
-    ESX.TriggerServerCallback("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
+    TriggerServerCallback_("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
         if stored and impound == 0 or ispolice and string.find(garageid, "impound") or not Config.EnableReturnVehicle and impound ~= 1 or impound == 1 and not Config.EnableImpound then
             local tempcoord = {}
             if propertygarage then
@@ -976,7 +924,7 @@ RegisterNUICallback(
             while veh == nil do
                 Citizen.Wait(10)
             end
-            ESX.TriggerServerCallback("renzu_garage:changestate",function(ret, garage_public)
+            TriggerServerCallback_("renzu_garage:changestate",function(ret, garage_public)
                 if ret and garage_public then
                     local ent = Entity(veh).state
                     while ent.share == nil do Wait(100) end
@@ -1135,7 +1083,7 @@ RegisterNUICallback(
                 props = json.decode(v.props)
             end
         end
-        ESX.TriggerServerCallback("renzu_garage:returnpayment",function(canreturn)
+        TriggerServerCallback_("renzu_garage:returnpayment",function(canreturn)
             if canreturn then
                 if propertygarage then
                     spawn = GetEntityCoords(PlayerPedId())
@@ -1183,7 +1131,7 @@ RegisterNUICallback(
                 while veh == nil do
                     Citizen.Wait(1)
                 end
-                ESX.TriggerServerCallback("renzu_garage:changestate",function(ret,garage_public)
+                TriggerServerCallback_("renzu_garage:changestate",function(ret,garage_public)
                     if ret and garage_public then
                         local ent = Entity(veh).state
                         while ent.share == nil do Wait(100) end
@@ -1248,7 +1196,7 @@ RegisterNUICallback("Close",function(data, cb)
         for k,v in pairs(impoundcoord) do
             if v.garage_x ~= nil then
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 40.0 and garageid == v.garage then
+                if dist >= 15.0 and dist <= 40.0 and garageid == v.garage then
                     SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
                 end
             end
@@ -1257,7 +1205,7 @@ RegisterNUICallback("Close",function(data, cb)
         for k,v in pairs(garagecoord) do
             if v.garage_x ~= nil then
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 40.0 and garageid == v.garage then
+                if dist >= 15.0 and dist <= 40.0 and garageid == v.garage then
                     SetEntityCoords(ped, v.garage_x,v.garage_y,v.garage_z, 0, 0, 0, false)  
                 end
             end

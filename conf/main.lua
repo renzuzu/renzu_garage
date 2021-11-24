@@ -1,7 +1,9 @@
 Config = {}
 Config.Locale = "en" -- en,es,de or any language support
+--FRAMEWORK
+Config.framework = 'QBCORE' -- ESX, QBCORE
 --GENERAL SETTING
-Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async", "oxmysql"
+Config.Mysql = 'oxmysql' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
 Config.ReturnDamage = true -- return visual damage when restoring vehicle from garage
 Config.RefreshOwnedVehiclesOnStart = true -- refresh vehicles store state (return any lost vehicles every server start (not script restart))
@@ -90,5 +92,17 @@ Config.CarlockKey = 'J' -- Keyboard (changable in keybinds FIVEM setting)
 -- Variables
 Message = Locale[Config.Locale]
 if not IsDuplicityVersion() then
+  ESX = nil
+  QBCore = nil
+  fetchdone = false
+  PlayerData = {}
+  playerLoaded = false
+  TriggerServerCallback_ = nil
+  vehicletable = 'owned_vehicles'
+  vehiclemod = 'vehicle'
+  owner = 'owner'
+  stored = 'stored'
+  garage__id = 'garage_id'
+  type_ = 'type'
   LastVehicleFromGarage = nil garageid = 'A' inGarage = false ingarage = false garage_coords = {} shell = nil ESX = nil fetchdone = false PlayerData = {} playerLoaded = false canpark = false spawned_cars = {} vtype = 'car' vehiclesdb = {} tid = 0 propertygarage = false parkmeter = {} jobgarages = {} coordcache = {} propertyspawn = {} lastcat = nil deleting = false housingcustom = nil garage_public = false shell = nil i = 0 vehtable = {} garage_id = 'A' meter_cars = {} inshell = false patrolcars = {} cat = nil OwnedVehicles = {} VTable = {} owned_veh = {} neargarage = false markers = {} drawsleep = 1 drawtext = false indist = false jobgarage = false garagejob = nil ispolice = false vhealth = 1000 myoldcoords = nil spawnedgarage = {} shell = nil i = 0 vehtable = {} garage_id = 'A' min = 0 max = 10 plus = 0 countspawn = 0 opened = false newprop = nil object = nil insidegarage = true private_garages = {} activeshare = nil currentprivate = nil carrymode = false carrymod = false tostore = {} vehicleinarea = {} impoundata = nil parkedvehicles = {} vehiclekeysdata = nil entering = false garagekeysdata = nil
 end

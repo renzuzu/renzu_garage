@@ -88,6 +88,7 @@ window.addEventListener('message', function(event) {
             impound_left = duration_left
             //impound_left = impound_left.replace(",", "")
         }
+        console.log(impound_left,'gago')
         document.getElementById("dateissue").innerHTML = humanDateFormat;
         for(var [key,value] of Object.entries(data.info)){
             for(var [k,v] of Object.entries(value)){
@@ -364,9 +365,9 @@ window.addEventListener('message', function(event) {
             <div class="uk-margin uk-card uk-card-default uk-card-hover">
             <!-- UIkit CARD BODY -->
             <div class="uk-card-body">
-            <a class="uk-link-reset uk-position-cover" href="#"></a>
-            <div class="uk-flex uk-flex-center">
-            <span class="uk-icon default" style="background: url(img/CAR_`+img+`.png);
+            <a class="uk-link-reset uk-position-cover" href="#" onclick="choosecat('`+i+`')"></a>
+            <div class="uk-flex uk-flex-center" onclick="choosecat('`+i+`')">
+            <spanclass="uk-icon default" style="background: url(img/CAR_`+img+`.png);
             background-size: cover;
             width: 100px;
             height: 100px;"></span>
