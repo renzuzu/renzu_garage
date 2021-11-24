@@ -1759,7 +1759,7 @@ end
 
 function ShowFloatingHelpNotification(msg, coords, disablemarker, i)
     AddTextEntry('FloatingHelpNotificationsc'..i, msg)
-    SetFloatingHelpTextWorldPosition(1, coords+vector3(0,0,0.3))
+    SetFloatingHelpTextWorldPosition(1, coords.x,coords.y,coords.z+0.3)
     SetFloatingHelpTextStyle(1, 1, 2, -1, 3, 0)
     BeginTextCommandDisplayHelp('FloatingHelpNotificationsc'..i)
     EndTextCommandDisplayHelp(2,0, 0, -1)

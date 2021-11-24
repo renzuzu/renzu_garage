@@ -618,7 +618,8 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
             SetVehicleBobo(vehicle)
             Wait(100)
             SetVehicleProp(vehicle, vp)
-            SetEntityCoords(GetEntityCoords(vehicle))
+            local mycoord = GetEntityCoords(vehicle)
+            SetEntityCoords(mycoord.x,mycoord.y,mycoord.z)
             if not property then
                 Spawn_Vehicle_Forward(vehicle, vector3(v.spawn_x*1.0,v.spawn_y*1.0,v.spawn_z*1.0))
             end
