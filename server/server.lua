@@ -821,7 +821,6 @@ RegisterServerCallBack_('renzu_garage:parkingmeter', function (source, cb, coord
             end
         end
         if canpark then
-            print(prop)
             MysqlGarage(Config.Mysql,'execute','INSERT INTO parking_meter (identifier, coord, park_coord, vehicle, plate) VALUES (@identifier, @coord, @park_coord, @vehicle, @plate)', {
                 ['@identifier']   = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
                 ['@coord']   = json.encode(coord),
@@ -1067,7 +1066,6 @@ end)
 
 RegisterServerEvent('renzu_garage:unpark')
 AddEventHandler('renzu_garage:unpark', function(plate,state,model)
-    print(plate,state,model)
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -1421,7 +1419,7 @@ AddEventHandler('entityCreated', function(entity)
                     local share = {}
                     if xPlayer then
                         local tempvehicles = GlobalState.GVehicles
-                        tempvehicles[plate] = {plate = plate, name = "Vehicle", owner = xPlayer.identifier}
+                        tempvehicles[plate] = {plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
                         GlobalState.GVehicles = tempvehicles
                         share[xPlayer.identifier] = xPlayer.identifier
                         ent.share = share
@@ -1433,11 +1431,11 @@ AddEventHandler('entityCreated', function(entity)
             end
             local share = {}
             if havekeys and DoesEntityExist(entity) then -- if vehicle is not owned and not job vehicles, we will create a temporary vehicle key sharing for the player to avoid using hotwire eg. while in truck deliveries etc... which is created like a local vehicle
-                local owner = NetworkGetEntityOwner(entity)
-                local xPlayer = GetPlayerFromId(owner)
+                local o = NetworkGetEntityOwner(entity)
+                local xPlayer = GetPlayerFromId(o)
                 if xPlayer then
                     local tempvehicles = GlobalState.GVehicles
-                    tempvehicles[plate] = {plate = plate, name = "Vehicle", owner = xPlayer.identifier}
+                    tempvehicles[plate] = {plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
                     GlobalState.GVehicles = tempvehicles
                     share[xPlayer.identifier] = xPlayer.identifier
                     ent.share = share

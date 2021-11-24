@@ -284,7 +284,7 @@ function Keyless()
     EnsureEntityStateBag(nearestveh)
     -- check nearest owned vehicle
     local ent = Entity(nearestveh).state
-    if GlobalState.GVehicles[nearestplate] and GlobalState.GVehicles[nearestplate].owner == PlayerData.identifier -- player owned
+    if GlobalState.GVehicles[nearestplate] and GlobalState.GVehicles[nearestplate][owner] == PlayerData.identifier -- player owned
     or GlobalState.GVehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
     or GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
         ent.unlock = not ent.unlock

@@ -231,7 +231,7 @@ CreateThread(function()
                             elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < 5 then
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],0)
                                 SetEntityCollision(spawned_cars[park.plate],true)
-                                if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park.owner
+                                if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park[owner]
                                 or GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and GlobalState.Gshare and GlobalState.Gshare[park.plate] and GlobalState.Gshare[park.plate][PlayerData.identifier] and GlobalState.Gshare[park.plate][PlayerData.identifier] then
                                     TriggerServerEvent("renzu_garage:unpark", park.plate, 0, tonumber(json.decode(park[vehiclemod]).model))
                                     Wait(100)
