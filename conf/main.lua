@@ -4,6 +4,7 @@ Config.Locale = "en" -- en,es,de or any language support
 Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
 Config.ReturnDamage = true -- return visual damage when restoring vehicle from garage
+Config.RefreshOwnedVehiclesOnStart = true -- refresh vehicles store state (return any lost vehicles every server start (not script restart))
 Config.ReturnPayment = 1000 -- a value to pay if vehicle is not in garage
 Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 Config.floatingtext = true -- use native floating text and marker to interact with garages (popui and floatingtext must be opposite settings) (popui must be false if this is true)

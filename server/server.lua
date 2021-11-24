@@ -136,6 +136,12 @@ Citizen.CreateThread(function()
     end
     print("^2 impound_data Import success ^7")
     Wait(100)
+    if Config.RefreshOwnedVehiclesOnStart and not GlobalState.RefreshVehicle then
+        MysqlGarage(Config.Mysql,'execute','UPDATE owned_vehicles SET `stored` = @stored', {
+            ['@stored'] = 1,
+        })
+        GlobalState.RefreshVehicle = true
+    end
     print("^2 -------- renzu_garage v1.726 Started ----------^7")
 end)
 
