@@ -723,7 +723,7 @@ function ShowConfirm(){
             <p class="vehicle">Vehicle is Unavailable</p>
         </div>
 
-        <div class="modal-footer" style="display:inline-block !important; text-align:center;margin:20px;">
+        <div class="modal-footer" style="display:inline-block !important; text-align:center;margin:20px;top:1.5vh;left:0">
             <h1 style="font-size:12px;">Release Date</h1>
             <div id="clockdiv">
             <div>
