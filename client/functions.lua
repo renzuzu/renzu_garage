@@ -27,10 +27,33 @@ function GerNearVehicle(coords, distance, myveh)
     return false
 end
 
-function Spawn_Vehicle_Forward(veh, coords)
+function GetAvailableSpots(veh,spawns)
+    for k,v in ipairs(spawns) do
+        local available = IsAnyVehicleNearPoint(v.x,v.y,v.z,2.1)
+        print(available,k)
+        if not available then return k end
+    end
+    return false
+end
+
+function Spawn_Vehicle_Forward(veh, coords, spawns)
     Wait(10)
     local move_coords = coords
-    local vehicle = GerNearVehicle(move_coords, 3, veh)
+    local vehicle = IsAnyVehicleNearPoint(move_coords.x,move_coords.y,move_coords.z,2.1)
+    if countspawn == 0 then countspawn = countspawn + 1 end
+    if spawns and spawns[1] then
+        if IsAnyVehicleNearPoint(spawns[countspawn].x,spawns[countspawn].y,spawns[countspawn].z,2.1) then
+            countspawn = GetAvailableSpots(veh,spawns)
+        end
+        if countspawn then
+            SetEntityCoords(veh, spawns[countspawn].x,spawns[countspawn].y,spawns[countspawn].z)
+            SetEntityHeading(veh, spawns[countspawn].w)
+            move_coords = vector3(spawns[countspawn].x,spawns[countspawn].y,spawns[countspawn].z)
+            countspawn = 0
+        end
+        return
+    end
+    vehicle = GerNearVehicle(coords,3.0,veh)
     if vehicle and countspawn < 5 then
         move_coords = move_coords + GetEntityForwardVector(veh) * 9.0
         SetEntityCoords(veh, move_coords.x, move_coords.y, move_coords.z)

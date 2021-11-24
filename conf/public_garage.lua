@@ -4,13 +4,24 @@ garagecoord = {
         Dist = 7, -- distance (DEPRECATED)
         Type = "car",
         Blip = {color = 38, sprite = 289, scale = 0.6},
-        garage_x = 241.1,
-        garage_y = -757.1,
-        garage_z = 34.639263153076, -- coordinates for this garage
-        spawn_x = 245.59975585938,
-        spawn_y = -743.73449707031,
-        spawn_z = 33.954160003662,
-        heading = 154.98515319824 -- Vehicle spawn location
+        garage_x = 212.05801391602,
+        garage_y = -806.82318115234,
+        garage_z = 30.850284576416, -- coordinates for this garage
+        spawn_x = 259.56192016602,
+        spawn_y = -771.90295410156,
+        spawn_z = 30.039196014404,
+        spawns = { -- multi spawn points
+            [1] = vector4(205.80200195313,-800.98461914063,30.336420059204,251.11260986328),
+            [2] = vector4(207.53726196289,-798.51123046875,30.313058853149,247.42681884766),
+            [3] = vector4(207.82752990723,-796.08166503906,30.297472000122,247.77174377441),
+            [4] = vector4(208.51196289063,-793.43505859375,30.28475189209,247.7737121582),
+            [5] = vector4(209.48347473145,-790.82354736328,30.300022125244,247.76875305176),
+            [6] = vector4(210.29898071289,-788.34698486328,30.28684425354,250.75137329102),
+            [7] = vector4(211.26725769043,-785.88366699219,30.271169662476,249.43542480469),
+            [8] = vector4(212.43359375,-783.44329833984,30.252775192261,249.76136779785),
+            -- add more here
+        },
+        heading = 70.078811645508-- Vehicle spawn location
     },
     {
         garage = "B", --PINK MOTEL
@@ -23,7 +34,18 @@ garagecoord = {
         spawn_x = 270.75,
         spawn_y = -340.51,
         spawn_z = 44.92,
-        heading = 342.03
+        heading = 342.03,
+        spawns = { -- multi spawn points
+            [1] = vector4(265.4719543457,-332.08441162109,44.450561523438,250.59829711914),
+            [2] = vector4(267.23263549805,-329.06015014648,44.450458526611,249.85958862305),
+            [3] = vector4(268.1755065918,-325.57357788086,44.450607299805,250.04553222656),
+            [4] = vector4(269.48678588867,-322.5729675293,44.450901031494,248.83270263672),
+            [5] = vector4(270.57336425781,-319.01446533203,44.450626373291,248.16058349609),
+            [6] = vector4(277.44564819336,-340.67172241211,44.450538635254,67.979270935059),
+            [7] = vector4(278.24362182617,-336.94314575195,44.245914459229,68.633239746094),
+            [8] = vector4(278.67599487305,-333.11920166016,44.245590209961,68.187942504883),
+            -- add more here
+        },
     },
     {
         garage = "C", --GROVE
@@ -175,6 +197,14 @@ garagecoord = {
             [2] = {model = 'police2', name = 'Police 2', type = 'car', grade = 1, plateprefix = 'LSPD'}, -- minimum grade
             [3] = {model = 'police3', name = 'Police 3', type = 'car', grade = 1, plateprefix = 'LSPD'}, -- minimum grade
         },
+        spawns = {
+            [1] = vector4(446.27514648438,-1025.2941894531,28.239305496216,5.9499230384827),
+            [2] = vector4(442.35726928711,-1025.7015380859,28.312492370605,1.7962882518768),
+            [3] = vector4(438.4599609375,-1025.8989257813,28.381614685059,3.311493396759),
+            [4] = vector4(434.84564208984,-1026.8361816406,28.467458724976,5.2896723747253),
+            [5] = vector4(431.1669921875,-1026.8513183594,28.522979736328,6.8625078201294),
+            [6] = vector4(427.1767578125,-1027.4038085938,28.601217269897,7.0630011558533),
+        },
     },
     {
         garage = "Police Public Garage", -- public garage job
@@ -190,6 +220,14 @@ garagecoord = {
         spawn_y = -1019.6309814453,
         spawn_z = 27.948703765869,
         heading = 91.976776123047,
+        spawns = {
+            [1] = vector4(446.27514648438,-1025.2941894531,28.239305496216,5.9499230384827),
+            [2] = vector4(442.35726928711,-1025.7015380859,28.312492370605,1.7962882518768),
+            [3] = vector4(438.4599609375,-1025.8989257813,28.381614685059,3.311493396759),
+            [4] = vector4(434.84564208984,-1026.8361816406,28.467458724976,5.2896723747253),
+            [5] = vector4(431.1669921875,-1026.8513183594,28.522979736328,6.8625078201294),
+            [6] = vector4(427.1767578125,-1027.4038085938,28.601217269897,7.0630011558533),
+        },
     },
     --JOB GARAGE
     {
@@ -207,20 +245,6 @@ garagecoord = {
         heading = 312.01202392578
     },
     {
-        garage = "Sheriff Garage", --PALETO
-        job = "sheriff",
-        Type = "car",
-        Dist = 10,
-        Blip = {color = 38, sprite = 289, scale = 0.6},
-        garage_x = 376.8639831543,
-        garage_y = -1627.7742919922,
-        garage_z = 28.504697799683,
-        spawn_x = 395.60012817383,
-        spawn_y = -1622.9046630859,
-        spawn_z = 29.221649169922,
-        heading = 227.15142822266
-    },
-    {
         garage = "Hospital Garage", --PALETO
         job = "ambulance",
         Type = "car",
@@ -232,10 +256,20 @@ garagecoord = {
         spawn_x = 286.06204223633,
         spawn_y = -562.79351806641,
         spawn_z = 43.117538452148,
-        heading = 82.327735900879
+        heading = 82.327735900879,
+        default_vehicle = { -- the vehicle listed here is like a goverment property and can be used for patrol etc. (this can be used in other garage, public or other job garage)
+            [1] = {model = 'ambulance', name = 'Ambulance', type = 'car', grade = 1, plateprefix = 'HP'}, -- minimum grade
+            [2] = {model = 'gauntlet', name = 'Gauntlet', type = 'car', grade = 1, plateprefix = 'HP'}, -- minimum grade
+            [3] = {model = 'double', name = 'Double', type = 'car', grade = 1, plateprefix = 'HP'}, -- minimum grade
+        },
+        spawns = {
+            [1] = vector4(296.26379394531,-604.16204833984,43.097145080566,70.580841064453),
+            [2] = vector4(294.83581542969,-607.69738769531,43.119316101074,67.897407531738),
+            [3] = vector4(292.81790161133,-610.82397460938,43.134288787842,70.962066650391),
+        },
     },
     {
-        garage = "Mechanic Garage", --PALETO
+        garage = "Mechanic Garage", -- BENNYS
         job = "mechanic",
         Type = "car",
         Dist = 10,
@@ -246,7 +280,19 @@ garagecoord = {
         spawn_x = -194.388671875,
         spawn_y = -1304.6813964844,
         spawn_z = 31.330451965332,
-        heading = 80.139533996582
+        heading = 80.139533996582,
+        default_vehicle = { -- the vehicle listed here is like a goverment property and can be used for patrol etc. (this can be used in other garage, public or other job garage)
+            [1] = {model = 'rumpo', name = 'Rumpo', type = 'car', grade = 1, plateprefix = 'MECH'}, -- minimum grade
+            [2] = {model = 'towtruck', name = 'Tow Truck', type = 'car', grade = 1, plateprefix = 'MECH'}, -- minimum grade
+            [3] = {model = 'towtruck2', name = 'Tow Truck 2', type = 'car', grade = 1, plateprefix = 'MECH'}, -- minimum grade
+            [4] = {model = 'flatbed', name = 'Flatbed', type = 'car', grade = 1, plateprefix = 'MECH'}, -- minimum grade
+        },
+        spawns = {
+            [1] = vector4(-173.84768676758,-1303.8607177734,31.363254547119,0.68920373916626),
+            [2] = vector4(-169.03070068359,-1304.6204833984,31.403896331787,0.6904256939888),
+            [3] = vector4(-164.01719665527,-1305.0968017578,31.418834686279,4.6423711776733),
+            [4] = vector4(-159.13815307617,-1305.037109375,31.422592163086,4.0851006507874)
+        }
     },
 
     -- BOAT GARAGE
