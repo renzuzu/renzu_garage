@@ -1,5 +1,6 @@
 -- IMPOUND
 ImpoundedLostVehicle = true -- If vehicle is not in garage, player can retrieve it at impound
+LostVehicleRadius = 400 -- if vehicle is > than this distance, impound menu will show the vehicle and < this value the vehicle will not be available in impound ( this is only if entity is existing in your one sync radius (400R Infinity))
 Impoundforall = true -- if true all players can access the impound to return their owned vehicles else only allowed jobs at impound config
 ImpoundPayment = 10000 -- required cash to get impounded vehicles if Impoundforall is enable
 DefaultDuration = 1 -- 1 hour if duration is not specified

@@ -50,7 +50,7 @@ function OpenImpound(garageid)
         if DoesEntityExist(vehicle) then
             local otherplate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1'):upper()
             local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-            if #(GetEntityCoords(ped) - GetEntityCoords(vehicle)) < 50 then
+            if #(GetEntityCoords(ped) - GetEntityCoords(vehicle)) < LostVehicleRadius then
                 nearbyvehicles[otherplate] = true
             end
         end
