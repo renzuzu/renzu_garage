@@ -70,32 +70,34 @@ function OpenImpound(garageid)
                 if vehtable[v.impound] == nil then
                     vehtable[v.impound] = {}
                 end
-                veh = 
-                {
-                brand = v.brand or 1.0,
-                name = v.name or 1.0,
-                brake = v.brake or 1.0,
-                handling = v.handling or 1.0,
-                topspeed = v.topspeed or 1.0,
-                power = v.power or 1.0,
-                torque = v.torque or 1.0,
-                model = v.model,
-                img = v.img,
-                model2 = v.model2,
-                plate = v.plate,
-                --props = v.props,
-                fuel = v.fuel or 100.0,
-                bodyhealth = v.bodyhealth or 1000.0,
-                enginehealth = v.enginehealth or 1000.0,
-                garage_id = v.garage_id or 'A',
-                impound = v.impound or 0,
-                ingarage = v.ingarage or 0,
-                impound = v.impound or 0,
-                stored = v.stored or 0,
-                identifier = v.identifier or '',
-                impound_date = v.impound_date or -1
-                }
-                table.insert(vehtable[v.impound], veh)
+                print(v.type)
+                if v.type ~= 'air' and v.type ~= 'boat' then
+                    veh = {
+                        brand = v.brand or 1.0,
+                        name = v.name or 1.0,
+                        brake = v.brake or 1.0,
+                        handling = v.handling or 1.0,
+                        topspeed = v.topspeed or 1.0,
+                        power = v.power or 1.0,
+                        torque = v.torque or 1.0,
+                        model = v.model,
+                        img = v.img,
+                        model2 = v.model2,
+                        plate = v.plate,
+                        --props = v.props,
+                        fuel = v.fuel or 100.0,
+                        bodyhealth = v.bodyhealth or 1000.0,
+                        enginehealth = v.enginehealth or 1000.0,
+                        garage_id = v.garage_id or 'A',
+                        impound = v.impound or 0,
+                        ingarage = v.ingarage or 0,
+                        impound = v.impound or 0,
+                        stored = v.stored or 0,
+                        identifier = v.identifier or '',
+                        impound_date = v.impound_date or -1
+                    }
+                    table.insert(vehtable[v.impound], veh)
+                end
             end
         end
     end
