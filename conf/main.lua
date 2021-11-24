@@ -1,7 +1,7 @@
 Config = {}
-Config.Locale = "en" -- en,es, or any language support
+Config.Locale = "en" -- en,es,de or any language support
 --GENERAL SETTING
-Config.Mysql = 'oxmysql' -- "ghmattisql", "mysql-async", "oxmysql"
+Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
 Config.ReturnDamage = true -- return visual damage when restoring vehicle from garage
 Config.ReturnPayment = 1000 -- a value to pay if vehicle is not in garage
