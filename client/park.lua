@@ -288,7 +288,7 @@ CreateThread(function()
                 while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
                     if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) and not ingarage then
-                        TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[33].." [E]")
+                        TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[33].." [F]")
                         while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
                             if IsControlPressed(0,Config.ParkButton) then
                                 local vehicle = GetVehiclePedIsIn(PlayerPedId())

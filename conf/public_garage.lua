@@ -1,7 +1,7 @@
 garagecoord = {
     {
         garage = "A", --LEGION
-        Dist = 7, -- distance (DEPRECATED)
+        Dist = 3, -- distance (DEPRECATED)
         Type = "car",
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 212.05801391602,
@@ -26,7 +26,7 @@ garagecoord = {
     {
         garage = "B", --PINK MOTEL
         Type = "car",
-        Dist = 7,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 273.0,
         garage_y = -343.85,
@@ -50,7 +50,7 @@ garagecoord = {
     {
         garage = "C", --GROVE
         Type = "car",
-        Dist = 7,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -71.46,
         garage_y = -1821.83,
@@ -63,7 +63,7 @@ garagecoord = {
     {
         garage = "D", --MIRROR
         Type = "car",
-        Dist = 7,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 1032.84,
         garage_y = -765.1,
@@ -76,7 +76,7 @@ garagecoord = {
     {
         garage = "E", --BEACH
         Type = "car",
-        Dist = 7,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -1248.69,
         garage_y = -1425.71,
@@ -90,7 +90,7 @@ garagecoord = {
     {
         garage = "F", --GO HIGHWAY
         Type = "car",
-        Dist = 7,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -2961.58,
         garage_y = 375.93,
@@ -103,7 +103,7 @@ garagecoord = {
     {
         garage = "G", --SANDY WEST
         Type = "car",
-        Dist = 10,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 217.33,
         garage_y = 2605.65,
@@ -116,7 +116,7 @@ garagecoord = {
     {
         garage = "H", --SANDY MAIN
         Type = "car",
-        Dist = 7,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 1878.44,
         garage_y = 3760.1,
@@ -142,7 +142,7 @@ garagecoord = {
     {
         garage = "J", --GRAPESEED
         Type = "car",
-        Dist = 10,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 1713.06,
         garage_y = 4745.32,
@@ -168,7 +168,7 @@ garagecoord = {
     {
         garage = "Bayview Garage", --PALETO
         Type = "car",
-        Dist = 10,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -686.14886474609,
         garage_y = 5782.2724609375,
@@ -183,7 +183,7 @@ garagecoord = {
         garage = "Police Garage", --PALETO
         job = "police",
         Type = "car",
-        Dist = 10,
+        Dist = 3,
         Blip = {color = 38, sprite = 662, scale = 0.6},
         garage_x = 427.20556640625,
         garage_y = -1011.4292602539,
@@ -211,7 +211,7 @@ garagecoord = {
         garage_type = 'public', -- public = every police job can acccess the garage vehicle list (this can be used in other job garages too)
         job = "police",
         Type = "car",
-        Dist = 10,
+        Dist = 3,
         Blip = {color = 38, sprite = 662, scale = 0.6},
         garage_x = 450.5574645996, -- 450.55746459961,-1025.3254394531,28.56488609314,52.594207763672
         garage_y = -1025.3254394531,
@@ -234,7 +234,7 @@ garagecoord = {
         garage = "Sheriff Garage", --PALETO
         job = "sheriff",
         Type = "car",
-        Dist = 10,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = -450.94107055664,
         garage_y = 5989.919921875,
@@ -248,7 +248,7 @@ garagecoord = {
         garage = "Hospital Garage", --PALETO
         job = "ambulance",
         Type = "car",
-        Dist = 10,
+        Dist = 3,
         Blip = {color = 38, sprite = 289, scale = 0.6},
         garage_x = 291.01055908203,
         garage_y = -566.08709716797,
