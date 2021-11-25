@@ -298,7 +298,7 @@ CreateThread(function()
                 while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
                     if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) and not ingarage then
-                        Config.Notify( 'info', Message[33].." [F]")
+                        Config.Notify( 'info', '$ '..v.fee..' Fee: '..Message[33].." [F]")
                         while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
                             if IsControlPressed(0,Config.ParkButton) then
                                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
@@ -316,7 +316,7 @@ CreateThread(function()
                                 if spawned_cars[vehicleProps.plate] ~= nil then
                                     spawned_cars[vehicleProps.plate] = nil
                                 end
-                                TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps)
+                                TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps,parking[k])
                                 ReqAndDelete(car)
                                 Config.Notify( 'success', Message[34])
                                 neargarage = false

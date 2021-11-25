@@ -84,6 +84,21 @@ Citizen.CreateThread(function()
             EndTextCommandSetBlipName(blip)
         end
     end
+    if Config.Realistic_Parking then
+        for k,v in pairs(parking) do
+            local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+            local name = 'Parking Spot'
+            local blip = AddBlipForCoord(v.garage_x,v.garage_y,v.garage_z)
+            SetBlipSprite (blip, 524)
+            SetBlipDisplay(blip, 5)
+            SetBlipScale  (blip, 0.6)
+            SetBlipColour (blip, 25)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName(""..name.."")
+            EndTextCommandSetBlipName(blip)
+        end
+    end
 end)
 
 CreateThread(function()

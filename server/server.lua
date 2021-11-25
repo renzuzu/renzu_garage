@@ -1023,7 +1023,7 @@ AddEventHandler('renzu_garage:GetParkedVehicles', function()
 end)
 
 RegisterServerEvent('renzu_garage:park')
-AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
+AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props,data)
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -1031,7 +1031,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
     end
     local source = source
     local xPlayer = GetPlayerFromId(source)
-    if xPlayer then
+    if xPlayer and xPlayer.getMoney() >= data.fee then
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
             ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
             ['@plate'] = plate
@@ -1054,6 +1054,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
                     parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
                     Wait(200)
                     TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles, false, parkmeter)
+                    xPlayer.removeMoney(data.fee)
                 else
                     print('exploiting')
                 end
@@ -1061,6 +1062,8 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props)
         else
             xPlayer.showNotification(Message[77], 1, 0)
         end
+    else
+        Config.Notify('warning',Message[2], 'Not Enough Money to pay parking fee', xPlayer)
     end
 end)
 
