@@ -55,6 +55,20 @@ function OpenImpound(garageid)
             end
         end
     end
+    local data = parkedvehicles
+    local parked = {}
+    for i = 1, #data do
+        local park = data[i]
+        if park then
+            parked[park.plate] = true
+        end
+    end
+    for k,v in pairs(parkmeter) do
+        if v and v.plate then
+            v.plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
+            parked[v.plate] = true
+        end
+    end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if v.stored == 0 then
@@ -65,6 +79,9 @@ function OpenImpound(garageid)
             end
             if v.garage_id == 'impound' then
                 v.garage_id = impoundcoord[1].garage
+            end
+            if v.garage_id == 'PARKED' or v.isparked or parked[v.plate] then
+                v.stored = true
             end
             if ImpoundedLostVehicle and not v.stored and not string.find(v.garage_id, "impound") then
                 v.impound = 1

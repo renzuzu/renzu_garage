@@ -460,6 +460,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
                 type = value.type,
                 garage_type = value.garage_type ~= nil and value.garage_type or 'personal',
                 job = value.job ~= nil,
+                isparked = value.isparked,
             }
             table.insert(OwnedVehicles['garage'], VTable)
         end
