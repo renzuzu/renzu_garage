@@ -2,7 +2,9 @@ function AntiDupe(coords, hash,x,y,z,w,prop)
     Wait(10)
     local move_coords = coords
     local vehicle = IsAnyVehicleNearPoint(coords.x,coords.y,coords.z,1.1)
-	if not vehicle then v = CreateVehicle(hash,x,y,z,w,true,false) private_garages[v] = v SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) SetVehicleAsNoLongerNeeded(v) end
+    local nearveh = GetClosestVehicle(vector3(x,y,z), 2.000, 0, 70)
+    local model = GetEntityModel(nearveh)
+	if not vehicle or vehicle and model ~= hash then v = CreateVehicle(hash,x,y,z,w,true,false) private_garages[v] = v SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) SetVehicleAsNoLongerNeeded(v) end
 end
 
 RegisterNetEvent('renzu_garage:ingarage')
@@ -67,7 +69,7 @@ AddEventHandler('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,h
     CreateThread(function()
         local stats_show = nil
         while insidegarage do
-            local nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
+            local nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70) or GetVehiclePedIsIn(PlayerPedId())
             if nearveh ~= 0 and not carrymod then
                 local name = 'not found'
                 for k,v in pairs(vehiclesdb) do
@@ -102,7 +104,7 @@ AddEventHandler('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,h
                     })
                     stats_show = nearveh
                     CreateThread(function()
-                        while nearveh ~= 0 do
+                        while nearveh ~= 0 and not IsPedInAnyVehicle(PlayerPedId()) do
                             if IsControlPressed(0,38) then
                                 TriggerEvent('renzu_garage:vehiclemod',nearveh)
                                 Wait(100)
@@ -112,8 +114,8 @@ AddEventHandler('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,h
                         end
                         return
                     end)
-                    while nearveh ~= 0 do
-                        nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
+                    while nearveh ~= 0 and not IsPedInAnyVehicle(PlayerPedId()) do
+                        nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70) or GetVehiclePedIsIn(PlayerPedId())
                         Wait(200)
                     end
                 end
@@ -502,7 +504,7 @@ AddEventHandler('renzu_garage:exitgarage', function(t,exit)
     if not exit then
         insidegarage = false
         local closestplayer, dis = GetClosestPlayer()
-        if closestplayer == -1 and dis < 33 then
+        if closestplayer == -1 and dis < 33 or closestplayer == -1 and dis == -1 then
             local empty = true
             for k,v in pairs(private_garages) do
                 empty = false
@@ -520,7 +522,7 @@ AddEventHandler('renzu_garage:exitgarage', function(t,exit)
     else
         local empty = true
         local closestplayer, dis = GetClosestPlayer()
-        if closestplayer == -1 and dis > 33 or closestplayer ~= -1 and dis > 33 then
+        if closestplayer == -1 and dis > 33 or closestplayer ~= -1 and dis > 33 or closestplayer == -1 and dis == -1 then
             for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
                 vehicleinarea[string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1'):upper()] = vehicle
             end
@@ -547,7 +549,6 @@ end)
 RegisterNetEvent('renzu_garage:opengaragemenu')
 AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
     local garage,t = garageid,v
-    print(garage,t)
     TriggerServerCallback_("renzu_garage:isgarageowned",function(owned,share)
         local multimenu = {}
         if not owned then
