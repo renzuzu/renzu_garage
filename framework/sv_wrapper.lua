@@ -74,6 +74,9 @@ function GetPlayerFromIdentifier(identifier)
 	self = {}
 	if Config.framework == 'ESX' then
 		local player = ESX.GetPlayerFromIdentifier(identifier)
+		player.showNotification = function(msg)
+			player.triggerEvent('esx:showNotification', msg)
+		end
 		self.src = player.source
 		return player
 	else
@@ -116,7 +119,7 @@ function GetPlayerFromIdentifier(identifier)
 			return true
 		end
 		selfcore.data.showNotification = function(msg)
-			TriggerEvent('QBCore:Notify',self.src, msg)
+			TriggerClientEvent('QBCore:Notify',self.src, msg)
 			return true
 		end
 		if selfcore.data.source == nil then
@@ -144,7 +147,11 @@ function GetPlayerFromId(src)
 	self = {}
 	self.src = src
 	if Config.framework == 'ESX' then
-		return ESX.GetPlayerFromId(self.src)
+		local player = ESX.GetPlayerFromId(self.src)
+		player.showNotification = function(msg)
+			player.triggerEvent('esx:showNotification', msg)
+		end
+		return player
 	elseif Config.framework == 'QBCORE' then
 		selfcore = {}
 		selfcore.data = QBCore.Functions.GetPlayer(self.src)
@@ -183,7 +190,7 @@ function GetPlayerFromId(src)
 			return true
 		end
 		selfcore.data.showNotification = function(msg)
-			TriggerEvent('QBCore:Notify',self.src, msg)
+			TriggerClientEvent('QBCore:Notify',self.src, msg)
 			return true
 		end
 		selfcore.data.addInventoryItem = function(item,amount,info,slot)

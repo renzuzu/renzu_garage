@@ -1245,7 +1245,7 @@ function OpenGarage(garageid,garage_type,jobonly,default)
             DeleteEntity(LastVehicleFromGarage)
         end
     else
-        TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[38])
+        Config.Notify('info', Message[38])
         if not propertyspawn.x and #(GetEntityCoords(PlayerPedId()) - vector3(garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z)) > 15 then
             SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
         elseif propertyspawn.x and #(GetEntityCoords(PlayerPedId()) - vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)) > 15 then

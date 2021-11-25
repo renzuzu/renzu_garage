@@ -26,16 +26,16 @@ RegisterCommand(Config.GarageKeysCommand, function(source, args, rawCommand)
             while garagekeysdata == nil do Wait(100) end
             if garagekeysdata.action == 'give' then
                 TriggerServerEvent('renzu_garage:updategaragekeys',garagekeysdata.action,garagekeysdata.data)
-                TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[49])
+                Config.Notify( 'success', Message[49])
             end
             if garagekeysdata.action == 'del' then
                 TriggerServerEvent('renzu_garage:updategaragekeys',garagekeysdata.action,garagekeysdata.data.mygaragekeys)
                 LocalPlayer.state:set('garagekey', false, true)
-                TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[50])
+                Config.Notify( 'success', Message[50])
             end
             if garagekeysdata.action == 'use' then
                 LocalPlayer.state:set('garagekey', garagekeysdata.data.mygaragekeys ~= 'own' and garagekeysdata.data.mygaragekeys or false, true)
-                TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[51])
+                Config.Notify('success', Message[51])
             end
             garagekeysdata = nil
         end
@@ -320,7 +320,7 @@ function Keyless()
             --local payload = msgpack_pack(v)
             --SetStateBagValue(es, s, payload, payload:len(), r)
             PlaySoundFromEntity(-1, "Door_Open", nearestveh, "Lowrider_Super_Mod_Garage_Sounds", 0, 0)
-            TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[55])
+            Config.Notify('success', Message[55])
             --StartVehicleHorn(nearestveh,2)
             StartVehicleHorn(nearestveh, 11, "HELDDOWN", false)
             Wait(200)
@@ -334,13 +334,13 @@ function Keyless()
             StartVehicleHorn(nearestveh, 11, "HELDDOWN", false)
             Wait(200)
             StartVehicleHorn(nearestveh, 0, "HELDDOWN", false)
-            TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[56])
+            Config.Notify( 'success', Message[56])
         end
         Wait(500)
         ClearPedTasks(PlayerPedId())
         return
     end
-    TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[57])
+    Config.Notify( 'info', Message[57])
 end
 
 RegisterCommand('keyless'..Config.CarlockKey, function()
@@ -467,7 +467,7 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
                 end
                 if owned then
                     TriggerServerEvent('renzu_garage:transfercar',plate,vehiclekeysdata.data.playerslist)
-                    TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[59])
+                    Config.Notify( 'success', Message[59])
                 end
             end
             if vehiclekeysdata.action == 'dupe' and p then
@@ -485,9 +485,9 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
                     share[vehiclekeysdata.data.playerslist] = PlayerData.identifier
                     ent:set('share', share, true)
                     TriggerServerEvent('statebugupdate','share',share, VehToNet(vehicle))
-                    TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[60])
+                    Config.Notify('success', Message[60])
                 else
-                    TriggerEvent('renzu_notify:Notify', 'warning',Message[2], Message[61])
+                    Config.Notify( 'warning', Message[61])
                 end
             end
             vehiclekeysdata = nil

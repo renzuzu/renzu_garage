@@ -441,9 +441,9 @@ AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,
         share = false
         save = nil
         savepartsonly = nil
-        TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[63]..' ('..mod.name..')')
+        Config.Notify( 'success', Message[63]..' ('..mod.name..')',xPlayer)
     else
-        TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[64])
+        Config.Notify( 'error', Message[64],xPlayer)
     end
 end)
 
@@ -482,12 +482,12 @@ AddEventHandler('renzu_garage:buygarage', function(id,v)
                 ['@vehicles'] = '[]'
             })
             xPlayer.removeMoney(cost)
-            TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[65]..' ('..id..')')
+            Config.Notify('success', Message[65]..' ('..id..')',xPlayer)
             local housingtemp = GlobalState.HousingGarages or {}
             housingtemp[id] = xPlayer.identifier
             GlobalState.HousingGarages = housingtemp
         else
-            TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[66])
+            Config.Notify( 'error', Message[66],xPlayer)
         end
     end
 end)
@@ -534,7 +534,7 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
         ['@owner'] = xPlayer.identifier,
         ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1')
     })
-    if not Config.Allowednotowned and result[1] == nil then TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[69]) return end
+    if not Config.Allowednotowned and result[1] == nil then Config.Notify( 'error', Message[69], xPlayer) return end
     local garage = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
         ['@identifier'] = identifier,
         ['@garage'] = id
@@ -581,11 +581,11 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
             ['@garage'] = id,
             ['@identifier'] = identifier,
         })
-        TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[67])
+        Config.Notify( 'success', Message[67], xPlayer)
         vehiclesgarage = {}
         pgarage = {}
     else
-        TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[68])
+        Config.Notify( 'error', Message[68], xPlayer)
     end
 end)
 
@@ -746,7 +746,7 @@ AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
             ['@garage'] = id,
             ['@identifier'] = identifier,
         })
-        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[70])
+        Config.Notify('success', Message[70], xPlayer)
         --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
         TriggerClientEvent('renzu_garage:exitgarage',source, t, true)
         Wait(500)
@@ -798,7 +798,7 @@ RegisterCommand(Config.GiveAccessCommand, function(source, args, rawCommand)
             end
         end
     else
-        TriggerClientEvent('renzu_notify:Notify', source, 'warning',Message[2], Message[71])
+        Config.Notify('warning', Message[71], xPlayer)
     end
 end)
 
@@ -829,18 +829,18 @@ RegisterServerCallBack_('renzu_garage:parkingmeter', function (source, cb, coord
                 ['@plate'] = prop.plate
             })
             xPlayer.removeMoney(Config.MeterPayment)
-            TriggerClientEvent('renzu_notify:Notify', src, 'success',Message[2], Message[72])
+            Config.Notify('success',Message[72], xPlayer)
             Wait(300)
             parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
             Wait(200)
             TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,prop.plate,parkmeter)
             cb(true)
         else
-            TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[73])
+            Config.Notify( 'error', Message[73], xPlayer)
             cb(false)
         end
     else
-        TriggerClientEvent('renzu_notify:Notify', src, 'error',Message[2], Message[74])
+        Config.Notify('error', Message[74], xPlayer)
         cb(false)
     end
 end)
@@ -903,10 +903,10 @@ RegisterServerCallBack_('renzu_garage:isvehicleingarage', function (source, cb, 
             local money = impound_G[garage] ~= nil and impound_G[garage][plate] ~= nil and impound_G[garage][plate].fine or ImpoundPayment
             if xPlayer.getMoney() >= money then
                 xPlayer.removeMoney(money)
-                TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[75])
+                Config.Notify( 'success',Message[75],xPlayer)
                 cb(1,0)
             else
-                TriggerClientEvent('renzu_notify:Notify', source, 'error',Message[2], Message[76])
+                Config.Notify( 'error', Message[76],xPlayer)
                 cb(false,1,garage_impound,impound_fee)
             end
         elseif result and result[1][stored] ~= nil then
@@ -998,7 +998,7 @@ AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
                 ['@keys']   = json.encode(result),
             })
         end
-        TriggerClientEvent('renzu_notify:Notify',xPlayer.source, 'success',Message[2], 'You receive a Garage Key from '..sender.name)
+        Config.Notify('success', 'You receive a Garage Key from '..sender.name,xPlayer)
     elseif action == 'del' then
         local xPlayer = GetPlayerFromId(source)
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
@@ -1124,7 +1124,7 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
         if r and r[1] then
             identifier = r[1][owner]
         else
-            TriggerClientEvent('renzu_notify:Notify', source, 'info',Message[2], 'Vehicle is not owned')
+            Config.Notify('info',Message[2], 'Vehicle is not owned', xPlayer)
             cb(false,public)
         end
     end
@@ -1172,9 +1172,9 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     if state == 1 then
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[78])
+                        Config.Notify( 'success',Message[78], xPlayer)
                     else
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[79])
+                        Config.Notify( 'success', Message[79], xPlayer)
                     end
                     cb(true,public)
                 else
@@ -1255,9 +1255,9 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                         TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
                     end
                     if state == 1 then
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[80])
+                        Config.Notify( 'success', Message[80], xPlayer)
                     else
-                        TriggerClientEvent('renzu_notify:Notify', source, 'success',Message[2], Message[81])
+                        Config.Notify( 'success', Message[81],xPlayer)
                     end
                     cb(true,public)
                 else
@@ -1265,12 +1265,12 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                     print('exploiting')
                 end
             else
-                TriggerClientEvent('renzu_notify:Notify', source, 'error',Message[2], Message[82])
+                Config.Notify( 'error',Message[82],xPlayer)
                 cb(false)
                 --xPlayer.showNotification("This Vehicle is local car", 1, 0)
             end
         else
-            TriggerClientEvent('renzu_notify:Notify', source, 'info',Message[2], Message[77])
+            Config.Notify( 'info',Message[77],xPlayer)
             cb(false)
             --xPlayer.showNotification("This Vehicle is not your property", 1, 0)
         end

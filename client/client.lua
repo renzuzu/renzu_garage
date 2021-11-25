@@ -264,7 +264,7 @@ AddEventHandler('opengarage', function()
                 if dist <= v.Dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and not string.find(v.garage, "impound") then
                     garageid = v.garage
                     tid = k
-                    TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[36])
+                    Config.Notify('info', Message[36])
                     TriggerServerEvent("renzu_garage:GetVehiclesTable",garageid,v.garage_type == 'public' or false)
                     fetchdone = false
                     garage_public = v.garage_type == 'public' or false
@@ -305,7 +305,7 @@ AddEventHandler('opengarage', function()
             elseif not DoesEntityExist(vehiclenow) then
                 if dist <= v.Dist and Impoundforall or not Impoundforall and dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
                     garageid = v.garage
-                    TriggerEvent('renzu_notify:Notify', 'info',Message[2], "Opening Impound...Please wait..")
+                    Config.Notify('info', "Opening Impound...Please wait..")
                     TriggerServerEvent("renzu_garage:GetVehiclesTableImpound")
                     fetchdone = false
                     while not fetchdone do
@@ -608,7 +608,7 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
             plus = 0
             FreezeEntityPosition(PlayerPedId(),false)
         else
-            TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[40])
+            Config.Notify( 'error', Message[40])
             LastVehicleFromGarage = nil
             Wait(111)
             SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
@@ -807,7 +807,7 @@ RegisterNUICallback(
         if string.find(garageid, "impound") and not ispolice then
             DoScreenFadeIn(0)
             SetEntityCoords(PlayerPedId(), impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
-            TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[44])
+            Config.Notify('error', Message[44])
             return
         end
         GotoGarage(data.garageid or garageid,false,false,job)
@@ -1169,7 +1169,7 @@ RegisterNUICallback(
                     type = "cleanup"
                 })
             else
-                TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[40])
+                Config.Notify('error', Message[40])
                 LastVehicleFromGarage = nil
                 Wait(111)
                 SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)

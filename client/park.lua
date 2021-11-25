@@ -126,7 +126,7 @@ CreateThread(function()
                             SetVehicleProp(myveh, vehicle)
                             NetworkFadeInEntity(myveh,1)
                             TaskWarpPedIntoVehicle(PlayerPedId(), myveh, -1)
-                            TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[35])
+                            Config.Notify( 'info', Message[35])
                             Wait(2500)
                             FreezeEntityPosition(myveh, false)
                             SetEntityCollision(myveh,true)
@@ -255,7 +255,7 @@ CreateThread(function()
                                     SetVehicleProp(myveh, json.decode(park[vehiclemod]))
                                     NetworkFadeInEntity(myveh,1)
                                     TaskWarpPedIntoVehicle(PlayerPedId(), myveh, -1)
-                                    TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[35])
+                                    Config.Notify( 'info', Message[35])
                                 end
                             elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) > 5 then
                                 SetVehicleDoorsLocked(spawned_cars[park.plate],2)
@@ -298,7 +298,7 @@ CreateThread(function()
                 while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
                     if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) and not ingarage then
-                        TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[33].." [F]")
+                        Config.Notify( 'info', Message[33].." [F]")
                         while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
                             if IsControlPressed(0,Config.ParkButton) then
                                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
@@ -318,7 +318,7 @@ CreateThread(function()
                                 end
                                 TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps)
                                 ReqAndDelete(car)
-                                TriggerEvent('renzu_notify:Notify', 'success',Message[2], Message[34])
+                                Config.Notify( 'success', Message[34])
                                 neargarage = false
                             end
                             Wait(0)

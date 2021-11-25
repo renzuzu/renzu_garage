@@ -262,7 +262,7 @@ AddEventHandler('renzu_garage:openinventory', function(current)
             TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[17],false,'<i class="fas fa-warehouse-alt"></i> '..Message[18])
             TriggerEvent('renzu_contextmenu:show')
         else
-            TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[18])
+            Config.Notify('error', Message[18])
         end
     end,current,activeshare)
 end)
@@ -294,7 +294,7 @@ AddEventHandler('renzu_garage:installmod', function(index,lvl,k,vehicle,mod)
         ClearPedTasks(PlayerPedId())
         ReqAndDelete(object)
     else
-        TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[20])
+        Config.Notify('error', Message[20])
     end
 end)
 
@@ -333,7 +333,7 @@ AddEventHandler('renzu_garage:getmod', function(index,lvl,k)
                 Wait(500)
             end
         else
-            TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[24])
+            Config.Notify( 'error',Message[24])
         end
     end,currentprivate,k,activeshare)
 end)
@@ -431,7 +431,7 @@ AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
             TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Vehicle Parts",false,'<i class="fad fa-starfighter-alt"></i> '..Message[17])
             TriggerEvent('renzu_contextmenu:show')
         else
-            TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[26])
+            Config.Notify( 'error', Message[26])
         end
     end
 end)
@@ -578,7 +578,7 @@ AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
             TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[29],false,Message[29])
             TriggerEvent('renzu_contextmenu:show')
         elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
-            TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[31])
+            Config.Notify( 'error',Message[31])
             opened = true
         elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
             local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))

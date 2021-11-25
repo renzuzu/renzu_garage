@@ -63,7 +63,7 @@ function GarageHousing_Basic()
             TriggerServerEvent('renzu_garage:gotohousegarage',garageID,var)
         end
     else
-        TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[62])
+        Config.Notify('error', Message[62])
     end
 end
 

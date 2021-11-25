@@ -1,7 +1,12 @@
 Config = {}
 Config.Locale = "en" -- en,es,de or any language support
 --FRAMEWORK
+<<<<<<< Updated upstream
 Config.framework = 'ESX' -- ESX, QBCORE
+=======
+Config.framework = 'QBCORE' -- ESX, QBCORE
+
+>>>>>>> Stashed changes
 --GENERAL SETTING
 Config.Mysql = 'oxmysql' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
@@ -49,8 +54,8 @@ Config.ParkingAnywhere = true -- if this is true ParkingMeter Prop Feature will 
 -- ParkingAnywhere is like a realistic parking but by using /park command or /parkingmater
 -- you can park anywhere using /park
 Config.MeterProp = {
-  [1] = 'prop_parknmeter_01',
-  [2] = 'prop_parknmeter_02',
+    [1] = 'prop_parknmeter_01',
+    [2] = 'prop_parknmeter_02',
 }
 Config.MeterPayment = 5000
 
@@ -80,10 +85,10 @@ Config.LockpickLevel = 3 -- how many pins to complete
 Config.EnableAlert = true
 Config.AlertJob = 'police'
 Config.FailAlert = function() -- linden outlaw alert are preconfigured (please correct this , i might be wrong) https://github.com/thelindat/linden_outlawalert
-  local data = {displayCode = '211', description = 'Carjacking', isImportant = 0, recipientList = {Config.AlertJob}, length = '10000', infoM = 'fa-info-circle', info = 'Ongoing Carnapping'}
-  local dispatchData = {dispatchData = data, caller = 'Alarm', coords = GetEntityCoords(PlayerPedId())}
-  TriggerServerEvent('wf-alerts:svNotify', dispatchData)
-  print("SENT ALERT")
+    local data = {displayCode = '211', description = 'Carjacking', isImportant = 0, recipientList = {Config.AlertJob}, length = '10000', infoM = 'fa-info-circle', info = 'Ongoing Carnapping'}
+    local dispatchData = {dispatchData = data, caller = 'Alarm', coords = GetEntityCoords(PlayerPedId())}
+    TriggerServerEvent('wf-alerts:svNotify', dispatchData)
+    print("SENT ALERT")
 end
 
 -- Carlock
@@ -91,18 +96,33 @@ Config.CarlockKey = 'J' -- Keyboard (changable in keybinds FIVEM setting)
 
 -- Variables
 Message = Locale[Config.Locale]
+
+-- NOTIFY
+Config.Renzu_notify = false -- if false we will use default framework notification
+Config.Notify = function(type,msg,xPlayer)
+    if Config.Renzu_notify and not IsDuplicityVersion() then
+        TriggerEvent('renzu_notify:Notify', type,Message[2], msg)
+    elseif Config.Renzu_notify then
+        TriggerClientEvent('renzu_notify:Notify', xPlayer.source, type,Message[2], msg)
+    elseif not Config.Renzu_notify and not IsDuplicityVersion() then
+        ShowNotification(msg)
+    elseif not Config.Renzu_notify then
+        xPlayer.showNotification(msg)
+    end
+end
+
 if not IsDuplicityVersion() then
-  ESX = nil
-  QBCore = nil
-  fetchdone = false
-  PlayerData = {}
-  playerLoaded = false
-  TriggerServerCallback_ = nil
-  vehicletable = 'owned_vehicles'
-  vehiclemod = 'vehicle'
-  owner = 'owner'
-  stored = 'stored'
-  garage__id = 'garage_id'
-  type_ = 'type'
-  LastVehicleFromGarage = nil garageid = 'A' inGarage = false ingarage = false garage_coords = {} shell = nil ESX = nil fetchdone = false PlayerData = {} playerLoaded = false canpark = false spawned_cars = {} vtype = 'car' vehiclesdb = {} tid = 0 propertygarage = false parkmeter = {} jobgarages = {} coordcache = {} propertyspawn = {} lastcat = nil deleting = false housingcustom = nil garage_public = false shell = nil i = 0 vehtable = {} garage_id = 'A' meter_cars = {} inshell = false patrolcars = {} cat = nil OwnedVehicles = {} VTable = {} owned_veh = {} neargarage = false markers = {} drawsleep = 1 drawtext = false indist = false jobgarage = false garagejob = nil ispolice = false vhealth = 1000 myoldcoords = nil spawnedgarage = {} shell = nil i = 0 vehtable = {} garage_id = 'A' min = 0 max = 10 plus = 0 countspawn = 0 opened = false newprop = nil object = nil insidegarage = true private_garages = {} activeshare = nil currentprivate = nil carrymode = false carrymod = false tostore = {} vehicleinarea = {} impoundata = nil parkedvehicles = {} vehiclekeysdata = nil entering = false garagekeysdata = nil
+    ESX = nil
+    QBCore = nil
+    fetchdone = false
+    PlayerData = {}
+    playerLoaded = false
+    TriggerServerCallback_ = nil
+    vehicletable = 'owned_vehicles'
+    vehiclemod = 'vehicle'
+    owner = 'owner'
+    stored = 'stored'
+    garage__id = 'garage_id'
+    type_ = 'type'
+    LastVehicleFromGarage = nil garageid = 'A' inGarage = false ingarage = false garage_coords = {} shell = nil ESX = nil fetchdone = false PlayerData = {} playerLoaded = false canpark = false spawned_cars = {} vtype = 'car' vehiclesdb = {} tid = 0 propertygarage = false parkmeter = {} jobgarages = {} coordcache = {} propertyspawn = {} lastcat = nil deleting = false housingcustom = nil garage_public = false shell = nil i = 0 vehtable = {} garage_id = 'A' meter_cars = {} inshell = false patrolcars = {} cat = nil OwnedVehicles = {} VTable = {} owned_veh = {} neargarage = false markers = {} drawsleep = 1 drawtext = false indist = false jobgarage = false garagejob = nil ispolice = false vhealth = 1000 myoldcoords = nil spawnedgarage = {} shell = nil i = 0 vehtable = {} garage_id = 'A' min = 0 max = 10 plus = 0 countspawn = 0 opened = false newprop = nil object = nil insidegarage = true private_garages = {} activeshare = nil currentprivate = nil carrymode = false carrymod = false tostore = {} vehicleinarea = {} impoundata = nil parkedvehicles = {} vehiclekeysdata = nil entering = false garagekeysdata = nil
 end

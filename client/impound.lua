@@ -25,7 +25,7 @@ RegisterCommand('impound', function(source, args, rawCommand)
                     ClearPedTasksImmediately(ped)
                     Storevehicle(vehicle.vehicle,true,impoundata)
                 else
-                    TriggerEvent('renzu_notify:Notify', 'error',Message[2], Message[47])
+                    Config.Notify( 'error', Message[47])
                 end
             else
                 ShowNotification(Message[46])
@@ -146,7 +146,7 @@ function OpenImpound(garageid)
     else
         SetEntityCoords(PlayerPedId(), impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
         CloseNui()
-        TriggerEvent('renzu_notify:Notify', 'info',Message[2], Message[39])
+        Config.Notify( 'info', Message[39])
     end
 
 end
