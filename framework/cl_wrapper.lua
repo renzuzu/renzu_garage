@@ -96,6 +96,7 @@ function Playerloaded()
 			end
 		end)
 	end
+	while not PlayerData.job do Wait(100) end
 end
 
 function SetJob()
