@@ -1,12 +1,7 @@
 Config = {}
 Config.Locale = "en" -- en,es,de or any language support
 --FRAMEWORK
-<<<<<<< Updated upstream
 Config.framework = 'ESX' -- ESX, QBCORE
-=======
-Config.framework = 'QBCORE' -- ESX, QBCORE
-
->>>>>>> Stashed changes
 --GENERAL SETTING
 Config.Mysql = 'oxmysql' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
