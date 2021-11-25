@@ -9,16 +9,7 @@ function Initialized()
 		vehiclemod = 'vehicle'
 		QBCore = {}
 	elseif Config.framework == 'QBCORE' then
-		CreateThread(function()
-			QBCore = exports['qb-core']:GetCoreObject()
-		end)
-		Wait(1000)
-		if not QBCore then -- support old version in ugly way
-			CreateThread(function()
-				QBCore = exports['qb-core']:GetSharedObject()
-			end)
-			while not QBCore do Wait(100) end -- forgive me for this method. this will save me a head ache
-		end
+		QBCore = exports['qb-core']:GetCoreObject()
 		RegisterServerCallBack_ =  QBCore.Functions.CreateCallback
 		RegisterUsableItem = QBCore.Functions.CreateUseableItem
 		vehicletable = 'player_vehicles '
