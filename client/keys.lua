@@ -398,25 +398,30 @@ function HotWireVehicle(veh)
 end
 
 function LockPick()
-    if not Config.EnableLockpick then return end
-    local veh = getveh()
-    if veh ~= 0 then
-        local ent = Entity(veh).state
-        if not ent.unlock then
-            local ret = exports.renzu_lockgame:CreateGame(Config.LockpickLevel)
-            if ret then
-                ent.unlock = not ent.unlock
-                ent:set('unlock', ent.unlock, true)
-                TriggerServerEvent('statebugupdate','unlock',ent.unlock, VehToNet(veh))
-                SetVehicleDoorsLocked(veh, 1)
-                HotWireVehicle(veh)
-            else
-                if Config.EnableAlert then
-                    Config.FailAlert()
+    local playerPed = PlayerPedId()
+    local coords    = GetEntityCoords(playerPed)
+    local distanceincar = 2.0
+    if IsAnyVehicleNearPoint(coords.x, coords.y, coords.z, distanceincar) then
+        if not Config.EnableLockpick then return end
+        local veh = getveh()
+        if veh ~= 0 then
+            local ent = Entity(veh).state
+            if not ent.unlock then
+                local ret = exports.renzu_lockgame:CreateGame(Config.LockpickLevel)
+                if ret then
+                    ent.unlock = not ent.unlock
+                    ent:set('unlock', ent.unlock, true)
+                    TriggerServerEvent('statebugupdate','unlock',ent.unlock, VehToNet(veh))
+                    SetVehicleDoorsLocked(veh, 1)
+                    HotWireVehicle(veh)
+                else
+                    if Config.EnableAlert then
+                        Config.FailAlert()
+                    end
+                    SetVehicleAlarmTimeLeft(veh,20)
+                    SetVehicleAlarm(veh,true)
+                    StartVehicleAlarm(veh)
                 end
-                SetVehicleAlarmTimeLeft(veh,20)
-                SetVehicleAlarm(veh,true)
-                StartVehicleAlarm(veh)
             end
         end
     end
