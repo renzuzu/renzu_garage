@@ -1066,11 +1066,8 @@ RegisterNUICallback(
                     Citizen.Wait(101)
                 end
                 TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
+                break
             end
-        end
-
-        while veh == nil do
-            Citizen.Wait(10)
         end
         LastVehicleFromGarage = nil
         TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
@@ -1082,7 +1079,7 @@ RegisterNUICallback(
         plus = 0
         drawtext = false
         indist = false
-    end)
+end)
 
 RegisterNUICallback(
     "ReturnVehicle",
