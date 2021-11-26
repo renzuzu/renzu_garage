@@ -1058,16 +1058,14 @@ RegisterNUICallback(
                         Citizen.Wait(1)
                     end
                 end
-                v = CreateVehicle(hash, v.x,v.y,v.z, 256.0, 1, 1)
+                vehicle = CreateVehicle(hash, v.x,v.y,v.z, 256.0, 1, 1)
                 SetVehicleBobo(vehicle)
-                Spawn_Vehicle_Forward(v, vector3(v.x,v.y,v.z),v and v.spawns or false)
-                veh = v
+                Spawn_Vehicle_Forward(vehicle, vector3(v.x,v.y,v.z),v and v.spawns or false)
                 DoScreenFadeIn(333)
-                while veh == nil do
+                while not DoesEntityExist(vehicle) do
                     Citizen.Wait(101)
                 end
-                TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
-                veh = v
+                TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
             end
         end
 
