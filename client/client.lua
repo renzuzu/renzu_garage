@@ -1072,6 +1072,7 @@ RegisterNUICallback(
         LastVehicleFromGarage = nil
         TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
         CloseNui()
+        SetNuiFocus(false,false)
         TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
         i = 0
         min = 0
