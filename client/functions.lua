@@ -1325,6 +1325,8 @@ function OpenHeli(garageid)
     if LastVehicleFromGarage ~= nil then
         DeleteEntity(LastVehicleFromGarage)
     end
+    SetNuiFocusKeepInput(false)
+    SetNuiFocus(false, false)
 end
 
 function CreateDefault(default,jobonly,garage_type,garageid)

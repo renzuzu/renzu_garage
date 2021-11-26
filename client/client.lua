@@ -1039,7 +1039,9 @@ RegisterNUICallback(
     function(data, cb)
         local ped = PlayerPedId()
         local veh = nil
-
+        inGarage = false
+        CloseNui()
+        SetNuiFocus(false,false)
         for k,v in pairs(helispawn[PlayerData.job.name]) do
             local v = v.coords
             local dist = #(vector3(v.x,v.y,v.z) - GetEntityCoords(PlayerPedId()))
@@ -1070,10 +1072,6 @@ RegisterNUICallback(
             end
         end
         LastVehicleFromGarage = nil
-        TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
-        CloseNui()
-        SetNuiFocus(false,false)
-        TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
         i = 0
         min = 0
         max = 10
