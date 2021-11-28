@@ -205,6 +205,7 @@ Giveaccess to player private owned garage
 
 # Dependency for now
 - ESX - ALL ESX <= LEGACY
+- Qbcore latest
 - https://github.com/renzuzu/renzu_popui
 - https://github.com/renzuzu/renzu_contextmenu
 - https://github.com/renzuzu/renzu_notify
