@@ -294,10 +294,11 @@ CreateThread(function()
             if dist < v.Dist then
                 neargarage = true
                 canpark = true
-                local speedvehicle = IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId()))
+                local vehicle = GetVehiclePedIsIn(PlayerPedId())
+                local speedvehicle = IsVehicleStopped(vehicle)
                 while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
-                    if IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) and not ingarage then
+                    if GetPedInVehicleSeat(vehicle, -1) == PlayerPedId() and IsVehicleStopped(vehicle) and not ingarage then
                         Config.Notify( 'info', '$ '..v.fee..' Fee: '..Message[33].." [F]")
                         while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
                             if IsControlPressed(0,Config.ParkButton) then
@@ -311,7 +312,7 @@ CreateThread(function()
                                     z = GetEntityCoords(vehicle).z
                                 }
                                 car = vehicle
-                                TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
+                                TaskLeaveVehicle(PlayerPedId(),vehicle,1)
                                 Wait(2000)
                                 if spawned_cars[vehicleProps.plate] ~= nil then
                                     spawned_cars[vehicleProps.plate] = nil
