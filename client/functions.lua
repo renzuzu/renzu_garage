@@ -187,11 +187,14 @@ end
 
 function Storevehicle(vehicle,impound, impound_data, public)
     local vehicleProps = GetVehicleProperties(vehicle)
-    if garageid == nil then
+    local garage___id = garageid
+    if garage___id == nil then
         garageid = 'A'
+        garage___id = 'A'
     end
     if impound then
         garageid = impound_data['impounds'] or impoundcoord[1].garage
+        garage___id = impound_data['impounds'] or impoundcoord[1].garage
     end
     Wait(100)
     TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
@@ -201,7 +204,7 @@ function Storevehicle(vehicle,impound, impound_data, public)
         if ret or ent.share and ent.share[PlayerData.identifier] then
             DeleteEntity(vehicle)	
         end
-    end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps, impound_data or {}, public)
+    end,vehicleProps.plate, 1, garage___id, vehicleProps.model, vehicleProps, impound_data or {}, public)
     neargarage = false
         if impound then
 	   DeleteEntity(vehicle)

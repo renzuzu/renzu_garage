@@ -1115,6 +1115,7 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
     else
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     end
+    local garage_id = garage_id
     local state = tonumber(state)
     local source = source
     local xPlayer = GetPlayerFromId(source)
