@@ -48,23 +48,25 @@ function isVehicleUnlocked()
     local veh = nil
     if IsPedInAnyVehicle(p) then
         local v = GetVehiclePedIsIn(p)
-        local plate = GetVehicleNumberPlateText(v)
-        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
-        local r = GetIsVehicleEngineRunning(v)
-        TaskLeaveVehicle(p,v,0)
-        Wait(1000)
-        if r then
-            SetVehicleEngineOn(v,true,true,false)
-        end
-        local props = GetVehicleProperties(v)
-        local Visual = {}
-        for k,v in pairs(props) do
-            if k == 'tankHealth' or  k == 'dirtLevel' or  k == 'bodyHealth' or  k == 'engineHealth' or k == 'wheel_tires' or k == 'vehicle_window' or k == 'vehicle_doors' then
-                Visual[k] = v
+        if GetPedInVehicleSeat(v, -1) == PlayerPedId() then
+            local plate = GetVehicleNumberPlateText(v)
+            plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
+            local r = GetIsVehicleEngineRunning(v)
+            TaskLeaveVehicle(p,v,0)
+            Wait(1000)
+            if r then
+                SetVehicleEngineOn(v,true,true,false)
             end
+            local props = GetVehicleProperties(v)
+            local Visual = {}
+            for k,v in pairs(props) do
+                if k == 'tankHealth' or  k == 'dirtLevel' or  k == 'bodyHealth' or  k == 'engineHealth' or k == 'wheel_tires' or k == 'vehicle_window' or k == 'vehicle_doors' then
+                    Visual[k] = v
+                end
+            end
+            TriggerServerEvent('renzu_garage:SetPropState',{props = Visual, plate = plate})
+            return
         end
-        TriggerServerEvent('renzu_garage:SetPropState',{props = Visual, plate = plate})
-        return
     end
     if not IsPedInAnyVehicle(p) and IsAnyVehicleNearPoint(mycoords.x,mycoords.y,mycoords.z,10.0) then
         --print("ENTERING")
