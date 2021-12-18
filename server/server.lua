@@ -200,6 +200,9 @@ LuaBoolShitLogic = function(val) -- tiny int vs int structure ( lua read int as 
         if v.stored ~= nil and tonumber(v.stored) == 0 then
             t[k].stored = false
         end
+        if v.isparked ~= nil and tonumber(v.isparked) == 0 then
+            t[k].isparked = false
+        end
     end
     return t
 end
