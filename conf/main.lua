@@ -3,8 +3,8 @@ Config.Locale = "en" -- en,es,de or any language support
 --FRAMEWORK
 Config.framework = 'ESX' -- ESX, QBCORE
 --GENERAL SETTING
-Config.Mysql = 'oxmysql' -- "ghmattisql", "mysql-async", "oxmysql"
-Config.use_RenzuCustoms = true -- Use renzu_customs getter and setter for Vehicle Properties
+Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async", "oxmysql"
+Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
 Config.ReturnDamage = true -- return visual damage when restoring vehicle from garage
 Config.RefreshOwnedVehiclesOnStart = true -- refresh vehicles store state (return any lost vehicles every server start (not script restart))
 Config.ReturnPayment = 1000 -- a value to pay if vehicle is not in garage
