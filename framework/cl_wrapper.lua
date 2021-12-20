@@ -2,19 +2,19 @@ function Framework()
 	if Config.framework == 'ESX' then
 		while ESX == nil do
 			TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-			Citizen.Wait(100)
+			Citizen.Wait(11)
 		end
 		while PlayerData.job == nil do
 			TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 			PlayerData = ESX.GetPlayerData()
-			Citizen.Wait(111)
+			Citizen.Wait(11)
 		end
 		PlayerData = ESX.GetPlayerData()
 	elseif Config.framework == 'QBCORE' then
 		CreateThread(function()
 			QBCore = exports['qb-core']:GetCoreObject()
 		end)
-		Wait(1000)
+		Wait(5000)
 		if not QBCore then -- support old version in ugly way
 			CreateThread(function()
 				QBCore = exports['qb-core']:GetSharedObject()
@@ -152,10 +152,14 @@ CreateThread(function()
     Wait(500)
 	if Config.framework == 'ESX' then
 		while ESX == nil do Wait(1) end
-		TriggerServerCallback_ = ESX.TriggerServerCallback
+		TriggerServerCallback_ = function(...)
+			ESX.TriggerServerCallback(...)
+		end
 	elseif Config.framework == 'QBCORE' then
 		while QBCore == nil do Wait(1) end
-		TriggerServerCallback_ =  QBCore.Functions.TriggerCallback
+		TriggerServerCallback_ =  function(...)
+			QBCore.Functions.TriggerCallback(...)
+		end
 	end
 end)
 
