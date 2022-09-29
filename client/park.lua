@@ -299,7 +299,7 @@ CreateThread(function()
                 while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
                     if GetPedInVehicleSeat(vehicle, -1) == PlayerPedId() and IsVehicleStopped(vehicle) and not ingarage then
-                        Config.Notify( 'info', '$ '..v.fee..' Fee: '..Message[33].." [F]")
+                        Config.Notify( 'info', '$ '..v.fee..' Fee: '..Message[33].." [R]")
                         while IsVehicleStopped(GetVehiclePedIsIn(PlayerPedId())) do
                             if IsControlPressed(0,Config.ParkButton) then
                                 local vehicle = GetVehiclePedIsIn(PlayerPedId())

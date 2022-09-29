@@ -1252,7 +1252,7 @@ AddEventHandler('entityCreated', function(entity)
         end
         local plyid = NetworkGetEntityOwner(entity)
         local xPlayer = players[plyid] or GetPlayerFromId(plyid)
-        if plyid and not gvehicles[plate] then
+        if plyid and not gvehicles[plate] and DoesEntityExist(entity) then
             for k,v in pairs(jobplates) do
                 if string.find(plate, k) then
                     local share = {}
