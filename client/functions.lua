@@ -163,7 +163,7 @@ function SpawnChopperLocal(model, props)
             local zaxis = actualShop.z
             local hash = GetHashKey(model)
             local count = 0
-            if not HasModelLoaded(hash) then
+            if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                 RequestModel(hash)
                 while not HasModelLoaded(hash) do
                     RequestModel(hash)
@@ -237,7 +237,7 @@ function SpawnVehicleLocal(model, props)
                 local hash = tonumber(model)
                 local count = 0
                 FreezeEntityPosition(PlayerPedId(),true)
-                if not HasModelLoaded(hash) then
+                if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                     RequestModel(hash)
                     while not HasModelLoaded(hash) do
                         Citizen.Wait(10)
@@ -262,7 +262,7 @@ function SpawnVehicleLocal(model, props)
                 local hash = tonumber(model)
                 local count = 0
                 FreezeEntityPosition(PlayerPedId(),true)
-                if not HasModelLoaded(hash) then
+                if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                     RequestModel(hash)
                     while not HasModelLoaded(hash) do
                         Citizen.Wait(10)
@@ -498,7 +498,7 @@ function GarageVehicle()
                             Citizen.Wait(111)
                             local hash = tonumber(v.model2)
                             local count = 0
-                            if not HasModelLoaded(hash) then
+                            if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                                 RequestModel(hash)
                                 while not HasModelLoaded(hash) do
                                     RequestModel(hash)
@@ -608,7 +608,7 @@ function GarageVehicle()
                                 Citizen.Wait(111)
                                 local hash = tonumber(v.model2)
                                 local count = 0
-                                if not HasModelLoaded(hash) then
+                                if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                                     RequestModel(hash)
                                     while not HasModelLoaded(hash) do
                                         RequestModel(hash)
@@ -724,7 +724,7 @@ function GotoGarage(garageid, property, propertycoord, job)
         local model = GetHashKey('garage')
         local count = 0
         RequestModel(model)
-        while not HasModelLoaded(model) do
+        while not HasModelLoaded(model) and IsModelInCdimage(hash) do
             RequestModel(hash)
             RequestModel(model)
             Citizen.Wait(10)
@@ -766,7 +766,7 @@ function GotoGarage(garageid, property, propertycoord, job)
                 local righthead = 125.0
                 local hash = tonumber(v.model2)
                 local count = 0
-                if not HasModelLoaded(hash) then
+                if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                     RequestModel(hash)
                     while not HasModelLoaded(hash) do
                         Citizen.Wait(10)
@@ -841,7 +841,7 @@ function CreateGarageShell()
     local count = 0
     local model = GetHashKey('garage')
     RequestModel(model)
-    while not HasModelLoaded(model) do
+    while not HasModelLoaded(model) and IsModelInCdimage(hash) do
         RequestModel(model)
         Citizen.Wait(10)
     end
@@ -954,7 +954,7 @@ function CreateGarageShell()
     local count = 0
     local model = GetHashKey('garage')
     RequestModel(model)
-    while not HasModelLoaded(model) do
+    while not HasModelLoaded(model) and IsModelInCdimage(hash) do
         RequestModel(model)
         Citizen.Wait(10)
     end
