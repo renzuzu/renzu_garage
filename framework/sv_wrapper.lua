@@ -1,5 +1,18 @@
 Using = {}
 ESX = nil
+vehicles = {}
+parkedvehicles = {}
+parkmeter = {}
+default_routing = {}
+current_routing = {}
+lastgarage = {}
+impound_G = {}
+jobplates = {}
+sharedgarage = {}
+housegarage = {}
+globalkeys = {}
+vehiclekeys = {}
+players = {}
 function Initialized()
 	if Config.framework == 'ESX' then
 		ESX = exports['es_extended']:getSharedObject()
@@ -30,52 +43,146 @@ function Initialized()
 		identifier_ = 'license'
 		ESX = {}
 	end
-end
 
-function ItemMeta(name,data,xPlayer,ox)
-	local xPlayer <const> = xPlayer
-	local name <const> = name
-	if Config.framework == 'ESX' then
-		local Inventory = exports.ox_inventory:Inventory()
-		local item = Inventory.Search(xPlayer.source, 1, name)
-		local source = tonumber(xPlayer.source)
-		local meta = nil
-		local slot = nil
-		if ox and ox.slot then
-			-- thanks to linden
-			-- new ox updated latest https://github.com/overextended/ox_inventory/commit/a7028a23cc890a3ad357fe0d3784d81d0b2d078d and https://github.com/overextended/es_extended/commit/d7f5b969a83421825bfd82a972dc5ada9898f2f5
-			meta = ox.metadata.type
-		else
-			-- old ox logic
-			if not Using[source] then
-				Using[source] = {}
+	Citizen.CreateThread(function()
+		Wait(1000)
+		print("^2 -------- renzu_garage v1.8 Starting.. ----------^7")
+		GlobalState.GVehicles = {}
+		GlobalState.VehiclesState = {}
+		GlobalState.Gshare = {}
+		local OneSync = GetConvar('onesync_enabled', false) == 'true'
+		local Infinity = GetConvar('onesync_enableInfinity', false) == 'true'
+		if not OneSync and not Infinity then
+			while true do
+				print('^1One Sync is Disable: This garage need ^2OneSync^7 ^5Enable^5 ^7')
+				Wait(1000)
 			end
-			while not Using[source][name] do Wait(100) end
-			slot = Using[source][name]
-			for k2,v in pairs(item) do
-				if v.slot == slot then
-					meta = v.metadata.type
+		elseif Infinity then print('^2Server is running OneSync Infinity^7') else print('^2Server is running OneSync Legacy^7') end
+		print("^2 Checking vehicles table ^7")
+		vehicles = Config.Vehicles
+		local vehicles_ = {}
+		for k,v in pairs(vehicles) do
+			vehicles_[GetHashKey(k)] = v
+		end
+		print("^2 vehicles ok ^7")
+		GlobalState.VehicleinDb = vehicles
+		if not GlobalState.VehiclesState then
+			GlobalState.VehiclesState = {}
+		end
+		print("^2 Checking '..vehicletable..' isparked column table ^7")
+		parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE isparked = 1', {}) or {}
+		print("^2 '..vehicletable..' isparked column ok ^7")
+		globalvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT '..owner..', plate, '..vehiclemod..' FROM '..vehicletable..'', {}) or {}
+		print("^2 Checking garagekeys table ^7")
+		local resgaragekeys = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys', {})
+		print("^2 garagekeys table ok ^7")
+		if resgaragekeys and resgaragekeys[1] then
+			print("^2 saving garagekeys data ^7")
+			for k,v in pairs(resgaragekeys) do
+				if v.identifier and v.keys then
+					local garagekey = json.decode(v.keys) or {}
+					if garagekey then
+						for k2,v2 in pairs(garagekey) do
+							if v2.identifier then
+								if not sharedgarage[v.identifier] then sharedgarage[v.identifier] = {} end
+								sharedgarage[v.identifier][v2.identifier] = v2.garages
+							end
+						end
+					end
+				end
+			end
+			print("^2 garagekeys data saved ^7")
+		end
+		--checking vehicle keys
+		vkeys = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys', {})
+		if vkeys and vkeys[1] then
+			for k,v in pairs(vkeys) do
+				if v.plate and v.keys then
+					globalkeys[v.plate] = json.decode(v.keys or '[]') or {}
+				end
+			end
+			GlobalState.Gshare = globalkeys
+		end
+		local housingtemp = {}
+		local result_housing = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage', {})
+		if result_housing and result_housing[1] then
+			for k,v in pairs(result_housing) do
+				if v.garage then
+					housingtemp[v.garage] = v.identifier
 				end
 			end
 		end
-		return meta
-	else
-		local data <const> = data
-		return data.info
-	end
+		GlobalState.HousingGarages = housingtemp
+	
+		print("^2 saving job prefix plates data ^7")
+		for k,v in pairs(garagecoord) do
+			if v.job and v.default_vehicle then
+				for k2,v2 in pairs(v.default_vehicle) do
+					if v2.plateprefix then
+						jobplates[v2.plateprefix] = true
+					end
+				end
+			end
+		end
+		print("^2 job prefixes plates data saved ^7")
+		print("^2 Checking parking_meter table ^7")
+		parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
+		print("^2 parking_meter table ok ^7")
+		print("^2 Caching #"..#globalvehicles.." Vehicles Please Wait.. ^7")
+		local vehiclescount = #globalvehicles
+		local tempvehicles = {}
+		local ownedvehicles = {}
+		for k,v in ipairs(globalvehicles) do
+			if v.plate then
+				local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
+				tempvehicles[plate] = {}
+				tempvehicles[plate][owner] = v[owner]
+				tempvehicles[plate].plate = v.plate
+				tempvehicles[plate].name = 'NULL'
+				if v[vehiclemod] then
+					local prop = json.decode(v[vehiclemod]) or {model = ''}
+					if vehicles_[prop.model] then
+						tempvehicles[plate].name = vehicles_[prop.model].name
+					end
+				end
+				if not ownedvehicles[v[owner]] then
+					ownedvehicles[v[owner]] = {}
+				end
+				ownedvehicles[v[owner]][plate] = tempvehicles[plate]
+			end
+		end
+		for k,v in pairs(ownedvehicles) do
+			GlobalState['vehicles'..k] = v
+		end
+		ownedvehicles = nil
+		vehicles_ = nil
+		GlobalState.GVehicles = tempvehicles
+		tempvehicles = nil
+		print("^2 Cache Saved ^7")
+		print("^2 Checking impound_garage table ^7")
+		impoundget = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM impound_garage', {})
+		print("^2 impound_garage table ok ^7")
+		for k,v in pairs(impoundget) do
+			impound_G[v.garage] = json.decode(v.data) or {}
+		end
+		print("^2 Auto Import impound_garage table default data ^7")
+		for k,v in pairs(impoundcoord) do
+			MysqlGarage(Config.Mysql,'execute','INSERT IGNORE INTO impound_garage (garage, data) VALUES (@garage, @data)', {
+				['@garage']   = v.garage,
+				['@data']   = '[]'
+			})
+		end
+		print("^2 impound_data Import success ^7")
+		Wait(100)
+		if Config.RefreshOwnedVehiclesOnStart and not GlobalState.RefreshVehicle then
+			MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored', {
+				['@stored'] = 1,
+			})
+			GlobalState.RefreshVehicle = true
+		end
+		print("^2 -------- renzu_garage v1.8 Started ----------^7")
+	end)
 end
-
--- this will be deprecated and remove soon , please update your OX and ESX OX repo
--- OX LOGIC
-RegisterServerEvent('ox_inventory:ServerCallback') -- temporary logic unless theres a way to fetch current usable slot id from server, please educate me
-AddEventHandler('ox_inventory:ServerCallback', function(name, item, slot, metadata)
-	local source = source
-    if name == 'cb:ox_inventory:useItem' then
-		if not Using[tonumber(source)] then Using[tonumber(source)] = {} end
-        Using[tonumber(source)][item] = slot
-    end
-end)
--- OX LOGIC
 
 
 function GetPlayerFromIdentifier(identifier)
@@ -233,37 +340,53 @@ function VehicleNames()
 	end
 end
 
-function SqlFunc(plugin,type,query,var)
+function MysqlGarage(plugin,type,query,var)
 	local wait = promise.new()
-	if type == 'fetchAll' and plugin == 'mysql-async' then
-			MySQL.query(query, var, function(result)
+    if type == 'fetchAll' and plugin == 'mysql-async' then
+		MySQL.Async.fetchAll(query, var, function(result)
+            wait:resolve(result)
+        end)
+    end
+    if type == 'execute' and plugin == 'mysql-async' then
+        MySQL.Async.execute(query, var, function(result)
+            wait:resolve(result)
+        end)
+    end
+    if type == 'execute' and plugin == 'ghmattisql' then
+        exports['ghmattimysql']:execute(query, var, function(result)
+            wait:resolve(result)
+        end)
+    end
+    if type == 'fetchAll' and plugin == 'ghmattisql' then
+        exports.ghmattimysql:execute(query, var, function(result)
+            wait:resolve(result)
+        end)
+    end
+    if type == 'execute' and plugin == 'oxmysql' then
+        exports.oxmysql:execute(query, var, function(result)
+            wait:resolve(result)
+        end)
+    end
+    if type == 'fetchAll' and plugin == 'oxmysql' then
+		exports['oxmysql']:fetch(query, var, function(result)
 			wait:resolve(result)
 		end)
-	end
-	if type == 'execute' and plugin == 'mysql-async' then
-		MySQL.Async.execute(query, var, function(result)
-			wait:resolve(result)
-		end)
-	end
-	if type == 'execute' and plugin == 'ghmattisql' then
-		exports['ghmattimysql']:execute(query, var, function(result)
-			wait:resolve(result)
-		end)
-	end
-	if type == 'fetchAll' and plugin == 'ghmattisql' then
-		exports.ghmattimysql:execute(query, var, function(result)
-			wait:resolve(result)
-		end)
-	end
-	if type == 'execute' and plugin == 'oxmysql' then
-		exports.oxmysql:execute(query, var, function(result)
-			wait:resolve(result)
-		end)
-	end
-	if type == 'fetchAll' and plugin == 'oxmysql' then
-		exports['oxmysql']:execute(query, var, function(result)
-			wait:resolve(result)
-		end)
-	end
+    end
 	return Citizen.Await(wait)
+end
+
+LuaBoolShitLogic = function(val) -- tiny int vs int structure ( lua read int as a real number while tiny int a bool if 0 or 1)
+    local t = val
+    for k,v in pairs(t) do
+        if v.stored ~= nil and tonumber(v.stored) == 1 then
+            t[k].stored = true
+        end
+        if v.stored ~= nil and tonumber(v.stored) == 0 then
+            t[k].stored = false
+        end
+        if v.isparked ~= nil and tonumber(v.isparked) == 0 then
+            t[k].isparked = false
+        end
+    end
+    return t
 end

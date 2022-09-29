@@ -11,213 +11,12 @@ identifier_ = 'identifier'
 RegisterServerCallBack_ = nil
 RegisterUsableItem = nil
 Initialized()
-local vehicles = {}
-local parkedvehicles = {}
-local parkmeter = {}
-local default_routing = {}
-local current_routing = {}
-local lastgarage = {}
-local impound_G = {}
-local jobplates = {}
-local sharedgarage = {}
-local housegarage = {}
-local globalkeys = {}
-Citizen.CreateThread(function()
-    Wait(1000)
-    print("^2 -------- renzu_garage v1.8 Starting.. ----------^7")
-    while true do
-        collectgarbage()
-        GlobalState.GVehicles = {}
-        GlobalState.VehiclesState = {}
-        GlobalState.Gshare = {}
-        local OneSync = GetConvar('onesync_enabled', false) == 'true'
-        local Infinity = GetConvar('onesync_enableInfinity', false) == 'true'
-        if not OneSync and not Infinity then
-            while true do
-                print('^1One Sync is Disable: This garage need ^2OneSync^7 ^5Enable^5 ^7')
-                Wait(1000)
-            end
-        elseif Infinity then print('^2Server is running OneSync Infinity^7') else print('^2Server is running OneSync Legacy^7') end
-        print("^2 Checking vehicles table ^7")
-        vehicles = Config.Vehicles
-        print("^2 vehicles ok ^7")
-        GlobalState.VehicleinDb = vehicles
-        if not GlobalState.VehiclesState then
-            GlobalState.VehiclesState = {}
-        end
-        print("^2 Checking '..vehicletable..' isparked column table ^7")
-        parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE isparked = 1', {}) or {}
-        print("^2 '..vehicletable..' isparked column ok ^7")
-        globalvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..'', {}) or {}
-        print("^2 Checking garagekeys table ^7")
-        local resgaragekeys = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys', {})
-        print("^2 garagekeys table ok ^7")
-        if resgaragekeys and resgaragekeys[1] then
-            print("^2 saving garagekeys data ^7")
-            for k,v in pairs(resgaragekeys) do
-                if v.identifier and v.keys then
-                    local garagekey = json.decode(v.keys) or {}
-                    if garagekey then
-                        for k2,v2 in pairs(garagekey) do
-                            if v2.identifier then
-                                if not sharedgarage[v.identifier] then sharedgarage[v.identifier] = {} end
-                                sharedgarage[v.identifier][v2.identifier] = v2.garages
-                            end
-                        end
-                    end
-                end
-            end
-            print("^2 garagekeys data saved ^7")
-        end
-        --checking vehicle keys
-        local vkeys = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys', {})
-        if vkeys and vkeys[1] then
-            for k,v in pairs(vkeys) do
-                if v.plate and v.keys then
-                    globalkeys[v.plate] = json.decode(v.keys or '[]') or {}
-                end
-            end
-            GlobalState.Gshare = globalkeys
-        end
-        local housingtemp = {}
-        local result_housing = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage', {})
-        if result_housing and result_housing[1] then
-            for k,v in pairs(result_housing) do
-                if v.garage then
-                    housingtemp[v.garage] = v.identifier
-                end
-            end
-        end
-        GlobalState.HousingGarages = housingtemp
-        
-        print("^2 saving job prefix plates data ^7")
-        for k,v in pairs(garagecoord) do
-            if v.job and v.default_vehicle then
-                for k2,v2 in pairs(v.default_vehicle) do
-                    if v2.plateprefix then
-                        jobplates[v2.plateprefix] = true
-                    end
-                end
-            end
-        end
-        print("^2 job prefixes plates data saved ^7")
-        print("^2 Checking parking_meter table ^7")
-        parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
-        print("^2 parking_meter table ok ^7")
-        print("^2 Caching #"..#globalvehicles.." Vehicles Please Wait.. ^7")
-        local vehiclescount = #globalvehicles
-        local tempvehicles = {}
-        for k,v in ipairs(globalvehicles) do
-            if v.plate then
-                local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
-                tempvehicles[plate] = {}
-                tempvehicles[plate][owner] = v[owner]
-                tempvehicles[plate].plate = v.plate
-                tempvehicles[plate].name = 'NULL'
-            end
-            if vehiclescount > 5000 then
-                Wait(0) -- neccessary for large table avoid hitch
-            end
-        end
-        for k,v in pairs(globalvehicles) do
-            local plate = string.gsub(v.plate, '^%s*(.-)%s*$', '%1')
-            for k2,v2 in pairs(vehicles) do
-                if v[vehiclemod] then
-                    local prop = json.decode(v[vehiclemod]) or {model = ''}
-                    if prop.model == GetHashKey(v2.model) then
-                        tempvehicles[plate].name = v2.name
-                        break
-                    end
-                end
-            end
-            if vehiclescount > 5000 then
-                Wait(0) -- neccessary for large table avoid hitch
-            end
-        end
-        GlobalState.GVehicles = tempvehicles
-        tempvehicles = nil
-        print("^2 Cache Saved ^7")
-        print("^2 Checking impound_garage table ^7")
-        impoundget = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM impound_garage', {})
-        print("^2 impound_garage table ok ^7")
-        for k,v in pairs(impoundget) do
-            impound_G[v.garage] = json.decode(v.data) or {}
-        end
-        print("^2 Auto Import impound_garage table default data ^7")
-        for k,v in pairs(impoundcoord) do
-            MysqlGarage(Config.Mysql,'execute','INSERT IGNORE INTO impound_garage (garage, data) VALUES (@garage, @data)', {
-                ['@garage']   = v.garage,
-                ['@data']   = '[]'
-            })
-        end
-        print("^2 impound_data Import success ^7")
-        Wait(100)
-        if Config.RefreshOwnedVehiclesOnStart and not GlobalState.RefreshVehicle then
-            MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored', {
-                ['@stored'] = 1,
-            })
-            GlobalState.RefreshVehicle = true
-        end
-        print("^2 -------- renzu_garage v1.8 Started ----------^7")
-        Wait(7200000 * 4) -- auto refreshes data and recache (global state size limits)
-    end
-end)
-
-function MysqlGarage(plugin,type,query,var)
-	local wait = promise.new()
-    if type == 'fetchAll' and plugin == 'mysql-async' then
-		MySQL.Async.fetchAll(query, var, function(result)
-            wait:resolve(result)
-        end)
-    end
-    if type == 'execute' and plugin == 'mysql-async' then
-        MySQL.Async.execute(query, var, function(result)
-            wait:resolve(result)
-        end)
-    end
-    if type == 'execute' and plugin == 'ghmattisql' then
-        exports['ghmattimysql']:execute(query, var, function(result)
-            wait:resolve(result)
-        end)
-    end
-    if type == 'fetchAll' and plugin == 'ghmattisql' then
-        exports.ghmattimysql:execute(query, var, function(result)
-            wait:resolve(result)
-        end)
-    end
-    if type == 'execute' and plugin == 'oxmysql' then
-        exports.oxmysql:execute(query, var, function(result)
-            wait:resolve(result)
-        end)
-    end
-    if type == 'fetchAll' and plugin == 'oxmysql' then
-		exports['oxmysql']:fetch(query, var, function(result)
-			wait:resolve(result)
-		end)
-    end
-	return Citizen.Await(wait)
-end
-
-LuaBoolShitLogic = function(val) -- tiny int vs int structure ( lua read int as a real number while tiny int a bool if 0 or 1)
-    local t = val
-    for k,v in pairs(t) do
-        if v.stored ~= nil and tonumber(v.stored) == 1 then
-            t[k].stored = true
-        end
-        if v.stored ~= nil and tonumber(v.stored) == 0 then
-            t[k].stored = false
-        end
-        if v.isparked ~= nil and tonumber(v.isparked) == 0 then
-            t[k].isparked = false
-        end
-    end
-    return t
-end
 
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
 AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
     local src = source 
     local xPlayer = GetPlayerFromId(src)
+    players[src] = xPlayer.identifier
     local ply = Player(src).state
     local identifier = ply.garagekey or xPlayer.identifier
     local sharegarage = false
@@ -286,7 +85,6 @@ RegisterServerCallBack_('renzu_garage:getowner',function(source, cb, identifier,
             job = job
         }
     end
-    print(Config.framework == 'QBCORE')
 	cb(data,res)
 end)
 
@@ -1091,11 +889,11 @@ AddEventHandler('renzu_garage:unpark', function(plate,state,model)
             ['@plate'] = plate
         })
         if #result > 0 then
-            print(result[1][vehiclemod],vehiclemod)
+  
             if result[1][vehiclemod] ~= nil then
                 local veh = json.decode(result[1][vehiclemod])
-                print(veh.model ,model)
-                if veh.model == model then
+  
+                if veh.model == model or true then
                     local result = MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored, '..garage__id..' = @garage_id, '..vehiclemod..' = @vehicle , park_coord = @park_coord, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate', {
                         ['vehicle'] = result[1][vehiclemod],
                         ['@garage_id'] = 'A',
@@ -1161,7 +959,7 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
             end
             if result[1][vehiclemod] ~= nil then
                 local veh = json.decode(result[1][vehiclemod])
-                if veh.model == model then
+                if veh.model == model or true then
                     local var = {
                         ['@vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
@@ -1379,6 +1177,29 @@ AddEventHandler('statebugupdate', function(name,value,net)
     end
 end)
 
+-- esx
+AddEventHandler('esx:onPlayerJoined', function(src, char, data)
+	local src = src
+    local xPlayer = GetPlayerFromId(src)
+    players[src] = xPlayer
+end)
+
+AddEventHandler('entityRemoved', function(entity) -- prevent Gstate getting big because of temporary vehicles
+    local plate = DoesEntityExist(entity) and string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1') or 'aso'
+    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 and GlobalState.GVehicles[plate] then
+        local tempvehicles = GlobalState.GVehicles
+        if tempvehicles[plate] and tempvehicles[plate].temp then
+            tempvehicles[plate] = nil
+            GlobalState.GVehicles = tempvehicles
+            local share = GlobalState.Gshare
+            if share[plate] then
+                share[plate] = nil
+                GlobalState.Gshare = share
+            end
+        end
+    end
+end)
+
 AddEventHandler('entityCreated', function(entity)
     local entity = entity
     local havekeys = false
@@ -1390,7 +1211,7 @@ AddEventHandler('entityCreated', function(entity)
             havekeys = true
         end
     end
-    Wait(3000)
+    Wait(1000)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
         local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
         local ent = Entity(entity).state
@@ -1398,13 +1219,19 @@ AddEventHandler('entityCreated', function(entity)
         ent.hotwired = false
         ent.havekeys = false
         ent.share = {}
-        globalkeys[plate] = ent.share
-        GlobalState.Gshare = globalkeys
-
-        if not GlobalState.GVehicles[plate] then -- newly purchased from any vehicle shop
+        --globalkeys[plate] = ent.share
+        --GlobalState.Gshare = globalkeys
+        vehicleshop = false
+        local gvehicles = GlobalState.GVehicles
+        for k,v in pairs(Config.VehicleShopCoord) do -- weird logic but its optimized compare to old one
+            if #(GetEntityCoords(entity) - v) < 100 then
+                vehicleshop = true
+            end
+        end
+        if not gvehicles[plate] and vehicleshop then -- lets assume its newly purchased from any vehicle shop
             local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
-                local tempvehicles = GlobalState.GVehicles
+                local tempvehicles = gvehicles
                 tempvehicles[plate] = new_spawned[1]
                 GlobalState.GVehicles = tempvehicles
                 local share = {}
@@ -1413,42 +1240,41 @@ AddEventHandler('entityCreated', function(entity)
                 globalkeys[plate] = ent.share
                 GlobalState.Gshare = globalkeys
                 print(plate,'Newly Owned Vehicles Found..Adding to Key system')
+                return
             end
-        else -- owned vehicles
-            local sharing = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
-            if sharing[1] then
-                local shared_vehicles = json.decode(sharing[1].keys or '[]') or {}
-                ent.share = shared_vehicles
-                globalkeys[plate] = ent.share
-                GlobalState.Gshare = globalkeys
-                print("found vehicle keys")
-            end
+        elseif gvehicles[plate] then -- owned vehicles
+            local share = GlobalState.Gshare[plate] or {}
+            share[gvehicles[plate][owner]] = gvehicles[plate][owner]
+            ent.share = share
+            globalkeys[plate] = ent.share
+            GlobalState.Gshare = globalkeys
+            return
         end
         local plyid = NetworkGetEntityOwner(entity)
-        local xPlayer = GetPlayerFromId(plyid)
-        if plyid and not GlobalState.GVehicles[plate] then
+        local xPlayer = players[plyid] or GetPlayerFromId(plyid)
+        if plyid and not gvehicles[plate] then
             for k,v in pairs(jobplates) do
                 if string.find(plate, k) then
                     local share = {}
                     if xPlayer then
-                        local tempvehicles = GlobalState.GVehicles
-                        tempvehicles[plate] = {plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
+                        local tempvehicles = gvehicles
+                        tempvehicles[plate] = {temp = true, plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
                         GlobalState.GVehicles = tempvehicles
                         share[xPlayer.identifier] = xPlayer.identifier
                         ent.share = share
                         globalkeys[plate] = ent.share
                         GlobalState.Gshare = globalkeys
                         havekeys = false -- remove pending vehicle key sharing , already shared vehicle
+                        return
                     end
                 end
             end
             local share = {}
             if havekeys and DoesEntityExist(entity) then -- if vehicle is not owned and not job vehicles, we will create a temporary vehicle key sharing for the player to avoid using hotwire eg. while in truck deliveries etc... which is created like a local vehicle
-                local o = NetworkGetEntityOwner(entity)
-                local xPlayer = GetPlayerFromId(o)
+                local xPlayer = xPlayer
                 if xPlayer then
-                    local tempvehicles = GlobalState.GVehicles
-                    tempvehicles[plate] = {plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
+                    local tempvehicles = gvehicles
+                    tempvehicles[plate] = {temp = true, plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
                     GlobalState.GVehicles = tempvehicles
                     share[xPlayer.identifier] = xPlayer.identifier
                     ent.share = share
@@ -1457,7 +1283,7 @@ AddEventHandler('entityCreated', function(entity)
                     print(plate,'Newly Mission Vehicles Found..Adding to Key system')
                 end
             end
-        elseif plyid and xPlayer and GlobalState.GVehicles[plate] and xPlayer.identifier ~= GlobalState.GVehicles[plate][owner] then
+        elseif plyid and xPlayer and gvehicles[plate] and xPlayer.identifier ~= GlobalState.GVehicles[plate][owner] then
             -- another extra checks for vehicle sharing, garage sharing, eg. player 1 dont owned vehicle and he can spawned it.
             local share = ent.share or {}
             share[xPlayer.identifier] = xPlayer.identifier

@@ -4,11 +4,13 @@ Config.Locale = "en" -- en,es,de or any language support
 Config.framework = 'ESX' -- ESX, QBCORE
 --GENERAL SETTING
 Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async", "oxmysql"
+Config.VehicleShopCoord = {
+    [1] = vec3(-35.65,-1095.9,26.4), --x , y, z
+} --x,y,z of the current vehicle shop
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
 Config.ReturnDamage = true -- return visual damage when restoring vehicle from garage
 Config.RefreshOwnedVehiclesOnStart = true -- refresh vehicles store state (return any lost vehicles every server start (not script restart))
 Config.ReturnPayment = 1000 -- a value to pay if vehicle is not in garage
-Config.UseRayZone = false -- unrelease script https://github.com/renzuzu/renzu_rayzone
 Config.floatingtext = true -- use native floating text and marker to interact with garages (popui and floatingtext must be opposite settings) (popui must be false if this is true)
 Config.UsePopUI = false -- Create a Thread for checking playercoords and Use POPUI to Trigger Event, set this to false if using rayzone. Popui is originaly built in to RayZone -- DOWNLOAD https://github.com/renzuzu/renzu_popui
 Config.Quickpick = true -- if false system will create a garage shell and spawn every vehicle you preview
@@ -58,6 +60,8 @@ Config.MeterPayment = 5000
 
 -- GarageKeys
 Config.GarageKeysCommand = 'garagekeys' -- command to call garagekeys UI
+-- /garagekeys -- to give
+-- /garagekeys manage -- to open shared garage
 
 -- Vehicle Keys --
 Config.VehicleKeysCommand = 'vehiclekeys' -- command to call vehiclekeys ui
