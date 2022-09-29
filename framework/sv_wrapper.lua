@@ -1,8 +1,8 @@
 Using = {}
+ESX = nil
 function Initialized()
 	if Config.framework == 'ESX' then
-		ESX = nil
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+		ESX = exports['es_extended']:getSharedObject()
 		RegisterServerCallBack_ = function(...)
 			ESX.RegisterServerCallback(...)
 		end
@@ -156,9 +156,9 @@ function GetPlayerFromId(src)
 	self.src = src
 	if Config.framework == 'ESX' then
 		local player = ESX.GetPlayerFromId(self.src)
-		player.showNotification = function(msg)
-			player.triggerEvent('esx:showNotification', msg)
-		end
+		-- player.showNotification = function(msg)
+		-- 	player.triggerEvent('esx:showNotification', msg)
+		-- end
 		return player
 	elseif Config.framework == 'QBCORE' then
 		selfcore = {}
@@ -236,7 +236,7 @@ end
 function SqlFunc(plugin,type,query,var)
 	local wait = promise.new()
 	if type == 'fetchAll' and plugin == 'mysql-async' then
-			MySQL.Async.fetchAll(query, var, function(result)
+			MySQL.query(query, var, function(result)
 			wait:resolve(result)
 		end)
 	end
@@ -261,7 +261,7 @@ function SqlFunc(plugin,type,query,var)
 		end)
 	end
 	if type == 'fetchAll' and plugin == 'oxmysql' then
-		exports['oxmysql']:fetch(query, var, function(result)
+		exports['oxmysql']:execute(query, var, function(result)
 			wait:resolve(result)
 		end)
 	end
