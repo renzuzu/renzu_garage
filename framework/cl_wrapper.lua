@@ -27,6 +27,7 @@ function Playerloaded()
 		RegisterNetEvent('esx:playerLoaded')
 		AddEventHandler('esx:playerLoaded', function(xPlayer)
 			playerloaded = true
+			PlayerData = xPlayer
 			LocalPlayer.state:set( 'loaded', true, true)
 			LocalPlayer.state.loaded = true
 			if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
