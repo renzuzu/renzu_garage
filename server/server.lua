@@ -709,9 +709,18 @@ RegisterServerCallBack_('renzu_garage:isvehicleingarage', function (source, cb, 
             end
         end
         if string.find(id, "impound") and Impoundforall and not ispolice then
-            local money = impound_G[garage] ~= nil and impound_G[garage][plate] ~= nil and impound_G[garage][plate].fine or ImpoundPayment
-            if xPlayer.getMoney() >= money then
-                xPlayer.removeMoney(money)
+            local money = impound_G[garage_impound] ~= nil and impound_G[garage_impound][plate] ~= nil and impound_G[garage_impound][plate].fine or ImpoundPayment
+            if xPlayer.getMoney() >= tonumber(money) then
+                xPlayer.removeMoney(tonumber(money))
+                if Config.Renzu_jobs then
+                    local job = 'police'
+                    for k,v in pairs(impoundcoord) do
+                        if id == v.garage then
+                            job = v.job
+                        end
+                    end
+                    exports.renzu_jobs:addMoney(tonumber(money),job,source,'money',true)
+                end
                 Config.Notify( 'success',Message[75],xPlayer)
                 cb(1,0)
             else

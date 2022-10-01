@@ -24,6 +24,7 @@ Config.BlipNamesStatic = true -- if true no more garage a garage b blip names fr
 Config.use_renzu_vehthumb = true
 
 Config.Oxlib = true -- ox_lib http://google.com/
+Config.Renzu_jobs = false -- Job business Impound (impound only for now)
 if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
     Config.Oxlib = false
 end
