@@ -163,7 +163,7 @@ GarageZone.Add = function(coord,garage,dist,job,id)
 					color = 'white'
 				}
 			})
-			local close = DrawInteraction_(garage,coord,{3,4},msg,'opengarage',false,false,false)
+			local close = DrawInteraction_(garage,coord,{dist,dist+2},msg,'opengarage',false,false,false)
 			if GarageZone.Spheres[garage] then
 				inGarage = false
 				local job = GarageZone.Spheres[garage].job

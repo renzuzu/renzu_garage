@@ -52,6 +52,11 @@ Citizen.CreateThread(function()
             SetBlips(v.garage.x,v.garage.y,v.garage.z, 524, 0.6, 25, name, 5)
         end
     end
+    if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+        for k,v in pairs(helispawn[PlayerData.job.name]) do
+            GarageZone.Add(vector3(v.coords.x,v.coords.y,v.coords.z),v.garage,5,PlayerData.job.name,v.garage)
+        end
+    end
 end)
 
 CreateThread(function()

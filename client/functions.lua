@@ -1282,10 +1282,9 @@ end
 
 
 function OpenHeli(garageid)
-    inGarage = true
     local ped = PlayerPedId()
     while not fetchdone do
-    Citizen.Wait(333)
+        Citizen.Wait(1)
     end
     local vehtable = {}
     for k,v2 in pairs(OwnedVehicles) do
@@ -1293,26 +1292,25 @@ function OpenHeli(garageid)
             if vehtable[v.garage_id] == nil then
                 vehtable[v.garage_id] = {}
             end
-            veh = 
-            {
-            brand = v.brand,
-            name = v.name,
-            brake = v.brake,
-            handling = v.handling,
-            topspeed = v.topspeed,
-            power = v.power,
-            torque = v.torque,
-            model = v.model,
-            model2 = v.model2,
-            img = v.img,
-            plate = v.plate,
-            --props = v.props,
-            fuel = v.fuel,
-            bodyhealth = v.bodyhealth,
-            enginehealth = v.enginehealth,
-            garage_id = v.garage_id,
-            impound = v.impound,
-            ingarage = v.ingarage
+            veh = {
+                brand = v.brand,
+                name = v.name,
+                brake = v.brake,
+                handling = v.handling,
+                topspeed = v.topspeed,
+                power = v.power,
+                torque = v.torque,
+                model = v.model,
+                model2 = v.model2,
+                img = v.img,
+                plate = v.plate,
+                --props = v.props,
+                fuel = v.fuel,
+                bodyhealth = v.bodyhealth,
+                enginehealth = v.enginehealth,
+                garage_id = v.garage_id,
+                impound = v.impound,
+                ingarage = v.ingarage
             }
             table.insert(vehtable[v.garage_id], veh)
         end
@@ -1341,6 +1339,8 @@ function OpenHeli(garageid)
             end
         end
     end
+    Wait(1000)
+    inGarage = true
     while inGarage do
         Citizen.Wait(111)
         SetNuiFocusKeepInput(false)
@@ -1796,7 +1796,6 @@ function DrawInteraction_(i,v,reqdist,msg,event,server,var,disablemarker)
         --Citizen.CreateThread(function()
             markers[i] = true
             --local reqdist = reqdist[2]
-            print('unggoy',v)
             local coord = v
             local dist = #(GetEntityCoords(ped) - coord)
             while dist < reqdist[2] and not cancel do
@@ -1823,7 +1822,6 @@ function DrawInteraction_(i,v,reqdist,msg,event,server,var,disablemarker)
             markers[i] = false
             while inGarage do Wait(1) end
             cancel = false
-            print("thread close")
             return true
         --end)
     end
