@@ -24,6 +24,9 @@ Config.BlipNamesStatic = true -- if true no more garage a garage b blip names fr
 Config.use_renzu_vehthumb = true
 
 Config.Oxlib = true -- ox_lib http://google.com/
+if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
+    Config.Oxlib = false
+end
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
 Config.PlateSpace = true -- enable / disable plate spaces (compatibility with esx 1.1?)
@@ -119,9 +122,6 @@ Config.Notify = function(type,msg,xPlayer)
     end
 end
 
-if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
-    Config.Oxlib = false
-end
 if not IsDuplicityVersion() then
     ESX = nil
     QBCore = nil

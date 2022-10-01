@@ -1191,6 +1191,7 @@ end)
 RegisterNUICallback("RenameVehicle",function(data, cb)
     local ped = PlayerPedId()
     local newname = nil
+    if not Config.Oxlib then return end -- ox_lib
     local input = lib.inputDialog('Custom Name', {'Nick name'})
 	if input and input[1] ~= '' then
 		local nickname = tostring(input[1])
