@@ -69,6 +69,44 @@ function OpenImpound(garageid)
             parked[v.plate] = true
         end
     end
+
+    local cats = {}
+    local totalcats = 0
+    if 'police' == PlayerData.job.name then
+        for k,v2 in pairs(OwnedVehicles) do
+            for k2,v in pairs(v2) do
+                if string.find(v.type, "car") then v.type = 'car' end
+                if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice 
+                    or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
+                    v.brand = v.brand:upper()
+                    if v.stored == 1 then
+                        v.stored = true
+                    end
+                    if v.stored == 0 then
+                        v.stored = false
+                    end
+                    if ImpoundedLostVehicle or not ImpoundedLostVehicle then
+                        if cats[v.brand] == nil then
+                            cats[v.brand] = 0
+                            totalcats = totalcats + 1
+                        end
+                        cats[v.brand] = cats[v.brand] + 1
+                        SetNuiFocus(true, true)
+                    end
+                end
+            end
+        end
+        if totalcats > 1 then
+            SendNUIMessage(
+                {
+                    cats = cats,
+                    type = "cats"
+                }
+            )
+            while cat == nil do Wait(1000) end
+        end
+    end
+
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if v.stored == 0 then
@@ -89,55 +127,71 @@ function OpenImpound(garageid)
             end
             local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
             if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice 
-            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier then
-                c = c + 1
-                if vehtable[v.impound] == nil then
-                    vehtable[v.impound] = {}
-                end
-                if v.type ~= 'air' and v.type ~= 'boat' then
-                    veh = {
-                        brand = v.brand or 1.0,
-                        name = v.name or 1.0,
-                        brake = v.brake or 1.0,
-                        handling = v.handling or 1.0,
-                        topspeed = v.topspeed or 1.0,
-                        power = v.power or 1.0,
-                        torque = v.torque or 1.0,
-                        model = v.model,
-                        img = v.img,
-                        model2 = v.model2,
-                        plate = v.plate,
-                        --props = v.props,
-                        fuel = v.fuel or 100.0,
-                        bodyhealth = v.bodyhealth or 1000.0,
-                        enginehealth = v.enginehealth or 1000.0,
-                        garage_id = v.garage_id or 'A',
-                        impound = v.impound or 0,
-                        ingarage = v.ingarage or 0,
-                        impound = v.impound or 0,
-                        stored = v.stored or 0,
-                        identifier = v.identifier or '',
-                        impound_date = v.impound_date or -1
-                    }
-                    table.insert(vehtable[v.impound], veh)
+            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier
+            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
+                if cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() or 'police' ~= PlayerData.job.name then
+
+                    c = c + 1
+                    if vehtable[v.impound] == nil then
+                        vehtable[v.impound] = {}
+                    end
+                    if v.type ~= 'air' and v.type ~= 'boat' then
+                        if tostring(v.enginehealth) == "nan" or v.enginehealth == 'nan' or v.enginehealth == (tonumber('nan')) then
+                            v.enginehealth = 1000.0
+                        end
+                        if tostring(v.bodyhealth) == "nan" or v.bodyhealth == 'nan' or v.bodyhealth == (tonumber('nan')) then
+                            v.bodyhealth = 1000.0
+                        end
+                        if tostring(v.fuel) == "nan" or v.fuel == 'nan' or v.fuel == (tonumber('nan')) then
+                            v.fuel = 1000.0
+                        end
+                        local veh = {
+                            brand = v.brand or 1.0,
+                            name = v.name or 1.0,
+                            brake = v.brake or 1.0,
+                            handling = v.handling or 1.0,
+                            topspeed = v.topspeed or 1.0,
+                            power = v.power or 1.0,
+                            torque = v.torque or 1.0,
+                            model = v.model,
+                            img = v.img,
+                            model2 = v.model2,
+                            plate = v.plate,
+                            --props = v.props,
+                            fuel = v.fuel or 100.0,
+                            bodyhealth = v.bodyhealth or 1000.0,
+                            enginehealth = v.enginehealth or 1000.0,
+                            garage_id = v.garage_id or 'A',
+                            impound = v.impound or 0,
+                            ingarage = v.ingarage or 0,
+                            impound = v.impound or 0,
+                            stored = v.stored or 0,
+                            identifier = v.identifier or '',
+                            impound_date = v.impound_date or -1
+                        }
+                        table.insert(vehtable[v.impound], veh)
+                    end
                 end
             end
         end
     end
+    lastcat = cat
+    cat = nil
     if c > 0 then
         if not Config.Quickpick then
             CreateGarageShell()
         end
         SendNUIMessage(
             {
+                impound = true,
                 garage_id = garageid,
                 data = vehtable,
-                type = "display"
+                type = "display",
+                police = true,
             }
         )
         SetNuiFocus(true, true)
         if not Config.Quickpick then
-            --  RequestCollisionAtCoord(926.15, -959.06, 61.94-30.0)
             for k,v in pairs(impoundcoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(PlayerPedId()))
                 if dist <= 70.0 then

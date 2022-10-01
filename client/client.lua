@@ -20,83 +20,36 @@ Citizen.CreateThread(function()
     end
     for k, v in pairs (garagecoord) do
         if v.job ~= nil and v.job == PlayerData.job.name or v.job == nil then
-            local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
-            SetBlipSprite (blip, v.Blip.sprite)
-            SetBlipDisplay(blip, 4)
-            SetBlipScale  (blip, v.Blip.scale)
-            SetBlipColour (blip, v.Blip.color)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            if Config.BlipNamesStatic then
-                AddTextComponentSubstringPlayerName(Message[2])
-            else
-                AddTextComponentSubstringPlayerName(Message[2]..": "..v.garage.."")
-            end
-            EndTextCommandSetBlipName(blip)
+            GarageZone.Add(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,4,v.job,k)
+            SetBlips(v.garage_x, v.garage_y, v.garage_z, v.Blip.sprite, v.Blip.scale, v.Blip.color, v.garage)
         end
     end
     if Config.EnableImpound then
         for k, v in pairs (impoundcoord) do
             if PlayerData.job ~= nil and JobImpounder[PlayerData.job.name] ~= nil then
-                local blip = AddBlipForCoord(v.garage_x, v.garage_y, v.garage_z)
-                SetBlipSprite (blip, v.Blip.sprite)
-                SetBlipDisplay(blip, 4)
-                SetBlipScale  (blip, v.Blip.scale)
-                SetBlipColour (blip, v.Blip.color)
-                SetBlipAsShortRange(blip, true)
-                BeginTextCommandSetBlipName('STRING')
-                if Config.BlipNamesStatic then
-                    AddTextComponentSubstringPlayerName(Message[3])
-                else
-                    AddTextComponentSubstringPlayerName(Message[2]..": "..v.garage.."")
-                end
-                EndTextCommandSetBlipName(blip)
+                GarageZone.Add(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,4,nil,k)
+                SetBlips(v.garage_x, v.garage_y, v.garage_z, v.Blip.sprite, v.Blip.scale, v.Blip.color, v.garage)
             end
         end
     end
     for k, v in pairs (private_garage) do
-        local blip = AddBlipForCoord(v.buycoords.x, v.buycoords.y, v.buycoords.z)
-        SetBlipSprite (blip, v.Blip.sprite)
-        SetBlipDisplay(blip, 4)
-        SetBlipScale  (blip, v.Blip.scale)
-        SetBlipColour (blip, v.Blip.color)
-        SetBlipAsShortRange(blip, true)
-        BeginTextCommandSetBlipName('STRING')
-        if Config.BlipNamesStatic then
-            AddTextComponentSubstringPlayerName(Message[4])
-        else
-            AddTextComponentSubstringPlayerName(Message[2]..": "..v.name.."")
-        end
-        EndTextCommandSetBlipName(blip)
+        GarageZone.PrivateAdd(vector3(v.buycoords.x, v.buycoords.y, v.buycoords.z),k,4,nil,k,v)
+        SetBlips(v.buycoords.x, v.buycoords.y, v.buycoords.z, v.Blip.sprite, v.Blip.scale, v.Blip.color, v.name)
     end
     if Config.EnablePropertyCoordGarageCoord and Config.HousingBlips then
         for k,v in pairs(HousingGarages) do
+            GarageZone.Add(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,4,nil,k)
             local vec = vector3(v.garage.x,v.garage.y,v.garage.z)
             local name = Message[5]..' #'..k
-            local blip = AddBlipForCoord(v.garage.x,v.garage.y,v.garage.z)
-            SetBlipSprite (blip, 524)
-            SetBlipDisplay(blip, 5)
-            SetBlipScale  (blip, 0.4)
-            SetBlipColour (blip, 2)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName(""..name.."")
-            EndTextCommandSetBlipName(blip)
+            SetBlips(v.garage.x,v.garage.y,v.garage.z, 524, 0.4, 2, name, 5)
         end
     end
     if Config.Realistic_Parking then
         for k,v in pairs(parking) do
             local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
-            local name = 'Parking Spot'
-            local blip = AddBlipForCoord(v.garage_x,v.garage_y,v.garage_z)
-            SetBlipSprite (blip, 524)
-            SetBlipDisplay(blip, 5)
-            SetBlipScale  (blip, 0.6)
-            SetBlipColour (blip, 25)
-            SetBlipAsShortRange(blip, true)
-            BeginTextCommandSetBlipName('STRING')
-            AddTextComponentSubstringPlayerName(""..name.."")
-            EndTextCommandSetBlipName(blip)
+            local name = v.garage..' Parking Spot'
+            GarageZone.RealParkAdd(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,v.Dist,nil,k)
+            SetBlips(v.garage.x,v.garage.y,v.garage.z, 524, 0.6, 25, name, 5)
         end
     end
 end)
@@ -104,7 +57,7 @@ end)
 CreateThread(function()
     while PlayerData.job == nil do Wait(100) end
     Wait(500)
-    if not Config.UsePopUI and Config.floatingtext then
+    if not Config.Oxlib and not Config.UsePopUI and Config.floatingtext then
         while true do
             local mycoord = GetEntityCoords(PlayerPedId())
             local inveh = IsPedInAnyVehicle(PlayerPedId())
@@ -199,7 +152,7 @@ CreateThread(function()
         end
     end
     if Config.UsePopUI and not Config.floatingtext then
-        while true do
+        while not Config.Oxlib do
             local mycoord = GetEntityCoords(PlayerPedId())
             local inveh = IsPedInAnyVehicle(PlayerPedId())
             for k,v in pairs(garagecoord) do
@@ -364,13 +317,11 @@ end)
 
 RegisterNetEvent('renzu_garage:notify')
 AddEventHandler('renzu_garage:notify', function(type, message)    
-    SendNUIMessage(
-        {
-            type = "notify",
-            typenotify = type,
-            message = message,
-        }
-    ) 
+    lib.defaultNotify({
+        title = Message[2],
+        description = message,
+        status = type
+    })
 end)
 
 RegisterNetEvent('renzu_garage:receive_vehicles')
@@ -392,6 +343,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     end
 
     OwnedVehicles['garage'] = {}
+    local nicks = GlobalState.VehicleNickNames
     local gstate = GlobalState and GlobalState.VehicleImages or {}
     for _,value in pairs(tableVehicles) do
         local props = json.decode(value[vehiclemod])
@@ -402,11 +354,13 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
                 label = 'Unknown'
             end
 
-            local vehname = nil
-            for _,value in pairs(vehdata) do -- fetch vehicle names from vehicles sql table
-                if tonumber(props.model) == GetHashKey(value.model) then
-                    vehname = value.name
-                    break
+            local vehname = nicks[value.plate] or nil
+            if vehname == nil then
+                for _,value in pairs(vehdata) do -- fetch vehicle names from vehicles sql table
+                    if tonumber(props.model) == GetHashKey(value.model) then
+                        vehname = value.name
+                        break
+                    end
                 end
             end
 
@@ -869,6 +823,9 @@ RegisterNUICallback("SpawnChopper",function(data, cb)
     end
 end)
 
+function TID(val)
+    tid = val
+end
 RegisterNUICallback(
     "GetVehicleFromGarage",
     function(data, cb)
@@ -1229,4 +1186,56 @@ AddEventHandler("onResourceStop",function(resourceName)
     if resourceName == GetCurrentResourceName() then
         CloseNui()
     end
+end)
+
+RegisterNUICallback("RenameVehicle",function(data, cb)
+    local ped = PlayerPedId()
+    local newname = nil
+    local input = lib.inputDialog('Custom Name', {'Nick name'})
+	if input and input[1] ~= '' then
+		local nickname = tostring(input[1])
+		TriggerServerCallback_("renzu_garage:renamevehicle",function(newname)
+            cb(newname)
+        end,data.plate,nickname)
+    else
+        cb(false)
+	end
+end)
+
+RegisterNUICallback("DisposeVehicle",function(data, cb)
+    local ped = PlayerPedId()
+    TriggerServerCallback_("renzu_garage:disposevehicle",function(stored,impound)
+        if stored and impound == 0 then
+            SendNUIMessage(
+            {
+                type = "removeveh"
+            })
+        elseif impound == 1 then
+            SendNUIMessage(
+            {
+                type = "notify",
+                typenotify = "display",
+                message = Message[41],
+            })
+            Citizen.Wait(1000)
+            SendNUIMessage(
+            {
+                type = "onimpound",
+                garage = garage,
+                fee = fee,
+            })
+        else
+            SendNUIMessage(
+            {
+                type = "notify",
+                typenotify = "display",
+                message = Message[42],
+            })
+            Citizen.Wait(1000)
+            SendNUIMessage(
+            {
+                type = "returnveh"
+            }) 
+        end
+    end,data.plate,garageid)
 end)

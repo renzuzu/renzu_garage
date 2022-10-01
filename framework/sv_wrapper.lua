@@ -45,6 +45,7 @@ function Initialized()
 	end
 
 	Citizen.CreateThread(function()
+		GlobalState.VehicleNickNames = {}
 		Wait(1000)
 		print("^2 -------- renzu_garage v1.8 Starting.. ----------^7")
 		GlobalState.GVehicles = {}
@@ -180,6 +181,7 @@ function Initialized()
 			})
 			GlobalState.RefreshVehicle = true
 		end
+		GlobalState.VehicleNickNames = json.decode(GetResourceKvpString('vehiclenicks') or '[]') or {}
 		print("^2 -------- renzu_garage v1.8 Started ----------^7")
 	end)
 end

@@ -2,9 +2,16 @@ function AntiDupe(coords, hash,x,y,z,w,prop)
     Wait(10)
     local move_coords = coords
     local vehicle = IsAnyVehicleNearPoint(coords.x,coords.y,coords.z,1.1)
-    local nearveh = GetClosestVehicle(vector3(x,y,z), 2.000, 0, 70)
+    local nearveh = GetClosestVehicle(vector3(x,y,z), 1.000, 0, 70)
     local model = GetEntityModel(nearveh)
-	if not vehicle or vehicle and model ~= hash then v = CreateVehicle(hash,x,y,z,w,true,false) private_garages[v] = v SetVehicleProp(v, prop) SetEntityCollision(v,true) FreezeEntityPosition(v, false) SetVehicleAsNoLongerNeeded(v) end
+	if not vehicle or vehicle and model ~= hash then 
+        v = CreateVehicle(hash,x,y,z,w,true,true) 
+        while not DoesEntityExist(v) do Wait(1) end
+        private_garages[v] = v 
+        SetVehicleProp(v, prop) 
+        SetEntityCollision(v,true) 
+        FreezeEntityPosition(v, false) 
+    end
 end
 
 RegisterNetEvent('renzu_garage:ingarage')
@@ -46,22 +53,78 @@ AddEventHandler('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,h
         while insidegarage do
             local distance = #(GetEntityCoords(PlayerPedId()) - vec3(garage.garage_exit.x,garage.garage_exit.y,garage.garage_exit.z))
             if distance < 3 then
-                local t = {
-                    ['key'] = 'E', -- key
-                    ['event'] = 'renzu_garage:exitgarage',
-                    ['title'] = Message[7]..' [E] '..Message[11],
-                    ['server_event'] = false, -- server event or client
-                    ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
-                    ['fa'] = '<i class="fas fa-garage"></i>',
-                    ['invehicle_title'] = 'Exit Garage',
-                    ['custom_arg'] = {garage,false}, -- example: {1,2,3,4}
-                }
-                TriggerEvent('renzu_popui:drawtextuiwithinput',t)
-                while distance < 3 do
-                    distance = #(GetEntityCoords(PlayerPedId()) - garage.garage_exit)
-                    Wait(500)
+                if Config.Oxlib then
+                    local msg = '[E] - Exit Garage'
+                    lib.showTextUI(msg, {
+                        position = "left-center",
+                        icon = 'car',
+                        style = {
+                            borderRadius = 5,
+                            backgroundColor = '#212121',
+                            color = 'white'
+                        }
+                    })
+                    while #(GetEntityCoords(PlayerPedId()) - vec3(garage.garage_exit.x,garage.garage_exit.y,garage.garage_exit.z)) < 3 do
+                        if IsControlJustPressed(0,38) then
+                            lib.hideTextUI()
+                            local options = {}
+                            table.insert(options,{
+                                ['title'] = Message[32],
+                                ['icon'] = 'garage',
+                                ['menu'] = 'confirmout', -- event / export
+                                ['description'] = 'Exit Private Garage',
+                            })
+                            lib.registerContext({
+                                id = 'outprivate',
+                                title = 'My Private Garage',
+                                onExit = function()
+                                end,
+                                options = options,
+                                {
+                                    id = 'confirmout',
+                                    title = 'Are you Sure?',
+                                    menu = 'outprivate',
+                                    options = {
+                                        {
+                                            title = 'Yes',
+                                            description = 'Confirm to Enter',
+                                            onSelect = function(args)
+                                            TriggerEvent('renzu_garage:exitgarage',garage,false)
+                                            end
+                                        },
+                                        {
+                                            title = 'No',
+                                            description = 'ill Stay',
+                                            onSelect = function(args)
+                                            end
+                                        },
+                                    }
+                                }
+                            })
+                            lib.showContext('outprivate')
+                            break 
+                        end
+                        Wait(1) 
+                    end
+                    lib.hideTextUI()
+                else
+                    local t = {
+                        ['key'] = 'E', -- key
+                        ['event'] = 'renzu_garage:exitgarage',
+                        ['title'] = Message[7]..' [E] '..Message[11],
+                        ['server_event'] = false, -- server event or client
+                        ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
+                        ['fa'] = '<i class="fas fa-garage"></i>',
+                        ['invehicle_title'] = 'Exit Garage',
+                        ['custom_arg'] = {garage,false}, -- example: {1,2,3,4}
+                    }
+                    TriggerEvent('renzu_popui:drawtextuiwithinput',t)
+                    while distance < 3 do
+                        distance = #(GetEntityCoords(PlayerPedId()) - garage.garage_exit)
+                        Wait(500)
+                    end
+                    TriggerEvent('renzu_popui:closeui')
                 end
-                TriggerEvent('renzu_popui:closeui')
             end
             Wait(1000)
         end
@@ -130,64 +193,151 @@ AddEventHandler('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,h
             local inv = garage.garage_inventory
             local inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
             if inventorydis < 3 and not carrymode and not carrymod then
-                local t = {
-                    ['key'] = 'E', -- key
-                    ['event'] = 'renzu_garage:openinventory',
-                    ['title'] = Message[7]..' [E] '..Message[15],
-                    ['server_event'] = false, -- server event or client
-                    ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
-                    ['fa'] = '<i class="fas fa-car"></i>',
-                    ['invehicle_title'] = Message[7]..' [E] '..Message[15],
-                    ['custom_arg'] = {currentprivate,activeshare}, -- example: {1,2,3,4}
-                }
-                TriggerEvent('renzu_popui:drawtextuiwithinput',t)
-                while inventorydis < 3 and not carrymode do
-                    inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
-                    Wait(500)
+                if Config.Oxlib then
+                    local msg = Message[7]..' [E] '..Message[15]
+                    print(msg)
+                    lib.showTextUI(msg, {
+                    position = "left-center",
+                    icon = 'car',
+                        style = {
+                            borderRadius = 5,
+                            backgroundColor = '#212121',
+                            color = 'white'
+                        }
+                    })
+                    CreateThread(function()
+                        while inventorydis < 3 and not carrymode do
+                            inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                            Wait(500)
+                        end
+                        return
+                    end)
+                    while inventorydis < 3 and not carrymode do
+                        if IsControlJustPressed(0,38) then
+                            TriggerEvent('renzu_garage:openinventory',currentprivate,activeshare)
+                            break
+                        end
+                        Wait(1)
+                    end
+                    lib.hideTextUI()
+                else
+                    local t = {
+                        ['key'] = 'E', -- key
+                        ['event'] = 'renzu_garage:openinventory',
+                        ['title'] = Message[7]..' [E] '..Message[15],
+                        ['server_event'] = false, -- server event or client
+                        ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
+                        ['fa'] = '<i class="fas fa-car"></i>',
+                        ['invehicle_title'] = Message[7]..' [E] '..Message[15],
+                        ['custom_arg'] = {currentprivate,activeshare}, -- example: {1,2,3,4}
+                    }
+                    TriggerEvent('renzu_popui:drawtextuiwithinput',t)
+                    while inventorydis < 3 and not carrymode do
+                        inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                        Wait(500)
+                    end
+                    TriggerEvent('renzu_popui:closeui')
                 end
-                TriggerEvent('renzu_popui:closeui')
             elseif not carrymode and carrymod and inventorydis < 3 then
-                local t = {
-                    ['key'] = 'E', -- key
-                    ['event'] = 'renzu_garage:storemod',
-                    ['title'] = Message[7]..' [E] '..Message[6],
-                    ['server_event'] = false, -- server event or client
-                    ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
-                    ['fa'] = '<i class="fas fa-car"></i>',
-                    ['invehicle_title'] = Message[7]..' [E] '..Message[15],
-                    --{index,lvl,k,nearveh,Config.VehicleMod[index]}
-                    ['custom_arg'] = {currentprivate,Config.VehicleMod[tostore[1]],tostore[2],false,false,true}, -- example: {1,2,3,4}
-                }
-                TriggerEvent('renzu_popui:drawtextuiwithinput',t)
-                while inventorydis < 3 and not carrymode and carrymod do
-                    inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
-                    Wait(500)
+                if Config.Oxlib then
+                    local msg = Message[7]..' [E] '..Message[6],
+                    print(msg)
+                    lib.showTextUI(msg, {
+                    position = "left-center",
+                    icon = 'car',
+                        style = {
+                            borderRadius = 5,
+                            backgroundColor = '#212121',
+                            color = 'white'
+                        }
+                    })
+                    CreateThread(function()
+                        while inventorydis < 3 and not carrymode and carrymod do
+                            inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                            Wait(500)
+                        end
+                        return
+                    end)
+                    while inventorydis < 3 and not carrymode and carrymod do
+                        if IsControlJustPressed(0,38) then
+                            TriggerEvent('renzu_garage:storemod',currentprivate,Config.VehicleMod[tostore[1]],tostore[2],false,false,true)
+                            break
+                        end
+                        Wait(1)
+                    end
+                    lib.hideTextUI()
+                else
+                    local t = {
+                        ['key'] = 'E', -- key
+                        ['event'] = 'renzu_garage:storemod',
+                        ['title'] = Message[7]..' [E] '..Message[6],
+                        ['server_event'] = false, -- server event or client
+                        ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
+                        ['fa'] = '<i class="fas fa-car"></i>',
+                        ['invehicle_title'] = Message[7]..' [E] '..Message[15],
+                        --{index,lvl,k,nearveh,Config.VehicleMod[index]}
+                        ['custom_arg'] = {currentprivate,Config.VehicleMod[tostore[1]],tostore[2],false,false,true}, -- example: {1,2,3,4}
+                    }
+                    TriggerEvent('renzu_popui:drawtextuiwithinput',t)
+                    while inventorydis < 3 and not carrymode and carrymod do
+                        inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                        Wait(500)
+                    end
+                    TriggerEvent('renzu_popui:closeui')
                 end
-                TriggerEvent('renzu_popui:closeui')
             end
             if IsPedInAnyVehicle(PlayerPedId()) then
                 local vehicle_prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
-                local t = {
-                    ['key'] = 'E', -- key
-                    ['event'] = 'renzu_garage:exitgarage',
-                    ['title'] = Message[7]..' [E] '..Message[16],
-                    ['server_event'] = true, -- server event or client
-                    ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
-                    ['fa'] = '<i class="fas fa-car"></i>',
-                    ['invehicle_title'] = Message[7]..' [E] '..Message[16],
-                    ['custom_arg'] = {garage,vehicle_prop,garage_id,true,activeshare}, -- example: {1,2,3,4}
-                }
-                TriggerEvent('renzu_popui:drawtextuiwithinput',t)
-                while IsPedInAnyVehicle(PlayerPedId()) do
-                    if stats_show ~= nil then
-                        stats_show = nil
-                        SendNUIMessage({
-                            type = "stats",
-                            perf = stats,
-                            show = false,
-                        })
+                if Config.Oxlib then
+                    local msg = '[E] - Choose Vehicle'
+                    lib.showTextUI(msg, {
+                        position = "left-center",
+                        icon = 'car',
+                        style = {
+                            borderRadius = 5,
+                            backgroundColor = '#212121',
+                            color = 'white'
+                        }
+                    })
+                    while IsPedInAnyVehicle(PlayerPedId()) do
+                        if IsControlJustPressed(0,38) then
+                            DoScreenFadeOut(1)
+                            TriggerServerEvent('renzu_garage:exitgarage',garage,vehicle_prop,garage_id,true,activeshare)
+                        end
+                        if stats_show ~= nil then
+                            stats_show = nil
+                            SendNUIMessage({
+                                type = "stats",
+                                perf = stats,
+                                show = false,
+                            })
+                        end
+                        Wait(1)
                     end
-                    Wait(500)
+                    lib.hideTextUI()
+                else
+                    local t = {
+                        ['key'] = 'E', -- key
+                        ['event'] = 'renzu_garage:exitgarage',
+                        ['title'] = Message[7]..' [E] '..Message[16],
+                        ['server_event'] = true, -- server event or client
+                        ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
+                        ['fa'] = '<i class="fas fa-car"></i>',
+                        ['invehicle_title'] = Message[7]..' [E] '..Message[16],
+                        ['custom_arg'] = {garage,vehicle_prop,garage_id,true,activeshare}, -- example: {1,2,3,4}
+                    }
+                    TriggerEvent('renzu_popui:drawtextuiwithinput',t)
+                    while IsPedInAnyVehicle(PlayerPedId()) do
+                        if stats_show ~= nil then
+                            stats_show = nil
+                            SendNUIMessage({
+                                type = "stats",
+                                perf = stats,
+                                show = false,
+                            })
+                        end
+                        Wait(500)
+                    end
                 end
                 TriggerEvent('renzu_popui:closeui')
             end
@@ -237,42 +387,98 @@ AddEventHandler('renzu_garage:openinventory', function(current)
     local firstmenu = {}
     local openmenu = false
     TriggerServerCallback_("renzu_garage:getinventory",function(inventory)
-        for k,v in pairs(inventory) do
-            local k = tostring(k)
-            local item = k:gsub("-", "")
-            local mod = string.match(item,"[^%d]+")
-            local lvl = item:gsub("%D+", "")
-            for index,t in pairs(Config.VehicleMod) do
-                if t.name:lower() == mod:lower() then
-                    if multimenu[firstToUpper(t.type)] == nil then multimenu[firstToUpper(t.type)] = {} end
-                    multimenu[firstToUpper(t.type)].main_fa = '<img style="height: auto;margin-left: -20px;margin-top: -10px;position: relative;max-width: 35px;float: left;" src="https://cfx-nui-renzu_garage/html/img/'..index..'.png">'
-                    multimenu[firstToUpper(t.type)][k] = {
-                        ['title'] = firstToUpper(t.label)..' : LVL '..lvl..' x'..v,
-                        --['fa'] = '<i class="fad fa-question-square"></i>',
-                        ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_garage/html/img/'..index..'.png">',
-                        ['type'] = 'event', -- event / export
-                        ['content'] = 'renzu_garage:getmod',
-                        ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {index,lvl,k}, arg_unpack = true},
-                    }
-                    openmenu = true
+        if Config.Oxlib then
+            local options = {}
+            local menus = {}
+            local secondmenus = {}
+            for k,v in pairs(inventory) do
+                local k = tostring(k)
+                local item = k:gsub("-", "")
+                local mod = string.match(item,"[^%d]+")
+                local lvl = item:gsub("%D+", "")
+                for index,t in pairs(Config.VehicleMod) do
+                    if secondmenus[firstToUpper(t.type)] == nil then secondmenus[firstToUpper(t.type)] = {} end
+                    if t.name:lower() == mod:lower() then
+                        if not menus[firstToUpper(t.type)] then
+                            menus[firstToUpper(t.type)] = true
+                            table.insert(options,{
+                                ['title'] = firstToUpper(t.type),
+                                ['arrow'] = true,
+                                ['menu'] = firstToUpper(t.type), -- event / export
+                                ['description'] = 'Show Parts from '..firstToUpper(t.type),
+                            })
+                        end
+                        table.insert(secondmenus[firstToUpper(t.type)], {
+                            ['title'] = firstToUpper(t.label)..' : LVL '..lvl..' x'..v,
+                            ['arrow'] = true,
+                            onSelect = function(args)
+                                TriggerEvent('renzu_garage:getmod',index,lvl,k)
+                            end,
+                            ['description'] = 'Take Parts '..firstToUpper(t.label)..' : LVL '..lvl..' x'..v,
+                        })
+                    end
                 end
             end
-        end
-        if openmenu then
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[17],false,'<i class="fas fa-warehouse-alt"></i> '..Message[18])
-            TriggerEvent('renzu_contextmenu:show')
+            for k,v in pairs(secondmenus) do
+                lib.registerContext({
+                    id = k,
+                    title = k.. ' Parts',
+                    onExit = function()
+                    end,
+                    menu = 'showgarageinv',
+                    options = v
+                })
+            end
+            lib.registerContext({
+                id = 'showgarageinv',
+                title = 'Garage Inventory',
+                onExit = function()
+                end,
+                options = options
+            })
+            lib.showContext('showgarageinv')
         else
-            Config.Notify('error', Message[18])
+            for k,v in pairs(inventory) do
+                local k = tostring(k)
+                local item = k:gsub("-", "")
+                local mod = string.match(item,"[^%d]+")
+                local lvl = item:gsub("%D+", "")
+                for index,t in pairs(Config.VehicleMod) do
+                    if t.name:lower() == mod:lower() then
+                        if multimenu[firstToUpper(t.type)] == nil then multimenu[firstToUpper(t.type)] = {} end
+                        multimenu[firstToUpper(t.type)].main_fa = '<img style="height: auto;margin-left: -20px;margin-top: -10px;position: relative;max-width: 35px;float: left;" src="https://cfx-nui-renzu_garage/html/img/'..index..'.png">'
+                        multimenu[firstToUpper(t.type)][k] = {
+                            ['title'] = firstToUpper(t.label)..' : LVL '..lvl..' x'..v,
+                            --['fa'] = '<i class="fad fa-question-square"></i>',
+                            ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_garage/html/img/'..index..'.png">',
+                            ['type'] = 'event', -- event / export
+                            ['content'] = 'renzu_garage:getmod',
+                            ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {index,lvl,k}, arg_unpack = true},
+                        }
+                        openmenu = true
+                    end
+                end
+            end
+            if openmenu then
+                TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[17],false,'<i class="fas fa-warehouse-alt"></i> '..Message[18])
+                TriggerEvent('renzu_contextmenu:show')
+            else
+                Config.Notify('error', Message[18])
+            end
         end
     end,current,activeshare)
 end)
 
 RegisterNetEvent('renzu_garage:storemod')
 AddEventHandler('renzu_garage:storemod', function(current,mod,lvl,newprop,save,saveprop)
+    local newprop = newprop
     carrymode = false
     carrymod = false
     ReqAndDelete(object)
     ClearPedTasks(PlayerPedId())
+    if tonumber(mod.index) == 48 then -- fix broken native of getvehiclelivery
+        newprop.modLivery = -1
+    end
     TriggerServerEvent('renzu_garage:storemod',current,mod,lvl,newprop,activeshare,save,saveprop)
 end)
 
@@ -311,23 +517,54 @@ AddEventHandler('renzu_garage:getmod', function(index,lvl,k)
                 if nearveh ~= 0 then
                     local dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(nearveh))
                     if dist < 3 then
-                        local t = {
-                            ['key'] = 'E', -- key
-                            ['event'] = 'renzu_garage:installmod',
-                            ['title'] = Message[7]..' [E] '..Message[21]..' '..Config.VehicleMod[index].label..' '..Message[23]..' '..lvl,
-                            ['server_event'] = false, -- server event or client
-                            ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
-                            ['fa'] = '<i class="fas fa-car"></i>',
-                            ['custom_arg'] = {index,lvl,k,nearveh,Config.VehicleMod[index]}, -- example: {1,2,3,4}
-                        }
-                        TriggerEvent('renzu_popui:drawtextuiwithinput',t)
-                        while dist < 3 do
-                            newprop = GetVehicleProperties(nearveh)
-                            nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
-                            dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(nearveh))
-                            Wait(500)
+                        if Config.Oxlib then
+                            local msg = ''..Message[7]..' [E] '..Message[21]..' '..Config.VehicleMod[index].label..' '..Message[23]..' '..lvl..''
+                            print(msg)
+                            lib.showTextUI(msg, {
+                            position = "left-center",
+                            icon = 'car',
+                                style = {
+                                    borderRadius = 5,
+                                    backgroundColor = '#212121',
+                                    color = 'white'
+                                }
+                            })
+                            CreateThread(function()
+                                while dist < 3 do
+                                    newprop = GetVehicleProperties(nearveh)
+                                    nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
+                                    dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(nearveh))
+                                    Wait(500)
+                                end
+                                return
+                            end)
+                            while dist < 3 do
+                                if IsControlJustPressed(0,38) then
+                                    TriggerEvent('renzu_garage:installmod',index,lvl,k,nearveh,Config.VehicleMod[index])
+                                    break
+                                end
+                                Wait(1)
+                            end
+                            lib.hideTextUI()
+                        else
+                            local t = {
+                                ['key'] = 'E', -- key
+                                ['event'] = 'renzu_garage:installmod',
+                                ['title'] = Message[7]..' [E] '..Message[21]..' '..Config.VehicleMod[index].label..' '..Message[23]..' '..lvl,
+                                ['server_event'] = false, -- server event or client
+                                ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
+                                ['fa'] = '<i class="fas fa-car"></i>',
+                                ['custom_arg'] = {index,lvl,k,nearveh,Config.VehicleMod[index]}, -- example: {1,2,3,4}
+                            }
+                            TriggerEvent('renzu_popui:drawtextuiwithinput',t)
+                            while dist < 3 do
+                                newprop = GetVehicleProperties(nearveh)
+                                nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
+                                dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(nearveh))
+                                Wait(500)
+                            end
+                            TriggerEvent('renzu_popui:closeui')
                         end
-                        TriggerEvent('renzu_popui:closeui')
                     end
                 end
                 Wait(500)
@@ -351,8 +588,6 @@ AddEventHandler('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
 			attempt = attempt + 1
 		end
         SetVehicleMod(vehicle, tonumber(mod.index), -1, false)
-        Wait(150)
-        newprop = GetVehicleProperties(vehicle)
         while carrymode do
             newprop = GetVehicleProperties(vehicle)
             local shell = currentprivate
@@ -362,22 +597,52 @@ AddEventHandler('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
             local vec = private_garage[shell].garage_inventory
             local distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
             if distance < 3 then
-                local t = {
-                    ['key'] = 'E', -- key
-                    ['event'] = 'renzu_garage:storemod',
-                    ['title'] = Message[7]..' [E] '..Message[25]..' '..mod.label,
-                    ['server_event'] = false, -- server event or client
-                    ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
-                    ['fa'] = '<i class="fas fa-car"></i>',
-                    ['custom_arg'] = {currentprivate,mod,lvl,newprop}, -- example: {1,2,3,4}
-                }
-                TriggerEvent('renzu_popui:drawtextuiwithinput',t)
-                while distance < 3 do
-                    newprop = GetVehicleProperties(vehicle)
-                    distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
-                    Wait(500)
+                if Config.Oxlib then
+                    local msg = ''..Message[7]..' [E] '..Message[25]..' '..mod.label..''
+                    print(msg)
+                    lib.showTextUI(msg, {
+                    position = "left-center",
+                    icon = 'car',
+                        style = {
+                            borderRadius = 5,
+                            backgroundColor = '#212121',
+                            color = 'white'
+                        }
+                    })
+                    CreateThread(function()
+                        while distance < 3 do
+                            newprop = GetVehicleProperties(vehicle)
+                            distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
+                            Wait(500)
+                        end
+                        return
+                    end)
+                    while distance < 3 do
+                        if IsControlJustPressed(0,38) then
+                            TriggerEvent('renzu_garage:storemod',currentprivate,mod,lvl,newprop)
+                            break
+                        end
+                        Wait(1)
+                    end
+                    lib.hideTextUI()
+                else
+                    local t = {
+                        ['key'] = 'E', -- key
+                        ['event'] = 'renzu_garage:storemod',
+                        ['title'] = Message[7]..' [E] '..Message[25]..' '..mod.label,
+                        ['server_event'] = false, -- server event or client
+                        ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
+                        ['fa'] = '<i class="fas fa-car"></i>',
+                        ['custom_arg'] = {currentprivate,mod,lvl,newprop}, -- example: {1,2,3,4}
+                    }
+                    TriggerEvent('renzu_popui:drawtextuiwithinput',t)
+                    while distance < 3 do
+                        newprop = GetVehicleProperties(vehicle)
+                        distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
+                        Wait(500)
+                    end
+                    TriggerEvent('renzu_popui:closeui')
                 end
-                TriggerEvent('renzu_popui:closeui')
             end
             Wait(500)
         end
@@ -409,29 +674,93 @@ AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
         local firstmenu = {}
 		SetModable(vehicle)
         local openmenu = false
-        for i = 0, 49 do
-            local modType = i
-            if Config.VehicleMod[i] ~= nil then
-                local mod = Config.VehicleMod[i]
-                if GetVehicleMod(vehicle,mod.index) + 1 > 0 then
-                    if multimenu[firstToUpper(mod.type)] == nil then multimenu[firstToUpper(mod.type)] = {} end
-                    multimenu[firstToUpper(mod.type)].main_fa = '<img style="height: auto;margin-left: -20px;margin-top: -10px;position: relative;max-width: 35px;float: left;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">'
-                    multimenu[firstToUpper(mod.type)][mod.label:upper()..' '..GetVehicleMod(vehicle,i) + 1] = {
-                        ['title'] = firstToUpper(mod.label)..' '..GetVehicleMod(vehicle,i) + 1,
-                        ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">',
-                        ['type'] = 'event', -- event / export
-                        ['content'] = 'renzu_garage:removevehiclemod',
-                        ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {mod,GetVehicleMod(vehicle,mod.index) + 1,vehicle}, arg_unpack = true},
-                    }
-                    openmenu = true
+        if Config.Oxlib then
+            local options = {}
+            local menus = {}
+            local secondmenus = {}
+            for i = 0, 49 do
+                local modType = i
+                if Config.VehicleMod[i] ~= nil then
+                    local mod = Config.VehicleMod[i]
+                    if secondmenus[firstToUpper(mod.type)] == nil then secondmenus[firstToUpper(mod.type)] = {} end
+                    if GetVehicleMod(vehicle,mod.index) + 1 > 0 then
+                        if not menus[firstToUpper(mod.type)] then
+                            menus[firstToUpper(mod.type)] = true
+                            table.insert(options,{
+                                ['title'] = firstToUpper(mod.type),
+                                ['arrow'] = true,
+                                ['menu'] = firstToUpper(mod.type), -- event / export
+                                ['description'] = 'Show Parts from '..firstToUpper(mod.type),
+                            })
+                        end
+                        local max = GetNumVehicleMods(vehicle, tonumber(mod.index))
+                        if i == 48 and max <= 0 then
+                            max = GetVehicleLiveryCount(vehicle) + 1
+                            livery = true
+                        end
+                        if livery then
+                            label = GetLabelText(GetLiveryName(vehicle,GetVehicleMod(vehicle,mod.index)))
+                        elseif GetLabelText(GetModTextLabel(vehicle, mod.index, GetVehicleMod(vehicle,mod.index))) ~= 'NULL' and GetVehicleMod(vehicle,mod.index) >= 1 then
+                            label = GetLabelText(GetModTextLabel(vehicle, mod.index, GetVehicleMod(vehicle,mod.index)))
+                        elseif i >= 1 then
+                            label = firstToUpper(mod.label:upper()..' '..GetVehicleMod(vehicle,i) + 1)
+                        else
+                            label = 'Default'
+                        end
+                        table.insert(secondmenus[firstToUpper(mod.type)], {
+                            ['title'] = firstToUpper(label),
+                            ['arrow'] = true,
+                            onSelect = function(args)
+                                TriggerEvent('renzu_garage:removevehiclemod',mod,GetVehicleMod(vehicle,mod.index) + 1,vehicle)
+                            end,
+                            ['description'] = 'Uninstalled Parts '..firstToUpper(mod.label),
+                        })
+                    end
                 end
             end
-        end
-        if openmenu then
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Vehicle Parts",false,'<i class="fad fa-starfighter-alt"></i> '..Message[17])
-            TriggerEvent('renzu_contextmenu:show')
+            for k,v in pairs(secondmenus) do
+                lib.registerContext({
+                    id = k,
+                    title = k.. ' Parts',
+                    onExit = function()
+                    end,
+                    menu = 'showvehicleparts',
+                    options = v
+                })
+            end
+            lib.registerContext({
+                id = 'showvehicleparts',
+                title = 'Vehicle Parts',
+                onExit = function()
+                end,
+                options = options
+            })
+            lib.showContext('showvehicleparts')
         else
-            Config.Notify( 'error', Message[26])
+            for i = 0, 49 do
+                local modType = i
+                if Config.VehicleMod[i] ~= nil then
+                    local mod = Config.VehicleMod[i]
+                    if GetVehicleMod(vehicle,mod.index) + 1 > 0 then
+                        if multimenu[firstToUpper(mod.type)] == nil then multimenu[firstToUpper(mod.type)] = {} end
+                        multimenu[firstToUpper(mod.type)].main_fa = '<img style="height: auto;margin-left: -20px;margin-top: -10px;position: relative;max-width: 35px;float: left;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">'
+                        multimenu[firstToUpper(mod.type)][mod.label:upper()..' '..GetVehicleMod(vehicle,i) + 1] = {
+                            ['title'] = firstToUpper(mod.label)..' '..GetVehicleMod(vehicle,i) + 1,
+                            ['fa'] = '<img style="height: auto;position: absolute;max-width: 30px;left:5%;top:25%;" src="https://cfx-nui-renzu_garage/html/img/'..mod.index..'.png">',
+                            ['type'] = 'event', -- event / export
+                            ['content'] = 'renzu_garage:removevehiclemod',
+                            ['variables'] = {server = false, send_entity = false, onclickcloseui = true, custom_arg = {mod,GetVehicleMod(vehicle,mod.index) + 1,vehicle}, arg_unpack = true},
+                        }
+                        openmenu = true
+                    end
+                end
+            end
+            if openmenu then
+                TriggerEvent('renzu_contextmenu:insertmulti',multimenu,"Vehicle Parts",false,'<i class="fad fa-starfighter-alt"></i> '..Message[17])
+                TriggerEvent('renzu_contextmenu:show')
+            else
+                Config.Notify( 'error', Message[26])
+            end
         end
     end
 end)
@@ -448,7 +777,6 @@ end)
 
 RegisterNetEvent('renzu_garage:choose')
 AddEventHandler('renzu_garage:choose', function(t,garage)
-	DoScreenFadeOut(1)
     insidegarage = false
     vehicleinarea = {}
     private_garages = {}
@@ -474,6 +802,7 @@ AddEventHandler('renzu_garage:choose', function(t,garage)
     Wait(10)
     TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
     housingcustom = nil
+    DoScreenFadeOut(1)
 	DoScreenFadeIn(333)
 end)
 
@@ -534,11 +863,11 @@ AddEventHandler('renzu_garage:exitgarage', function(t,exit)
         end
         vehicleinarea = {}
         private_garages = {}
-        DoScreenFadeOut(1)
+        --DoScreenFadeOut(1)
         if housingcustom then
-            SetEntityCoords(PlayerPedId(),housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z,true)
+            SetEntityCoords(PlayerPedId(),housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z)
         else
-            SetEntityCoords(PlayerPedId(),t.buycoords.x,t.buycoords.y,t.buycoords.z,true)
+            SetEntityCoords(PlayerPedId(),t.buycoords.x,t.buycoords.y,t.buycoords.z)
         end
         Wait(3500)
         housingcustom = nil
@@ -549,75 +878,183 @@ end)
 RegisterNetEvent('renzu_garage:opengaragemenu')
 AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
     local garage,t = garageid,v
-    TriggerServerCallback_("renzu_garage:isgarageowned",function(owned,share)
-        local multimenu = {}
-        if not owned then
-            firstmenu = {
-                [Message[27]] = {
+    if not Config.Oxlib then
+        TriggerServerCallback_("renzu_garage:isgarageowned",function(owned,share)
+            local multimenu = {}
+            if not owned then
+                firstmenu = {
+                    [Message[27]] = {
+                        ['title'] = Message[27]..' - $'..v.cost..'',
+                        ['fa'] = '<i class="fad fa-question-square"></i>',
+                        ['type'] = 'event', -- event / export
+                        ['content'] = 'renzu_garage:buygarage',
+                        ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,t}, arg_unpack = true},
+                    },
+                }
+                multimenu[Message[29]] = firstmenu
+                if share and share.garage == garageid then
+                    activeshare = share
+                    sharing = {
+                        [Message[28]] = {
+                            ['title'] = Message[28],
+                            ['fa'] = '<i class="fad fa-question-square"></i>',
+                            ['type'] = 'event', -- event / export
+                            ['content'] = 'renzu_garage:gotogarage',
+                            ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,share,true}, arg_unpack = true},
+                        },
+                    }
+                    multimenu[Message[30]] = sharing
+                end
+                TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[29],false,Message[29])
+                TriggerEvent('renzu_contextmenu:show')
+            elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
+                Config.Notify( 'error',Message[31])
+                opened = true
+            elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
+                local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
+                ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
+                TriggerServerEvent('renzu_garage:storeprivate',garageid,v, prop)
+                opened = true
+            elseif owned then
+                secondmenu = {
+                    [Message[32]] = {
+                        ['title'] = Message[32],
+                        ['fa'] = '<i class="fad fa-garage"></i>',
+                        ['type'] = 'event', -- event / export
+                        ['content'] = 'renzu_garage:gotogarage',
+                        ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,t,false}, arg_unpack = true},
+                    },
+                }
+                multimenu['My Garage'] = secondmenu
+                if share and share.garage == garageid then
+                    activeshare = share
+                    sharing = {
+                        [Message[28]] = {
+                            ['title'] = Message[28],
+                            ['fa'] = '<i class="fad fa-question-square"></i>',
+                            ['type'] = 'event', -- event / export
+                            ['content'] = 'renzu_garage:gotogarage',
+                            ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,share,true}, arg_unpack = true},
+                        },
+                    }
+                    multimenu[Message[30]] = sharing
+                end
+                TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[29],false,Message[29])
+                TriggerEvent('renzu_contextmenu:show')
+            end
+        end,garageid,v)
+    else
+        TriggerServerCallback_("renzu_garage:isgarageowned",function(owned,share)
+            local multimenu = {}
+            --local garage,v = table.unpack(v)
+            if not owned then
+                local options = {}
+                table.insert(options,{
                     ['title'] = Message[27]..' - $'..v.cost..'',
-                    ['fa'] = '<i class="fad fa-question-square"></i>',
-                    ['type'] = 'event', -- event / export
-                    ['content'] = 'renzu_garage:buygarage',
-                    ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,t}, arg_unpack = true},
-                },
-            }
-            multimenu[Message[29]] = firstmenu
-            if share and share.garage == garageid then
-                activeshare = share
-                sharing = {
-                    [Message[28]] = {
+                    ['icon'] = 'square',
+                    ['menu'] = 'confirmprivate', -- event / export
+                    ['description'] = 'Buy This Private Garage',
+                })
+                if share and share.garage == garageid then
+                    table.insert(options,{
                         ['title'] = Message[28],
-                        ['fa'] = '<i class="fad fa-question-square"></i>',
-                        ['type'] = 'event', -- event / export
-                        ['content'] = 'renzu_garage:gotogarage',
-                        ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,share,true}, arg_unpack = true},
-                    },
-                }
-                multimenu[Message[30]] = sharing
-            end
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[29],false,Message[29])
-            TriggerEvent('renzu_contextmenu:show')
-        elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
-            Config.Notify( 'error',Message[31])
-            opened = true
-        elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
-            local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
-            ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
-            TriggerServerEvent('renzu_garage:storeprivate',garageid,v, prop)
-            opened = true
-        elseif owned then
-            secondmenu = {
-                [Message[32]] = {
+                        ['icon'] = 'square',
+                        onSelect = function(args)
+                            TriggerServerEvent('renzu_garage:gotogarage',garageid,share,true)
+                        end,
+                        ['description'] = 'Buy This Private Garage',
+                    })
+                end
+                lib.registerContext({
+                    id = 'privategarage',
+                    title = 'Private Garage',
+                    onExit = function()
+                    end,
+                    options = options,
+                    {
+                        id = 'confirmprivate',
+                        title = 'Are you Sure?',
+                        menu = 'privategarage',
+                        options = {
+                            {
+                                title = 'Yes',
+                                description = 'Confirm to Buy',
+                                onSelect = function(args)
+                                  TriggerServerEvent('renzu_garage:buygarage',garageid,t)
+                                end
+                            },
+                            {
+                                title = 'No',
+                                description = 'ill come back later',
+                                onSelect = function(args)
+                                end
+                            },
+                        }
+                    }
+                })
+                lib.showContext('privategarage')
+            elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
+                Config.Notify( 'error',Message[31])
+                opened = true
+            elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
+                local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
+                ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
+                TriggerServerEvent('renzu_garage:storeprivate',garageid,t, prop)
+                opened = true
+            elseif owned then
+                local options = {}
+                table.insert(options,{
                     ['title'] = Message[32],
-                    ['fa'] = '<i class="fad fa-garage"></i>',
-                    ['type'] = 'event', -- event / export
-                    ['content'] = 'renzu_garage:gotogarage',
-                    ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,t,false}, arg_unpack = true},
-                },
-            }
-            multimenu['My Garage'] = secondmenu
-            if share and share.garage == garageid then
-                activeshare = share
-                sharing = {
-                    [Message[28]] = {
+                    ['icon'] = 'garage',
+                    ['menu'] = 'confirmenter', -- event / export
+                    ['description'] = 'Enter Private Garage',
+                })
+                if share and share.garage == garageid then
+                    table.insert(options,{
                         ['title'] = Message[28],
-                        ['fa'] = '<i class="fad fa-question-square"></i>',
-                        ['type'] = 'event', -- event / export
-                        ['content'] = 'renzu_garage:gotogarage',
-                        ['variables'] = {server = true, send_entity = false, onclickcloseui = true, custom_arg = {garage,share,true}, arg_unpack = true},
-                    },
-                }
-                multimenu[Message[30]] = sharing
+                        ['icon'] = 'square',
+                        onSelect = function(args)
+                            TriggerServerEvent('renzu_garage:gotogarage',garageid,share,true)
+                        end,
+                        ['description'] = 'Visit Private Garage',
+                    })
+                end
+                lib.registerContext({
+                    id = 'gotoprivate',
+                    title = 'My Private Garage',
+                    onExit = function()
+                    end,
+                    options = options,
+                    {
+                        id = 'confirmenter',
+                        title = 'Are you Sure?',
+                        menu = 'gotoprivate',
+                        options = {
+                            {
+                                title = 'Yes',
+                                description = 'Confirm to Enter',
+                                onSelect = function(args)
+                                  TriggerServerEvent('renzu_garage:gotogarage',garageid,t,false)
+                                end
+                            },
+                            {
+                                title = 'No',
+                                description = 'ill come back later',
+                                onSelect = function(args)
+                                end
+                            },
+                        }
+                    }
+                })
+                lib.showContext('gotoprivate')
             end
-            TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[29],false,Message[29])
-            TriggerEvent('renzu_contextmenu:show')
-        end
-    end,garageid,v)
+        end,garage,v)
+    end
 end)
 
 CreateThread(function()
     Wait(500)
-    while Config.Private_Garage do
+    while Config.Private_Garage and not Config.Oxlib do
         for k,v in pairs(private_garage) do
             local distance = #(GetEntityCoords(PlayerPedId()) - vector3(v.buycoords.x,v.buycoords.y,v.buycoords.z))
             if distance < 3 then

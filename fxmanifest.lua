@@ -5,6 +5,7 @@ lua54 'yes'
 use_fxv2_oal 'yes'
 
 shared_scripts {
+	'@ox_lib/init.lua',	
 	'conf/locale/*.lua',
 	'conf/main.lua',
 	'conf/*.lua',

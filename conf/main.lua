@@ -23,7 +23,7 @@ Config.BlipNamesStatic = true -- if true no more garage a garage b blip names fr
 -- VEHICLE IMAGES
 Config.use_renzu_vehthumb = true
 
-
+Config.Oxlib = true -- ox_lib http://google.com/
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
 Config.PlateSpace = true -- enable / disable plate spaces (compatibility with esx 1.1?)
@@ -99,7 +99,16 @@ Message = Locale[Config.Locale]
 -- NOTIFY
 Config.Renzu_notify = true -- if false we will use default framework notification
 Config.Notify = function(type,msg,xPlayer)
-    if Config.Renzu_notify and not IsDuplicityVersion() then
+    if Config.Oxlib and not IsDuplicityVersion() then
+        print(type)
+        lib.defaultNotify({
+            title = 'Garage',
+            description = msg,
+            status = type
+        })
+    elseif Config.Oxlib and IsDuplicityVersion() then
+        TriggerClientEvent('renzu_garage:notify', xPlayer.source, type, msg)
+    elseif Config.Renzu_notify and not IsDuplicityVersion() then
         TriggerEvent('renzu_notify:Notify', type,Message[2], msg)
     elseif Config.Renzu_notify and IsDuplicityVersion() then
         TriggerClientEvent('renzu_notify:Notify', xPlayer.source, type,Message[2], msg)
@@ -110,6 +119,9 @@ Config.Notify = function(type,msg,xPlayer)
     end
 end
 
+if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
+    Config.Oxlib = false
+end
 if not IsDuplicityVersion() then
     ESX = nil
     QBCore = nil
@@ -123,5 +135,7 @@ if not IsDuplicityVersion() then
     stored = 'stored'
     garage__id = 'garage_id'
     type_ = 'type'
+    Zones = {}
+    cancel = false
     LastVehicleFromGarage = nil garageid = 'A' inGarage = false ingarage = false garage_coords = {} shell = nil ESX = nil fetchdone = false PlayerData = {} playerLoaded = false canpark = false spawned_cars = {} vtype = 'car' vehiclesdb = {} tid = 0 propertygarage = false parkmeter = {} jobgarages = {} coordcache = {} propertyspawn = {} lastcat = nil deleting = false housingcustom = nil garage_public = false shell = nil i = 0 vehtable = {} garage_id = 'A' meter_cars = {} inshell = false patrolcars = {} cat = nil OwnedVehicles = {} VTable = {} owned_veh = {} neargarage = false markers = {} drawsleep = 1 drawtext = false indist = false jobgarage = false garagejob = nil ispolice = false vhealth = 1000 myoldcoords = nil spawnedgarage = {} shell = nil i = 0 vehtable = {} garage_id = 'A' min = 0 max = 10 plus = 0 countspawn = 0 opened = false newprop = nil object = nil insidegarage = true private_garages = {} activeshare = nil currentprivate = nil carrymode = false carrymod = false tostore = {} vehicleinarea = {} impoundata = nil parkedvehicles = {} vehiclekeysdata = nil entering = false garagekeysdata = nil
 end

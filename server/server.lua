@@ -202,8 +202,9 @@ AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,
         success = false
         for k,v in pairs(vehicles) do
             if v.vehicle == nil then v.taken = false end
-            if v.taken and newprop.plate == v.vehicle.plate then
-                v.vehicle = newprop
+            local prop = v.vehicle
+            if v.taken and newprop.plate == prop.plate then
+                vehicles[k].vehicle = newprop
                 success = true
                 break
             end
@@ -289,8 +290,8 @@ AddEventHandler('renzu_garage:buygarage', function(id,v)
                 ['@garage']   = id,
                 ['@vehicles'] = '[]'
             })
-            xPlayer.removeMoney(cost)
-            Config.Notify('success', Message[65]..' ('..id..')',xPlayer)
+            xPlayer.removeMoney(tonumber(cost))
+            Config.Notify('success', ''..Message[65]..' '..id..'',xPlayer)
             local housingtemp = GlobalState.HousingGarages or {}
             housingtemp[id] = xPlayer.identifier
             GlobalState.HousingGarages = housingtemp
@@ -1116,7 +1117,7 @@ AddEventHandler('renzu_garage:transfercar', function(plate,id)
                     local tempvehicles = GlobalState.GVehicles
                     tempvehicles[plate] = newtransfer[1]
                     GlobalState.GVehicles = tempvehicles
-                    print(plate,'Newly Transfer Vehicles Found..Updating Key system')
+                    --print(plate,'Newly Transfer Vehicles Found..Updating Key system')
                 end
             else
                 xPlayer.showNotification(Message[77], 1, 0)
@@ -1239,7 +1240,7 @@ AddEventHandler('entityCreated', function(entity)
                 ent.share = share
                 globalkeys[plate] = ent.share
                 GlobalState.Gshare = globalkeys
-                print(plate,'Newly Owned Vehicles Found..Adding to Key system')
+                --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
                 return
             end
         elseif gvehicles[plate] then -- owned vehicles
@@ -1280,7 +1281,7 @@ AddEventHandler('entityCreated', function(entity)
                     ent.share = share
                     globalkeys[plate] = ent.share
                     GlobalState.Gshare = globalkeys
-                    print(plate,'Newly Mission Vehicles Found..Adding to Key system')
+                    --print(plate,'Newly Mission Vehicles Found..Adding to Key system')
                 end
             end
         elseif plyid and xPlayer and gvehicles[plate] and xPlayer.identifier ~= GlobalState.GVehicles[plate][owner] then
@@ -1289,11 +1290,113 @@ AddEventHandler('entityCreated', function(entity)
             share[xPlayer.identifier] = xPlayer.identifier
             globalkeys[plate] = share
             GlobalState.Gshare = globalkeys
-            print(plate, 'Already Owned Vehicles Spawned by other identifier... giving keys to network entity owner')
+            --print(plate, 'Already Owned Vehicles Spawned by other identifier... giving keys to network entity owner')
         end
     end
 end)
 
 RegisterUsableItem(Config.LockpickItem, function(source)
     TriggerClientEvent('renzu_garage:lockpick', source)
+end)
+
+RegisterServerCallBack_('renzu_garage:renamevehicle', function (source, cb, plate, name)
+    local xPlayer = GetPlayerFromId(source)
+    local result = json.decode(GetResourceKvpString('vehiclenicks') or '[]') or {}
+    -- local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
+    --     ['@owner'] = xPlayer.identifier,
+    --     ['@plate'] = string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1')
+    -- })
+    if result then
+        name = name:gsub('[%p%c]', '')
+        -- MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `nickname` = @nickname WHERE TRIM(UPPER(plate)) = @plate', {
+        --     ['@plate'] = string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1'),
+        --     ['@nickname'] = name
+        -- })
+        result[plate] = name
+        SetResourceKvp('vehiclenicks', json.encode(result))
+        --print(name,'change nick name')
+        Config.Notify( 'success', plate..' has been set a Nickname to '..name,xPlayer)
+        GlobalState.VehicleNickNames = result
+        cb(name)
+    else
+        cb(false)
+    end
+end)
+
+function Deleteveh(plate,src)
+    local plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
+    if plate and type(plate) == 'string' then
+        MysqlGarage(Config.Mysql,'execute','DELETE FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate',{['@plate'] = plate})
+    else
+        print('error not string - Delete Vehicle')
+    end
+end
+
+RegisterServerCallBack_('renzu_garage:disposevehicle', function (source, cb, plate, id, ispolice, patrol)
+    local source = source
+    local xPlayer = GetPlayerFromId(source)
+    local garage_impound = nil
+    local impound_fee = ImpoundPayment
+    if not Config.PlateSpace then
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
+    else
+        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
+    end
+    if patrol then
+        cb(true,0)
+    else
+        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT `'..stored..'`, `'..garage__id..'`, impound FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate', {
+            ['@plate'] = plate
+        })
+        if string.find(id, "impound") then
+            garage_impound = impoundcoord[1].garage
+            impound_fee = ImpoundPayment
+            if result[1] and result[1].impound then
+                for k,v in pairs(impound_G) do
+                    for k2,v2 in pairs(v) do
+                        if k2 == plate then
+                            garage_impound = k
+                            impound_fee = v2.fine or ImpoundPayment
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        if string.find(id, "impound") and Impoundforall and not ispolice then
+            Config.Notify( 'error', plate..' cannot be disposed from impound',xPlayer)
+        elseif result and result[1][stored] ~= nil then
+            local stored = result[1][stored]
+            -- start shitty logic
+            if stored == 1 then
+                stored = true
+            end
+            if stored == 0 then
+                stored = false
+            end
+            local impound = result[1].impound
+            if impound == true then
+                impound = 1
+            end
+            if impound == false then
+                impound = 0
+            end
+            if impound and not garage_impound then
+                garage_impound = result[1][garage__id]
+            end
+            -- end shitty logic
+            local sharedvehicle = false
+            if stored then
+                local ply = Player(source).state
+                if ply.garagekey and ply.garagekey ~= xPlayer.identifier then -- sharing, taking out other vehicle
+                    sharedvehicle = true
+                end
+            end
+            if stored and impound == 0 then
+                Deleteveh(plate)
+                Config.Notify( 'success', plate..' has been removed from your garage',xPlayer)
+            end
+            cb(stored,impound,garage_impound or false,impound_fee,sharedvehicle)
+        end
+    end
 end)

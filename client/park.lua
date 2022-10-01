@@ -61,7 +61,7 @@ CreateThread(function()
                 if meter_cars[vehicle.plate] == nil then
                     local hash = tonumber(vehicle.model)
                     local count = 0
-                    if not HasModelLoaded(hash) then
+                    if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                         RequestModel(hash)
                         while not HasModelLoaded(hash) do
                             Citizen.Wait(10)
@@ -109,7 +109,7 @@ CreateThread(function()
                             local hash = tonumber(vehicle.model)
                             local count = 0
                             while IsAnyVehicleNearPoint(parkcoord.x,parkcoord.y,parkcoord.z,1.1) do local nearveh = GetClosestVehicle(vector3(parkcoord.x,parkcoord.y,parkcoord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
-                            if not HasModelLoaded(hash) then
+                            if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                                 RequestModel(hash)
                                 while not HasModelLoaded(hash) do
                                     RequestModel(hash)
@@ -174,129 +174,105 @@ AddEventHandler('renzu_garage:update_parked', function(t,plate,p)
     deleting = false
 end)
   
-CreateThread(function()
-    Wait(500)
-    while not LocalPlayer.state.loaded do Wait(100) end
-    while Config.Realistic_Parking do
-        for k,v in pairs(parking) do
-            local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
-            local dist = #(vec - GetEntityCoords(PlayerPedId()))
-            if dist < v.Dist then
-                neargarage = true
-                canpark = true
-                local mycoord = GetEntityCoords(PlayerPedId())
-                while dist < v.Dist do
-                    dist = #(vec - GetEntityCoords(PlayerPedId()))
-                    local bobo = parkedvehicles
-                    for i = 1, #bobo do
-                        local park = bobo[i]
-                        local coord = json.decode(park.park_coord)
-                        local vehicle_coord = vector3(coord.x,coord.y,coord.z)
-                        park.plate = string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1')
-                        local vdata = json.decode(park[vehiclemod])
-                        if #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < v.Dist and IsModelInCdimage(tonumber(vdata.model)) then
-                            if spawned_cars[park.plate] == nil then
-                                while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
-                                local hash = tonumber(vdata.model)
+RealPark = function()
+    for k,v in pairs(parking) do
+        local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
+        local dist = #(vec - GetEntityCoords(PlayerPedId()))
+        if dist < v.Dist then
+            neargarage = true
+            canpark = true
+            local mycoord = GetEntityCoords(PlayerPedId())
+            while dist < v.Dist do
+                dist = #(vec - GetEntityCoords(PlayerPedId()))
+                local bobo = parkedvehicles
+                for i = 1, #bobo do
+                    local park = bobo[i]
+                    local coord = json.decode(park.park_coord)
+                    local vehicle_coord = vector3(coord.x,coord.y,coord.z)
+                    park.plate = string.gsub(tostring(park.plate), '^%s*(.-)%s*$', '%1')
+                    local vdata = json.decode(park[vehiclemod])
+                    if #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < v.Dist and IsModelInCdimage(tonumber(vdata.model)) then
+                        if spawned_cars[park.plate] == nil then
+                            while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
+                            local hash = tonumber(vdata.model)
+                            local count = 0
+                            if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
+                                RequestModel(hash)
+                                while not HasModelLoaded(hash) do
+                                    RequestModel(hash)
+                                    Citizen.Wait(10)
+                                end
+                            end
+                            --local posZ = coord.z + 999.0
+                            --_,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
+                            spawned_cars[park.plate] = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 0, 0)
+                            while not DoesEntityExist(spawned_cars[park.plate]) do Wait(100) end
+                            SetEntityHeading(spawned_cars[park.plate], coord.heading)
+                            SetVehicleProp(spawned_cars[park.plate], json.decode(park[vehiclemod]))
+                            SetVehicleDoorsLocked(spawned_cars[park.plate],2)
+                            NetworkFadeInEntity(spawned_cars[park.plate],1)
+                            SetVehicleOnGroundProperly(spawned_cars[park.plate])
+                            --SetEntityCoordsNoOffset(spawned_cars[park.plate],coord.x,coord.y,posZ,false,false,false)
+                            CreateThread(function()
                                 local count = 0
-                                if not HasModelLoaded(hash) then
+                                while count < 5000 do
+                                    count = count + 200
+                                    SetEntityCollision(spawned_cars[park.plate],true)
+                                    Wait(20)
+                                end
+                                FreezeEntityPosition(spawned_cars[park.plate], true)
+                                SetEntityCollision(spawned_cars[park.plate],false)
+                                return
+                            end)
+                            SetVehicleDoorsLocked(spawned_cars[park.plate],2)
+                        elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < 5 then
+                            SetVehicleDoorsLocked(spawned_cars[park.plate],0)
+                            SetEntityCollision(spawned_cars[park.plate],true)
+                            if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park[owner]
+                            or GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and GlobalState.Gshare and GlobalState.Gshare[park.plate] and GlobalState.Gshare[park.plate][PlayerData.identifier] and GlobalState.Gshare[park.plate][PlayerData.identifier] then
+                                TriggerServerEvent("renzu_garage:unpark", park.plate, 0, tonumber(json.decode(park[vehiclemod]).model))
+                                Wait(100)
+                                DoScreenFadeOut(555)
+                                Wait(555)
+                                while DoesEntityExist(spawned_cars[park.plate]) do Wait(1) end
+                                --spawned_cars[park.plate] = nil
+                                local hash = tonumber(json.decode(park[vehiclemod]).model)
+                                local count = 0
+                                while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
+                                if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                                     RequestModel(hash)
                                     while not HasModelLoaded(hash) do
                                         RequestModel(hash)
-                                        Citizen.Wait(10)
+                                        Citizen.Wait(1)
                                     end
                                 end
-                                --local posZ = coord.z + 999.0
-                                --_,posZ = GetGroundZFor_3dCoord(coord.x,coord.y+.0,coord.z,1)
-                                spawned_cars[park.plate] = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 0, 0)
-                                while not DoesEntityExist(spawned_cars[park.plate]) do Wait(100) end
-                                SetEntityHeading(spawned_cars[park.plate], coord.heading)
-                                SetVehicleProp(spawned_cars[park.plate], json.decode(park[vehiclemod]))
-                                SetVehicleDoorsLocked(spawned_cars[park.plate],2)
-                                NetworkFadeInEntity(spawned_cars[park.plate],1)
-                                SetVehicleOnGroundProperly(spawned_cars[park.plate])
-                                --SetEntityCoordsNoOffset(spawned_cars[park.plate],coord.x,coord.y,posZ,false,false,false)
-                                CreateThread(function()
-                                    local count = 0
-                                    while count < 5000 do
-                                        count = count + 200
-                                        SetEntityCollision(spawned_cars[park.plate],true)
-                                        Wait(20)
-                                    end
-                                    FreezeEntityPosition(spawned_cars[park.plate], true)
-                                    SetEntityCollision(spawned_cars[park.plate],false)
-                                    return
-                                end)
-                                SetVehicleDoorsLocked(spawned_cars[park.plate],2)
-                            elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < 5 then
-                                SetVehicleDoorsLocked(spawned_cars[park.plate],0)
-                                SetEntityCollision(spawned_cars[park.plate],true)
-                                if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park[owner]
-                                or GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and GlobalState.Gshare and GlobalState.Gshare[park.plate] and GlobalState.Gshare[park.plate][PlayerData.identifier] and GlobalState.Gshare[park.plate][PlayerData.identifier] then
-                                    TriggerServerEvent("renzu_garage:unpark", park.plate, 0, tonumber(json.decode(park[vehiclemod]).model))
-                                    Wait(100)
-                                    while DoesEntityExist(spawned_cars[park.plate]) do Wait(1) end
-                                    --spawned_cars[park.plate] = nil
-                                    local hash = tonumber(json.decode(park[vehiclemod]).model)
-                                    local count = 0
-                                    while IsAnyVehicleNearPoint(coord.x,coord.y,coord.z,1.1) do local nearveh = GetClosestVehicle(vector3(coord.x,coord.y,coord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
-                                    if not HasModelLoaded(hash) then
-                                        RequestModel(hash)
-                                        while not HasModelLoaded(hash) do
-                                            RequestModel(hash)
-                                            Citizen.Wait(1)
-                                        end
-                                    end
-                                    myveh = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 1, 1)
-                                    SetVehicleBobo(myveh)
-                                    SetEntityHeading(myveh, coord.heading)
-                                    --FreezeEntityPosition(myveh, true)
-                                    -- SetEntityCollision(spawned_cars[park.plate],false)
-                                    SetVehicleProp(myveh, json.decode(park[vehiclemod]))
-                                    NetworkFadeInEntity(myveh,1)
-                                    TaskWarpPedIntoVehicle(PlayerPedId(), myveh, -1)
-                                    Config.Notify( 'info', Message[35])
-                                end
-                            elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) > 5 then
-                                SetVehicleDoorsLocked(spawned_cars[park.plate],2)
-                                SetEntityCollision(spawned_cars[park.plate],false)
+                                myveh = CreateVehicle(hash, coord.x,coord.y,coord.z, 42.0, 1, 1)
+                                SetVehicleBobo(myveh)
+                                SetEntityHeading(myveh, coord.heading)
+                                --FreezeEntityPosition(myveh, true)
+                                -- SetEntityCollision(spawned_cars[park.plate],false)
+                                SetVehicleProp(myveh, json.decode(park[vehiclemod]))
+                                NetworkFadeInEntity(myveh,1)
+                                TaskWarpPedIntoVehicle(PlayerPedId(), myveh, -1)
+                                DoScreenFadeIn(555)
+                                Wait(555)
+                                Config.Notify( 'info', Message[35])
                             end
-                        elseif spawned_cars[park.plate] then
-                            NetworkFadeInEntity(spawned_cars[park.plate],1)
-                            ReqAndDelete(spawned_cars[park.plate])
-                            spawned_cars[park.plate] = nil
+                        elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) > 5 then
+                            SetVehicleDoorsLocked(spawned_cars[park.plate],2)
+                            SetEntityCollision(spawned_cars[park.plate],false)
                         end
+                    elseif spawned_cars[park.plate] then
+                        NetworkFadeInEntity(spawned_cars[park.plate],1)
+                        ReqAndDelete(spawned_cars[park.plate])
+                        spawned_cars[park.plate] = nil
                     end
-                    Wait(1000)
                 end
-                canpark = false
-            end
-        end
-        Wait(1000)
-    end
-end)
-
-CreateThread(function()
-    Wait(2500)
-    local c = 0
-    while not LocalPlayer.state.loaded do 
-        Wait(1000) 
-        c = c + 1 
-        if c >= 10 then  -- support badhabit of developers
-            LocalPlayer.state:set( 'loaded', true, true)
-            LocalPlayer.state.loaded = true
-        end
-    end
-    while Config.Realistic_Parking do
-        for k,v in pairs(parking) do
-            local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
-            local dist = #(vec - GetEntityCoords(PlayerPedId()))
-            if dist < v.Dist then
                 neargarage = true
                 canpark = true
                 local vehicle = GetVehiclePedIsIn(PlayerPedId())
                 local speedvehicle = IsVehicleStopped(vehicle)
-                while dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) do
+                if dist < v.Dist and IsPedInAnyVehicle(PlayerPedId()) then
                     dist = #(vec - GetEntityCoords(PlayerPedId()))
                     if GetPedInVehicleSeat(vehicle, -1) == PlayerPedId() and IsVehicleStopped(vehicle) and not ingarage then
                         Config.Notify( 'info', '$ '..v.fee..' Fee: '..Message[33].." [R]")
@@ -325,12 +301,19 @@ CreateThread(function()
                             Wait(0)
                         end
                     end
-                    Wait(1000)
                 end
-                canpark = false
+                Wait(1000)
             end
+            canpark = false
         end
+    end
+end
+
+CreateThread(function()
+    Wait(500)
+    while not LocalPlayer.state.loaded do Wait(100) end
+    while Config.Realistic_Parking and not Config.Oxlib do
+        RealPark()
         Wait(1000)
     end
-    return
 end)

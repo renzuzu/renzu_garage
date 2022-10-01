@@ -9,6 +9,8 @@ var impound_left = '0'
 var isimpounder = false
 var impound_fine = 0
 var impound_loc = 0
+let datas = {}
+let lastab = 0
 function getTimeRemaining(endtime) {
     const total = Date.parse(endtime) - Date.parse(new Date());
     const seconds = Math.floor((total / 1000) % 60);
@@ -57,6 +59,9 @@ window.addEventListener('message', function(event) {
     if (event.data.type == "cleanup") {
         cleanup()
     }
+    if (event.data.type == 'removeveh') {
+        document.getElementById("tabid_"+lastab).remove();
+    }
     if (event.data.type == "onimpound") {
         impound_loc = event.data.garage
         impound_fine = event.data.fee
@@ -88,7 +93,6 @@ window.addEventListener('message', function(event) {
             impound_left = duration_left
             //impound_left = impound_left.replace(",", "")
         }
-        console.log(impound_left,'gago')
         document.getElementById("dateissue").innerHTML = humanDateFormat;
         for(var [key,value] of Object.entries(data.info)){
             for(var [k,v] of Object.entries(value)){
@@ -194,7 +198,6 @@ window.addEventListener('message', function(event) {
             document.getElementById("dupe_vehkey").style.display = 'none';
         }
         for (const i in playersnearby) {
-            console.log(playersnearby[i],i,playersnearby[i].identifier)
             $("#playerslist").append(`<option value="`+playersnearby[i].identifier+`">`+playersnearby[i].name+` - [`+playersnearby[i].source+`]</option>`)
         }
         for (const i in vehicles) {
@@ -204,9 +207,7 @@ window.addEventListener('message', function(event) {
             var datagive = {}
             for (const i in $( "form" ).serializeArray()) {
                 var data = $( "form" ).serializeArray()
-                console.log($( "form" ).serializeArray(),data[i].name)
                 datagive[data[i].name] = data[i].value
-                console.log()
             }
             document.getElementById("vehiclekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ action: 'give', data: datagive}));
@@ -215,9 +216,7 @@ window.addEventListener('message', function(event) {
             var datagive = {}
             for (const i in $( "form" ).serializeArray()) {
                 var data = $( "form" ).serializeArray()
-                console.log($( "form" ).serializeArray(),data[i].name)
                 datagive[data[i].name] = data[i].value
-                console.log()
             }
             document.getElementById("vehiclekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ action: 'dupe', data: datagive}));
@@ -330,7 +329,6 @@ window.addEventListener('message', function(event) {
       } else {
         $("#formid").append(givekey)
         for (const i in playersnearby) {
-            console.log(playersnearby[i],i,playersnearby[i].identifier)
             $("#playerslist").append(`<option value="`+playersnearby[i].identifier+`">`+playersnearby[i].name+` - [`+playersnearby[i].source+`]</option>`)
         }
         for (const i in garages) {
@@ -340,9 +338,7 @@ window.addEventListener('message', function(event) {
             var datagive = {}
             for (const i in $( "form" ).serializeArray()) {
                 var data = $( "form" ).serializeArray()
-                console.log($( "form" ).serializeArray(),data[i].name)
                 datagive[data[i].name] = data[i].value
-                console.log()
             }
             document.getElementById("garagekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ action: 'give', data: datagive}));
@@ -414,7 +410,8 @@ window.addEventListener('message', function(event) {
                 VehicleArr.push(v);          
             }             
         }
-        OpenGarage(VehicleArr)
+        OpenGarage(VehicleArr,event.data.impound,event.data.police)
+        gagos = VehicleArr
         ShowVehicle(0);
         $("#appdiv").css("display","block")
         if (!event.data.view) {
@@ -518,8 +515,20 @@ $(document).ready(function() {
 $('#garage').append(app);
 });
 
+let lastcarid = 0
 function ShowVehicle(currentTarget) {
         var data = inGarageVehicle[currentTarget]
+        if (lastcarid !== undefined) {
+            if (document.getElementById('changer_'+lastcarid)) {
+                //$('#changer_'+lastcarid).css("display","none");   
+                document.getElementById('changer_'+lastcarid).style.display = 'none'
+            }
+        }
+        if (document.getElementById('changer_'+currentTarget)) {
+            //$('#changer_'+currentTarget).css("display","block");
+            document.getElementById('changer_'+currentTarget).style.display = 'inline'
+        }
+        lastcarid = currentTarget
         if (data && currentcar !== currentTarget) {
             currentcar = currentTarget
             var div = $(this).parent().find('.active');        
@@ -531,7 +540,6 @@ function ShowVehicle(currentTarget) {
             if(!itemDisabled && garage_id.search("impound") == -1) {
                 $(currentTarget).addClass('active');
                 $('.modal').css("display","none");
-                
                 if (document.getElementById("nameBrand")) {
                     document.getElementById("nameBrand").innerHTML = '';
                 }
@@ -553,7 +561,6 @@ function ShowVehicle(currentTarget) {
                 }
 
                 $(".menu-modifications").css("display","block");
-
                 CurrentVehicle = {brand: data.brand || 'Sports', modelcar: data.model2 || -1, sale: 1, name: data.name || 'Vehicle',  plate: data.plate }
                 $('#contentVehicle').append(`
                     <div class="row spacebetween">
@@ -563,7 +570,7 @@ function ShowVehicle(currentTarget) {
 
                     <div class="row">
                     <div class="w3-border" style="width: 100%;
-                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.handling.toFixed(1)/10*100+`%"></div> </div>
+                    margin-left: 10px;"> <div class="w3-grey" style="max-width:100%;height:5px;width:`+data.handling.toFixed(1)/10*100+`%"></div> </div>
                     </div>
 
                     <div class="row spacebetween">
@@ -573,7 +580,7 @@ function ShowVehicle(currentTarget) {
 
                     <div class="row">
                     <div class="w3-border" style="width: 100%;
-                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.topspeed.toFixed(1)/520*100+`%"></div> </div>
+                    margin-left: 10px;"> <div class="w3-grey" style="max-width:100%;height:5px;width:`+data.topspeed.toFixed(1)/520*100+`%"></div> </div>
                     </div>
 
                     <div class="row spacebetween">
@@ -583,7 +590,7 @@ function ShowVehicle(currentTarget) {
 
                     <div class="row">
                     <div class="w3-border" style="width: 100%;
-                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.topspeed.toFixed(1)/500*100+`%"></div> </div>
+                    margin-left: 10px;"> <div class="w3-grey" style="max-width:100%;height:5px;width:`+data.topspeed.toFixed(1)/500*100+`%"></div> </div>
                     </div>
 
                     <div class="row spacebetween">
@@ -593,7 +600,7 @@ function ShowVehicle(currentTarget) {
 
                     <div class="row">
                     <div class="w3-border" style="width: 100%;
-                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.torque.toFixed(1)/500*100+`%"></div> </div>
+                    margin-left: 10px;"> <div class="w3-grey" style="max-width:100%;height:5px;width:`+data.torque.toFixed(1)/500*100+`%"></div> </div>
                     </div>
 
                     <div class="row spacebetween">
@@ -603,7 +610,7 @@ function ShowVehicle(currentTarget) {
 
                     <div class="row">
                     <div class="w3-border" style="width: 100%;
-                    margin-left: 10px;"> <div class="w3-grey" style="height:5px;width:`+data.brake.toFixed(1)/2*100+`%"></div> </div>
+                    margin-left: 10px;"> <div class="w3-grey" style="max-width:100%;height:5px;width:`+data.brake.toFixed(1)/2*100+`%"></div> </div>
                     </div>
                 `);
                 if (chopper) {
@@ -703,6 +710,88 @@ function ShowVehicle(currentTarget) {
 }
 function garage() {
     $.post("https://renzu_garage/gotogarage", JSON.stringify({id: garage_id }));
+}
+
+function ShowConfirm2(i){
+    document.getElementById("closemenu").innerHTML = '';
+    $("#vehicle_cat").html('')
+    if (document.getElementById("finediv")) {
+        document.getElementById("finediv").style.display = 'none';
+    }
+    $('.modal').css("display","flex");
+    if (impound_left !== '0') {
+        
+        $('#closemenu').append(`
+        <div class="background-circle"></div>
+        <div class="modal-content">
+            <i style="    position: absolute;
+            right: 20%;
+            font-size: 30px; top:-2px;" class="fas fa-garage-car"></i>
+            <p class="title">Impound:</p>
+            <p class="vehicle">Vehicle is Unavailable</p>
+        </div>
+
+        <div class="modal-footer" style="display:inline-block !important; text-align:center;margin:20px;top:1.5vh;left:0">
+            <h1 style="font-size:12px;">Release Date</h1>
+            <div id="clockdiv">
+            <div>
+                <span class="days"></span>
+                <div class="smalltext">Days</div>
+            </div>
+            <div>
+                <span class="hours"></span>
+                <div class="smalltext">Hours</div>
+            </div>
+            <div>
+                <span class="minutes"></span>
+                <div class="smalltext">Minutes</div>
+            </div>
+            <div>
+                <span class="seconds"></span>
+                <div class="smalltext">Seconds</div>
+            </div>
+            </div>
+            </div>
+        `);
+        const deadline = new Date(impound_left);
+        initializeClock('clockdiv', deadline);
+          //# sourceURL=renzu_garage
+    } else {
+        $('#closemenu').append(`
+        <div class="background-circle"></div>
+        <div class="modal-content" style="background:#b10021;">
+            <i style="    position: absolute;
+            right: 20%;
+            font-size: 30px; top:-2px;" class="fas fa-garage-car"></i>
+            <p class="title">Confirm:</p>
+            <p class="vehicle">Dispose Vehicle</p>
+            <p style="display:none;" id="finediv">FINE: $ <span id="fineamount">0</span></p>
+        </div>
+
+        <div class="modal-footer">
+            <div class="modal-buttons">     
+                <div>
+                    <span>Use</span>
+                    <button id="money" class="modal-money button" onclick="DisposeVehicle('confirm')" >✔️</button>
+                </div>
+                <div>
+                    <span>Cancel</span>
+                    <button href="#!" id="card" class="modal-money button" onclick="DisposeVehicle('cancel')">X</button>
+                </div>
+            </div>
+        </div>
+        `);
+        //document.getElementById("tabid_"+i).remove();
+        lastab = i
+        document.getElementById("finediv").style.display = 'none';
+        if (!isimpounder && impound_fine > 0) {
+            document.getElementById("fineamount").innerHTML = impound_fine;
+            document.getElementById("finediv").style.display = 'block';
+        }
+        impound_fine = 0
+    }
+    
+    
 }
 
 function ShowConfirm(){
@@ -839,10 +928,51 @@ function onimpound(){
             left: -5.5vw;
             width: 100%;
             padding: 20px;
-            border-radius: 10px;"> Required to Pay in <span id="impoundloc" style="color:#ffffff !important;"></span>: <br> <br>
+            border-radius: 10px;"> Ask to Police if you want to Release the Vehicle <br>
             Fine $ `+impound_fine+`</p>
         </div>
     `);
+}
+
+function RenameVehicle(i) {
+    if (CurrentVehicle.plate !== undefined) {
+        $.post('https://renzu_garage/RenameVehicle', JSON.stringify(CurrentVehicle), function(newname) {
+            if (call !== false) {
+                $("#namecustom_"+i).html(newname)
+            }
+        });
+        CurrentVehicle_ = CurrentVehicle
+        CurrentVehicle = {}
+        $.post('https://renzu_garage/Close');
+    }
+}
+
+function DisposeVehicle(option) {
+    if (chopper) {
+        $('.modal').css("display","none");
+        VehicleArr = []
+        switch(option){
+            case 'cancel':
+                break;
+            case 'confirm':
+                //$.post('https://renzu_garage/flychopper', JSON.stringify(CurrentVehicle));
+                CurrentVehicle_ = CurrentVehicle
+                CurrentVehicle = {}
+                break;
+        }
+    } else {
+        $('.modal').css("display","none");
+        VehicleArr = []
+        switch(option){
+            case 'cancel':
+                break;
+            case 'confirm':
+                $.post('https://renzu_garage/DisposeVehicle', JSON.stringify(CurrentVehicle));
+                CurrentVehicle_ = CurrentVehicle
+                CurrentVehicle = {}
+                break;
+        }
+    }  
 }
 
 function GetVehicle(option) {
@@ -910,20 +1040,28 @@ $(document).on('keydown', function(event) {
 });
     Renzu_Garage = {};
     inGarageVehicle = {}
-    function OpenGarage(data) {
+     
+    function OpenGarage(data,impound,police) {
         $('.vehiclegarage').empty();
         $('.app_inner').empty();
         if (document.getElementById("vehlist")) {
             document.getElementById("vehlist").innerHTML = '';
         }
-        for(i = 0; i < (data.length); i++) {
+        let page = 0
+        let max = page + 40
+        for(i = page; i < (data.length); i++) {
             var modelUper = data[i].model;
             inGarageVehicle[i] = data[i]
             var img = data[i].img
             var plate = data[i].plate.replace(' ','');
             var cats = data[i].brand.replace(' ','');
             var name = data[i].name.replace(' ','');
-            $(".app_inner").append('<content class="datas" data-'+modelUper.toLowerCase()+''+plate.toLowerCase()+''+cats.toLowerCase()+''+name.toLowerCase()+'="'+modelUper+' '+data[i].plate+' '+data[i].brand+'"><label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span style="position:absolute;top:4px;left:8px;font-size:7px;color: #e2e2e2;;">Category: '+ data[i].brand +'</span> <span style="position:absolute;top:4px;right:5px;font-size:8px;color:#fefefe;">Garage: '+ data[i].garage_id +'</span><h2 style="font-size:11px !important;"> <i class="icon" style="right:100px;"><img style="height:20px;" src="https://cdn.discordapp.com/attachments/709992715303125023/813351303887192084/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" style="min-width: 120px;height: 70px;border-radius: 10px;max-width: 120px;border-color: #c7c7c7;padding:2px;background:#d2dce266;" onerror="this.src=`https://i.imgur.com/Jdz2ZMK.png`;" src="'+img+'"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#191b1f87" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> </div> </div> </label></input></label></content>');    
+            show = 'block'
+            page = page + 1
+            $(".app_inner").append('<content id="tabid_'+i+'" class="datas" data-'+modelUper.toLowerCase()+''+plate.toLowerCase()+''+cats.toLowerCase()+''+name.toLowerCase()+'="'+modelUper+' '+data[i].plate+' '+data[i].brand+'"><label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span id="spanshit">Category: '+ data[i].brand +'</span> <span id="spanshit2">Garage: '+ data[i].garage_id +'</span><h2 id="h2shit"> <i class="icon" style="right:100px;"><img style="height:20px;" src="img/wheel.png"></i> <i id="changer_'+i+'" class="fas fa-edit" style="font-size:15px;display:none;" onclick="RenameVehicle('+i+')"></i> <span id="namecustom_'+i+'">'+ data[i].name +'</span> - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" onerror="this.src=`https://i.imgur.com/Jdz2ZMK.png`;" src="'+img+'"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm" style="margin-left:10px;width:45%;"> <button class="confirm_out" style="background:#191b1f87" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> <div class="row" id="confirm" style="margin-left:10px;width:45%;"> <button class="confirm_out" style="background:#bb090087" onclick="ShowConfirm2('+i+')"> <i class="fa-solid fa-circle-trash"></i> Dispose </button> </div> </div> </div> </label></input></label></content>'); 
+            if (max == i) {
+                break
+            }
         }     
     }
     $("#garage").fadeOut();
@@ -931,17 +1069,22 @@ $(document).on('keydown', function(event) {
     function Search(string) {
         var val = document.getElementById('SearchData').value
         val = val.replace(' ','')
-        var allEl = document.querySelectorAll('.datas');
-        var regex = new RegExp('^(.*)'+val+'(.*)$');
-
-        for (var i = 0; i < allEl.length; i++) {
-            var data = Object.keys(allEl[i].dataset);
-            for (var j = 0; j < data.length; j++) {
-                if (!regex.test(data[j])) {
-                        allEl[i].style.display = 'none'
-                } else {
-                    allEl[i].style.display = 'block'
-                }
+        $('.app_inner').empty();
+        for(i = 0; i < (datas.length); i++) {
+            var data = datas
+            var img = data[i].img
+            var modelUper = data[i].model;
+            var plate = data[i].plate.replace(' ','');
+            var cats = data[i].brand.replace(' ','');
+            var name = data[i].name.replace(' ','');
+            var text = ''+modelUper.toLowerCase()+''+plate.toLowerCase()+''+cats.toLowerCase()+''+name.toLowerCase()+''
+            inGarageVehicle[i] = datas[i]
+            var regex = new RegExp('^(.*)'+val+'(.*)$');
+            if (regex.test(text)) {
+                $(".app_inner").append('<content class="datas" data-'+modelUper.toLowerCase()+''+plate.toLowerCase()+''+cats.toLowerCase()+''+name.toLowerCase()+'="'+modelUper+' '+data[i].plate+' '+data[i].brand+'"><label style="cursor:pointer;"><input false="" id="tab-'+ i +'" onclick="ShowVehicle('+i+')" name="buttons" type="radio"> <label for="tab-'+ i +'"> <div class="app_inner__tab"> <span id="spanshit">Category: '+ data[i].brand +'</span> <span id="spanshit2">Garage: '+ data[i].garage_id +'</span><h2 id="h2shit"> <i class="icon" style="right:100px;"><img style="height:20px;" src="img/wheel.png"></i> '+ data[i].name +' - Plate: '+ data[i].plate +' </h2> <div class="tab_left"> <i class="big icon"><img class="imageborder" onerror="this.src=`https://i.imgur.com/Jdz2ZMK.png`;" src="'+img+'"></i>   </div> <div class="tab_right"> <p>Fuel Level: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].fuel) +'%"></div> </div></p> <p>Body  Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].bodyhealth * 0.1) +'%"></div> </div></p> <p>Engine Health: <div class="w3-border"> <div class="w3-grey" style="height:5px;width:'+ (data[i].enginehealth * 0.1) +'%"></div> </div></p><div class="row" id="confirm"> <button class="confirm_out" style="background:#191b1f87" onclick="ShowConfirm()"> <i class="fad fa-garage-open"></i> Take Out </button> </div> </div> </div> </label></input></label></content>'); 
             }
+        }
+        if (val == '') {
+            OpenGarage(datas)
         }
     }

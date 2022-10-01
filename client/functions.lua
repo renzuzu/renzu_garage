@@ -217,6 +217,19 @@ function helidel(vehicle)
     DeleteEntity(vehicle)
 end
 
+function GetClosestVehicle(c,dist)
+	local closest = 0
+	for k,v in pairs(GetGamePool('CVehicle')) do
+		local dis = #(GetEntityCoords(v) - c)
+		if dis < dist 
+		    or dist == -1 then
+			closest = v
+			dist = dis
+		end
+	end
+	return closest, dist
+end
+
 function SpawnVehicleLocal(model, props)
     local ped = PlayerPedId()
 
@@ -1180,26 +1193,34 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                     if vehtable[v.garage_id] == nil then
                         vehtable[v.garage_id] = {}
                     end
-                    veh = 
-                    {
-                    brand = v.brand or 1.0,
-                    name = v.name or 1.0,
-                    brake = v.brake or 1.0,
-                    handling = v.handling or 1.0,
-                    topspeed = v.topspeed or 1.0,
-                    power = v.power or 1.0,
-                    torque = v.torque or 1.0,
-                    model = v.model,
-                    model2 = v.model2,
-                    img = v.img,
-                    plate = v.plate,
-                    --props = v.props,
-                    fuel = v.fuel or 100.0,
-                    bodyhealth = v.bodyhealth or 1000.0,
-                    enginehealth = v.enginehealth or 1000.0,
-                    garage_id = v.garage_id or 'A',
-                    impound = v.impound or 0,
-                    ingarage = v.ingarage or false
+                    if tostring(v.enginehealth) == "nan" or v.enginehealth == 'nan' or v.enginehealth == (tonumber('nan')) then
+                        v.enginehealth = 1000.0
+                    end
+                    if tostring(v.bodyhealth) == "nan" or v.bodyhealth == 'nan' or v.bodyhealth == (tonumber('nan')) then
+                        v.bodyhealth = 1000.0
+                    end
+                    if tostring(v.fuel) == "nan" or v.fuel == 'nan' or v.fuel == (tonumber('nan')) then
+                        v.fuel = 1000.0
+                    end
+                    local veh = {
+                        brand = v.brand or 1.0,
+                        name = v.name or 1.0,
+                        brake = v.brake or 1.0,
+                        handling = v.handling or 1.0,
+                        topspeed = v.topspeed or 1.0,
+                        power = v.power or 1.0,
+                        torque = v.torque or 1.0,
+                        model = v.model,
+                        model2 = v.model2,
+                        img = v.img,
+                        plate = v.plate,
+                        --props = v.props,
+                        fuel = v.fuel or 100.0,
+                        bodyhealth = v.bodyhealth or 1000.0,
+                        enginehealth = v.enginehealth or 1000.0,
+                        garage_id = v.garage_id or 'A',
+                        impound = v.impound or 0,
+                        ingarage = v.ingarage or false
                     }
                     table.insert(vehtable[v.garage_id], veh)
                 end
@@ -1747,9 +1768,9 @@ function DrawInteraction(i,v,reqdist,msg,event,server,var,disablemarker)
                 end
                 drawsleep = 1
                 dist = #(GetEntityCoords(ped) - coord)
-                if dist < reqdist[1] then ShowFloatingHelpNotification(msg, coord, disablemarker , i) end
+                if not Config.Oxlib and dist < reqdist[1] then ShowFloatingHelpNotification(msg, coord, disablemarker , i) end
                 if dist < reqdist[1] and IsControlJustReleased(1, 51) then
-                    ShowFloatingHelpNotification(msg, coord, disablemarker , i)
+                    --ShowFloatingHelpNotification(msg, coord, disablemarker , i)
                     if not server then
                         TriggerEvent(event,i,var)
                     elseif server then
@@ -1762,7 +1783,49 @@ function DrawInteraction(i,v,reqdist,msg,event,server,var,disablemarker)
             end
             ClearAllHelpMessages()
             markers[i] = false
+            return true
         end)
+    end
+end
+
+function DrawInteraction_(i,v,reqdist,msg,event,server,var,disablemarker)
+    local i = i
+    if not markers[i] and i ~= nil and not inGarage then
+        local ped = PlayerPedId()
+        local inveh = IsPedInAnyVehicle(ped)
+        --Citizen.CreateThread(function()
+            markers[i] = true
+            --local reqdist = reqdist[2]
+            print('unggoy',v)
+            local coord = v
+            local dist = #(GetEntityCoords(ped) - coord)
+            while dist < reqdist[2] and not cancel do
+                if inveh ~= IsPedInAnyVehicle(ped) then
+                    break
+                end
+                drawsleep = 1
+                dist = #(GetEntityCoords(ped) - coord)
+                --if dist < reqdist[1] then ShowFloatingHelpNotification(msg, coord, disablemarker , i) end
+                if dist < reqdist[1] and IsControlJustReleased(1, 51) then
+                    lib.hideTextUI()
+                    --ShowFloatingHelpNotification(msg, coord, disablemarker , i)
+                    if not server then
+                        TriggerEvent(event,i,var)
+                    elseif server then
+                        TriggerServerEvent(event,i,var)
+                    end
+                    Wait(1000)
+                    break
+                end
+                Wait(drawsleep)
+            end
+            ClearAllHelpMessages()
+            markers[i] = false
+            while inGarage do Wait(1) end
+            cancel = false
+            print("thread close")
+            return true
+        --end)
     end
 end
 

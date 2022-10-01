@@ -7,7 +7,18 @@
       /* font-weight: normal;
       font-style: normal; */
     }
+
+    #spanshit {
+      position:absolute;top:4px;left:8px;font-size:7px;color: #e2e2e2;;
+    }
+
+    #spanshit2 {
+      position:absolute;top:4px;right:5px;font-size:8px;color:#fefefe;
+    }
       
+    #h2shit {
+      font-size:11px !important;
+    }
       body {
           background-size: cover;
           -webkit-user-select: none;
@@ -743,7 +754,12 @@ left:10px !important;
 }
 .app_inner input[type=radio]:checked + label .app_inner__tab .tab_left .big {
 #left: 260px;top: -31px;opacity: 0.8;}
-.app_inner input[type=radio]:checked + label .app_inner__tab .tab_left .imageborder {background: rgb(224 229 234 / 67%);padding:2px;border-radius: 20px;margin-left:0.5vw;margin-bottom:-40px !important;}
+.app_inner input[type=radio]:checked + label .app_inner__tab .tab_left .imageborder 
+
+{background: rgb(224 229 234 / 67%);padding:2px;border-radius: 20px;margin-left:0.5vw;margin-bottom:-40px !important;
+
+  min-width: 120px;height: 70px;border-radius: 10px;max-width: 120px;border-color: #c7c7c7;padding:2px;background:#d2dce266;
+}
 
 .app_inner input[type=radio]:checked + label .app_inner__tab {
   /* background-color: rgb(0 0 0 / 78%); */
