@@ -182,6 +182,10 @@ AddEventHandler('entityCreated', function(entity)
                 ent.share = share
                 globalkeys[plate] = ent.share
                 GlobalState.Gshare = globalkeys
+                if Config.Ox_Inventory then
+                    local source = GetPlayerFromIdentifier(new_spawned[1][owner]).source
+                    GiveVehicleKey(plate,source)
+                end
                 --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
                 return
             end
