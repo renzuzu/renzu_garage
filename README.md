@@ -304,6 +304,16 @@ COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;
 ```
+# OX_INVENTORY item
+```
+	['keys'] = {
+		label = 'Vehicle Key',
+		weight = 0,
+		stack = false,
+		close = true,
+		description = 'Vehicle Key'
+	},
+```
 
 
 # FOLDER NAME
