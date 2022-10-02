@@ -1,8 +1,10 @@
-fx_version 'cerulean'
-games {'common'}
-ui_page 'html/index.html'
-lua54 'yes'
+fx_version   'cerulean'
+use_experimental_fxv2_oal 'yes'
+lua54        'yes'
+game         'gta5'
 use_fxv2_oal 'yes'
+
+ui_page 'html/index.html'
 
 shared_scripts {
 	'@ox_lib/init.lua',	
@@ -15,7 +17,7 @@ shared_scripts {
 server_scripts {
 	'@mysql-async/lib/MySQL.lua',
 	'framework/sv_wrapper.lua',
-	'server/server.lua'
+	'server/*.lua'
 }
 
 client_scripts {
@@ -23,6 +25,9 @@ client_scripts {
 	'client/*.lua'
 }
 
+dependencies {
+    '/onesync',
+}
 files {
 	'html/design.css',
 	'html/uikit.css',

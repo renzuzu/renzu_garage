@@ -1,17 +1,4 @@
-ESX = nil
-QBCore = nil
-vehicletable = 'owned_vehicles'
-vehiclemod = 'vehicle'
-owner = 'owner'
-stored = 'stored'
-garage__id = 'garage_id'
-type_ = 'type'
-users = 'users'
-identifier_ = 'identifier'
-RegisterServerCallBack_ = nil
-RegisterUsableItem = nil
-Initialized()
-
+-- MAIN SERVER GARAGE
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
 AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
     local src = source 
@@ -31,70 +18,16 @@ AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
             sharegarage = garageid
         end
     end
-    --local Owned_Vehicle = MySQL.Sync.fetchAll('SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner', {['@owner'] = xPlayer.identifier})
+    local Owned_Vehicle = {}
     if not public and sharegarage then
-        local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner AND '..garage__id..' = @garage_id', {['@owner'] = identifier, ['@garage_id'] = sharegarage})
-        TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Owned_Vehicle) or {},vehicles or {})
+        Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner AND '..garage__id..' = @garage_id', {['@owner'] = identifier, ['@garage_id'] = sharegarage})
     elseif not public then
-        local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner', {['@owner'] = identifier})
-        TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Owned_Vehicle) or {},vehicles or {})
+        Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner', {['@owner'] = identifier})
     elseif public then
-        local Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..garage__id..' = @garage_id', {['@garage_id'] = garageid})
-        TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Owned_Vehicle) or {},vehicles or {})
+        Owned_Vehicle = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..garage__id..' = @garage_id', {['@garage_id'] = garageid})
     end
+    TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Owned_Vehicle) or {},GlobalState.VehicleinDb or {})
 end)
-
-RegisterServerEvent('renzu_garage:GetVehiclesTableImpound')
-AddEventHandler('renzu_garage:GetVehiclesTableImpound', function()
-    local src = source  
-    local xPlayer = GetPlayerFromId(src)
-    local identifier = xPlayer.identifier
-    --local Impounds = MySQL.Sync.fetchAll('SELECT * FROM '..vehicletable..' WHERE impound = 1', {})
-    local q = 'SELECT * FROM '..vehicletable..' WHERE `'..stored..'` = 0 OR impound = 1'
-    if not ImpoundedLostVehicle then
-        q = 'SELECT * FROM '..vehicletable..' WHERE impound = 1'
-    end
-    local Impounds = MysqlGarage(Config.Mysql,'fetchAll',q, {})
-    TriggerClientEvent("renzu_garage:receive_vehicles", src , LuaBoolShitLogic(Impounds),vehicles)
-end)
-
-RegisterServerCallBack_('renzu_garage:getjobgarages',function(source, cb, job)
-    local garage = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM jobgarages WHERE `job` = @job', {['@job'] = job})
-    if garage and garage[1] then
-        cb(garage[1])
-    end
-    cb(false)
-end)
-
-RegisterServerCallBack_('renzu_garage:getowner',function(source, cb, identifier, plate, garage)
-    local data = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..users..' WHERE '..identifier_..' = @identifier', {
-		['@identifier'] = identifier
-	})
-    if impound_G[garage][plate] == nil then
-        -- create data from default
-        impound_G[garage][plate] = {fine = ImpoundPayment, reason = 'no specified', impounder = 'Renzuzu', duration = -1, date = os.time()}
-    end
-    local res = impound_G[garage][plate] ~= nil and impound_G[garage][plate] or {}
-    if Config.framework == 'QBCORE' then
-        local playerinfo = json.decode(data[1].charinfo)
-        local job = json.decode(data[1].job).label
-        data[1] = {
-            firstname = playerinfo.firstname,
-            lastname = playerinfo.lastname,
-            phone_number = playerinfo.phone,
-            job = job
-        }
-    end
-	cb(data,res)
-end)
-
-function bool_to_number(value)
-    if value then
-    return tonumber(1)
-    else
-    return tonumber(0)
-    end
-end
 
 RegisterServerCallBack_('renzu_garage:returnpayment', function (source, cb)
     local source = source
@@ -104,200 +37,6 @@ RegisterServerCallBack_('renzu_garage:returnpayment', function (source, cb)
         cb(true)
     else
         cb(false)
-    end
-end)
-
-local garageshare = {}
-
-function DoiOwnthis(xPlayer,id)
-    local owned = false
-    for k,v in pairs(current_routing) do
-        if tonumber(v) == tonumber(xPlayer.source) and GetPlayerRoutingBucket(xPlayer.source) == tonumber(k) then
-            owned = true
-            success = true
-        end
-    end
-    return owned
-end
-
-RegisterServerCallBack_('renzu_garage:getinventory', function (source, cb, id, share)
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    local identifier = xPlayer.identifier
-    local share = share
-    local id = id
-    if share and not DoiOwnthis(xPlayer,id) then
-        identifier = share.owner
-    end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT inventory FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-        ['@identifier'] = identifier,
-        ['@garage'] = id
-    })
-    local inventory = {}
-    if json.decode(result[1].inventory) then
-        inventory = json.decode(result[1].inventory) or {}
-    end
-    id = nil
-    share = nil
-    cb(inventory)
-end)
-
-RegisterServerCallBack_('renzu_garage:itemavailable', function (source, cb, id, item, share)
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    local identifier = xPlayer.identifier
-    local share = share
-    local id = id
-    local item = item
-    if share and not DoiOwnthis(xPlayer,id) then
-        identifier = share.owner
-    end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT inventory FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-        ['@identifier'] = identifier,
-        ['@garage'] = id
-    })
-    local inventory = false
-    if json.decode(result[1].inventory) then
-        inventory = json.decode(result[1].inventory) or {}
-        if inventory[item] ~= nil and inventory[item] > 0 then
-            inventory[item] = inventory[item] - 1
-            MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET inventory = @inventory WHERE garage = @garage and identifier = @identifier', {
-                ['@inventory'] = json.encode(inventory),
-                ['@garage'] = id,
-                ['@identifier'] = identifier,
-            })
-            cb(true)
-        else
-            cb(false)
-        end
-    else
-        cb(false)
-    end
-    share = nil
-    id = nil
-    item = nil
-end)
-
-RegisterServerEvent('renzu_garage:storemod')
-AddEventHandler('renzu_garage:storemod', function(id,mod,lvl,newprop,share,save,savepartsonly)
-    local newprop = newprop
-	local savepartsonly = savepartsonly
-    local src = source  
-    local xPlayer = GetPlayerFromId(src)
-    local id = id
-    local identifier = xPlayer.identifier
-	local save = save
-	local share = share
-    if share and not DoiOwnthis(xPlayer,id) then
-        identifier = share.owner
-    end
-    local success = false
-    local vehicles = nil
-    if not savepartsonly then
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-            ['@identifier'] = identifier,
-            ['@garage'] = id
-        })
-        vehicles = json.decode(result[1].vehicles)
-        success = false
-        for k,v in pairs(vehicles) do
-            if v.vehicle == nil then v.taken = false end
-            local prop = v.vehicle
-            if v.taken and newprop.plate == prop.plate then
-                vehicles[k].vehicle = newprop
-                success = true
-                break
-            end
-        end
-    end
-    if success and not savepartsonly or savepartsonly then
-        if not savepartsonly then
-            MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored, '..garage__id..' = @garage_id, '..vehiclemod..' = @vehicle WHERE TRIM(UPPER(plate)) = @plate', {
-                ['@vehicle'] = json.encode(newprop),
-                ['@garage_id'] = 'private',
-                ['@plate'] = string.gsub(newprop.plate:upper(), '^%s*(.-)%s*$', '%1'),
-                ['@stored'] = 0
-            })
-        end
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT inventory FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-            ['@identifier'] = identifier,
-            ['@garage'] = id
-        })
-        local inventory = json.decode(result[1].inventory) or {}
-        if not save then
-            local modname = mod.name..'-'..lvl
-            if inventory[modname] == nil then
-                inventory[modname] = 1
-            else
-                inventory[modname] = inventory[modname] + 1
-            end
-        end
-        if savepartsonly then
-            MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET inventory = @inventory WHERE garage = @garage and identifier = @identifier', {
-                ['@inventory'] = json.encode(inventory),
-                ['@garage'] = id,
-                ['@identifier'] = identifier,
-            })
-        else
-            MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles, inventory = @inventory WHERE garage = @garage and identifier = @identifier', {
-                ['@vehicles'] = json.encode(vehicles),
-                ['@inventory'] = json.encode(inventory),
-                ['@garage'] = id,
-                ['@identifier'] = identifier,
-            })
-        end
-        newprop = {}
-        share = false
-        save = nil
-        savepartsonly = nil
-        Config.Notify( 'success', Message[63]..' ('..mod.name..')',xPlayer)
-    else
-        Config.Notify( 'error', Message[64],xPlayer)
-    end
-end)
-
-RegisterServerEvent('renzu_garage:buygarage')
-AddEventHandler('renzu_garage:buygarage', function(id,v)
-    local src = source  
-    local xPlayer = GetPlayerFromId(src)
-    local identifier = xPlayer.identifier
-    local cost = 10000
-    local canbuy = true
-    if string.find(id, 'garage_') then
-        local available = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
-            ['@garage'] = id
-        })
-        if available and available[1] then
-            canbuy = false
-        end
-    end
-    if canbuy then
-        if type(v) ~= 'table' then
-            local shellcost = 10000
-            local houseid = string.gsub(id, 'garage_', '')
-            for k,v in pairs(HousingGarages) do
-                if tonumber(houseid) == tonumber(k) then
-                    shellcost = HouseGarageCost[v.shell] or 10000
-                end
-            end
-            cost = shellcost
-        else
-            cost = v.cost
-        end
-        if xPlayer.getMoney() >= cost then
-            MysqlGarage(Config.Mysql,'execute','INSERT INTO private_garage (identifier, garage, vehicles) VALUES (@identifier, @garage, @vehicles)', {
-                ['@identifier']   = xPlayer.identifier,
-                ['@garage']   = id,
-                ['@vehicles'] = '[]'
-            })
-            xPlayer.removeMoney(tonumber(cost))
-            Config.Notify('success', ''..Message[65]..' '..id..'',xPlayer)
-            local housingtemp = GlobalState.HousingGarages or {}
-            housingtemp[id] = xPlayer.identifier
-            GlobalState.HousingGarages = housingtemp
-        else
-            Config.Notify( 'error', Message[66],xPlayer)
-        end
     end
 end)
 
@@ -315,367 +54,6 @@ function deepcopy(orig)
     end
     return copy
 end
-
-RegisterServerEvent('renzu_garage:storeprivate')
-AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
-    local src = source  
-    local xPlayer = GetPlayerFromId(src)
-    local identifier = xPlayer.identifier
-    if not private_garage[id] then
-        local shelltype = shell or 'small'
-        local houseid = string.gsub(id, 'garage_', '')
-        for k,v in pairs(HousingGarages) do
-            if tonumber(houseid) == tonumber(k) then
-                shelltype = shell or v.shell
-            end
-        end
-        housegarage[id] = {shell = shelltype, id = id, housing = housing}
-        local owned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
-            ['@garage'] = id
-        })
-        if owned[1] and owned[1].identifier then
-            identifier = owned[1].identifier
-        end
-    end
-    local id = housegarage[id] ~= nil and housegarage[id].id or id
-    local prop = prop
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
-        ['@owner'] = xPlayer.identifier,
-        ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1')
-    })
-    if not Config.Allowednotowned and result[1] == nil then Config.Notify( 'error', Message[69], xPlayer) return end
-    local garage = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-        ['@identifier'] = identifier,
-        ['@garage'] = id
-    })
-    local vehiclesgarage = {}
-    vehiclesgarage = json.decode(garage[1].vehicles) or {}
-    local success = false
-    local newgarage = true
-    for k,v in pairs(vehiclesgarage) do
-        newgarage = false
-        if v.vehicle == nil then v.taken = false end
-        if not v.taken then
-            v.taken = true
-            v.vehicle = prop
-            success = true
-            break
-        end
-    end
-    if newgarage then
-        local shell = id
-        if housegarage[id] ~= nil then
-            shell = housegarage[id].shell
-        end
-        local pgarage = deepcopy(private_garage[shell].park)
-        for k,v in pairs(pgarage) do
-            vehiclesgarage[k] = v
-            if v.vehicle == nil then vehiclesgarage[k].taken = false end
-            if not vehiclesgarage[k].taken and k == #pgarage then
-                vehiclesgarage[k].taken = true
-                vehiclesgarage[k].vehicle = prop
-                break
-            end
-        end
-    end
-    if success and not newgarage or newgarage then
-        MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored, '..garage__id..' = @garage_id, '..vehiclemod..' = @vehicle WHERE TRIM(UPPER(plate)) = @plate', {
-            ['@vehicle'] = json.encode(prop),
-            ['@garage_id'] = 'private',
-            ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),
-            ['@stored'] = 0
-        })
-        MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles WHERE garage = @garage and identifier = @identifier', {
-            ['@vehicles'] = json.encode(vehiclesgarage),
-            ['@garage'] = id,
-            ['@identifier'] = identifier,
-        })
-        Config.Notify( 'success', Message[67], xPlayer)
-        vehiclesgarage = {}
-        pgarage = {}
-    else
-        Config.Notify( 'error', Message[68], xPlayer)
-    end
-end)
-
-RegisterServerEvent('renzu_garage:gotohousegarage')
-AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
-    id,v,share,houseid,housing = table.unpack(var)
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    local identifier = xPlayer.identifier
-    if share and not DoiOwnthis(xPlayer,houseid) then
-        identifier = v.owner or xPlayer.identifier
-    end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
-        ['@garage'] = houseid
-    })
-    if not result[1] then
-        MysqlGarage(Config.Mysql,'execute','INSERT INTO private_garage (identifier, garage, vehicles) VALUES (@identifier, @garage, @vehicles)', {
-            ['@identifier']   = xPlayer.identifier,
-            ['@garage']   = houseid,
-            ['@vehicles'] = '[]'
-        })
-        result = {identifier = xPlayer.identifier, garage = houseid, vehicles = '[]'}
-    end
-    local routing = 0
-    local haveworld = false
-    for k,v in pairs(current_routing) do
-        if tonumber(v) == tonumber(source) then
-            haveworld = true
-            routing = tonumber(k)
-        end
-    end
-    if not haveworld then
-        default_routing[source] = GetPlayerRoutingBucket(source)
-    end
-    if not share and not haveworld then
-        for route = default_routing[source]+100, 65000 do
-            routing = route
-            if current_routing[route] == nil then
-                break
-            end
-        end
-    elseif share and v and v.route then
-        routing = v.route
-    end
-    garagehouseid = houseid:gsub('garage_','')
-    SetPlayerRoutingBucket(source,tonumber(garagehouseid) or routing)
-    if not share and not haveworld then
-        current_routing[routing] = source
-    end
-    Wait(1000)
-    lastgarage[source] = houseid
-	local vehicle_ = {}
-	for k,v in pairs(json.decode(result[1] and result[1].vehicles or '[]')) do
-		vehicle_[k] = v
-	end
-    housegarage[houseid] = {shell = id, id = houseid, housing = housing}
-    TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],houseid, vehicle_,housegarage[houseid])
-    result = {}
-    vehicle_ = {}
-end)
-
-RegisterServerEvent('renzu_garage:gotogarage')
-AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    local identifier = xPlayer.identifier
-    if share and not DoiOwnthis(xPlayer,id) then
-        identifier = v.owner or xPlayer.identifier
-    end
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE `identifier` = @identifier and garage = @garage', {
-        ['@identifier'] = identifier,
-        ['@garage'] = id
-    })
-    local routing = 0
-    local haveworld = false
-    for k,v in pairs(current_routing) do
-        if tonumber(v) == tonumber(source) then
-            haveworld = true
-            routing = tonumber(k)
-        end
-    end
-    if not haveworld then
-        default_routing[source] = GetPlayerRoutingBucket(source)
-    end
-    if not share and not haveworld then
-        for route = default_routing[source]+100, 65000 do
-            routing = route
-            if current_routing[route] == nil then
-                break
-            end
-        end
-    elseif share and v and v.route and not DoiOwnthis(xPlayer,id) then
-        routing = v.route or routing
-    end
-    SetPlayerRoutingBucket(source,routing)
-    if not share and not haveworld then
-        current_routing[routing] = source
-    end
-    Wait(1000)
-    lastgarage[source] = id
-	local vehicle_ = {}
-    local private_cars = result and result[1] and result[1].vehicles or '[]'
-    local cars = json.decode(private_cars) or {}
-	for k,v in pairs(cars) do
-		vehicle_[k] = v
-	end
-    TriggerClientEvent('renzu_garage:ingarage',source, result[1],private_garage[id],id, vehicle_)
-
-end)
-
-RegisterServerEvent('renzu_garage:exitgarage')
-AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    local id = id
-    local identifier = xPlayer.identifier
-    if not private_garage[id] then -- housing garages
-        local owned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE garage = @garage', {
-            ['@garage'] = id
-        })
-        if owned[1] and owned[1].identifier then
-            identifier = owned[1].identifier
-        end
-    end
-    if not choose then
-        --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
-        TriggerClientEvent('renzu_garage:exitgarage',source, t, true)
-        Wait(1000)
-        SetPlayerRoutingBucket(source,default_routing[source])
-        --current_routing[default_routing[source]] = nil
-    else
-        if share and not DoiOwnthis(xPlayer,id) then
-            identifier = share.owner
-        end
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-            ['@identifier'] = identifier,
-            ['@garage'] = id
-        })
-        local vehicles = json.decode(result[1].vehicles)
-        local success = false
-        for k,v in pairs(vehicles) do
-            if v.vehicle == nil then v.taken = false end
-            if v.taken and v.vehicle ~= nil and v.vehicle.plate == prop.plate then
-                v.taken = false
-                v.vehicle = nil
-                success = true
-                break
-            end
-        end
-        local result = MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored, '..garage__id..' = @garage_id, '..vehiclemod..' = @vehicle WHERE TRIM(UPPER(plate)) = @plate', {
-            ['@vehicle'] = json.encode(prop),
-            ['@garage_id'] = 'A',
-            ['@plate'] = string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),
-            ['@stored'] = 0
-        })
-        local result = MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles WHERE garage = @garage and identifier = @identifier', {
-            ['@vehicles'] = json.encode(vehicles),
-            ['@garage'] = id,
-            ['@identifier'] = identifier,
-        })
-        Config.Notify('success', Message[70], xPlayer)
-        --SetEntityCoords(GetPlayerPed(source),table.buycoords.x,table.buycoords.y,table.buycoords.z,true)
-        TriggerClientEvent('renzu_garage:exitgarage',source, t, true)
-        Wait(500)
-        --current_routing[default_routing[source]] = nil
-        TriggerClientEvent('renzu_garage:choose',source,prop,t)
-		Wait(2000)
-		SetPlayerRoutingBucket(source,default_routing[source])
-        TriggerClientEvent('renzu_garage:syncstate',-1,string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),source)
-        t = {}
-        vehicles = {}
-        result = {}
-    end
-    lastgarage[source] = nil
-end)
-
-
-RegisterServerCallBack_('renzu_garage:isgarageowned', function (source, cb, id, v)
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    local id = id
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT identifier FROM private_garage WHERE identifier = @identifier and garage = @garage', {
-        ['@identifier'] = xPlayer.identifier,
-        ['@garage'] = id
-    })
-    local garage_share = {}
-    if result and result[1] ~= nil then
-        if garageshare[tonumber(source)] ~= nil then
-            garage_share = garageshare[tonumber(source)]
-        end
-        cb(true,garage_share)
-    else
-        if garageshare[tonumber(source)] ~= nil then
-            garage_share = garageshare[tonumber(source)]
-        end
-        cb(false,garage_share)
-    end
-end)
-
-RegisterCommand(Config.GiveAccessCommand, function(source, args, rawCommand)
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    if lastgarage[source] then
-        for k,v in pairs(current_routing) do
-            if v == source then
-                garageshare[tonumber(args[1])] = {}
-                garageshare[tonumber(args[1])].owner = xPlayer.identifier
-                garageshare[tonumber(args[1])].route = k
-                garageshare[tonumber(args[1])].garage = lastgarage[source]
-            end
-        end
-    else
-        Config.Notify('warning', Message[71], xPlayer)
-    end
-end)
-
-RegisterServerCallBack_('renzu_garage:parkingmeter', function (source, cb, coord, coord2,prop)
-    local src = source  
-    local xPlayer = GetPlayerFromId(src)
-    local identifier = xPlayer.identifier
-    local coord = coord
-    local coord2 = coord2
-    local plate = string.gsub(tostring(prop.plate), '^%s*(.-)%s*$', '%1'):upper()
-    if xPlayer.getMoney() >= Config.MeterPayment then
-        local canpark = true
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT coord FROM parking_meter', {})
-        if result then
-            for k,v in pairs(result) do
-                local c = json.decode(v.coord)
-                if v.coord ~= nil and #(vector3(c.x,c.y,c.z) - coord) < 7 then
-                    canpark = false
-                end
-            end
-        end
-        if canpark then
-            MysqlGarage(Config.Mysql,'execute','INSERT INTO parking_meter (identifier, coord, park_coord, vehicle, plate) VALUES (@identifier, @coord, @park_coord, @vehicle, @plate)', {
-                ['@identifier']   = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
-                ['@coord']   = json.encode(coord),
-                ['@park_coord']   = json.encode(coord2),
-                ['@vehicle'] = json.encode(prop),
-                ['@plate'] = prop.plate
-            })
-            xPlayer.removeMoney(Config.MeterPayment)
-            Config.Notify('success',Message[72], xPlayer)
-            Wait(300)
-            parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
-            Wait(200)
-            TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,prop.plate,parkmeter)
-            cb(true)
-        else
-            Config.Notify( 'error', Message[73], xPlayer)
-            cb(false)
-        end
-    else
-        Config.Notify('error', Message[74], xPlayer)
-        cb(false)
-    end
-end)
-
-RegisterServerEvent('renzu_garage:getparkmeter')
-AddEventHandler('renzu_garage:getparkmeter', function(plate,state,model)
-    if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    else
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    end
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    if xPlayer then
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter WHERE TRIM(UPPER(plate)) = @plate', {['@plate'] = plate})
-        if #result > 0 then
-            MysqlGarage(Config.Mysql,'execute','DELETE FROM parking_meter WHERE TRIM(UPPER(plate)) = @plate', {['@plate'] = plate})
-            Wait(300)
-            parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
-            Wait(200)
-            TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
-        else
-            xPlayer.showNotification("This Vehicle is not your property", 1, 0)
-        end
-    end
-end)
 
 RegisterServerCallBack_('renzu_garage:isvehicleingarage', function (source, cb, plate, id, ispolice, patrol)
     local source = source
@@ -754,178 +132,43 @@ RegisterServerCallBack_('renzu_garage:isvehicleingarage', function (source, cb, 
                     sharedvehicle = true
                 end
             end
+            if Config.Ox_Inventory then
+                GiveVehicleKey(plate,source)
+            end
             cb(stored,impound,garage_impound or false,impound_fee,sharedvehicle)
         end
     end
 end)
 
-RegisterServerCallBack_('renzu_garage:getgaragekeys', function (source, cb)
-    local xPlayer = GetPlayerFromId(source)
-    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
-        ['@identifier'] = xPlayer.identifier
-    })
-    local players = {}
-    for i=0, GetNumPlayerIndices()-1 do
-        local x = GetPlayerFromId(tonumber(GetPlayerFromIndex(i)))
-        if x.identifier ~= xPlayer.identifier then
-            table.insert(players,x)
+DoesPlayerHaveKey = function(plate,source,remove)
+    local haskey = false
+    local data = exports.ox_inventory:Search(source, 'slots', 'keys')
+    local gago = {}
+    for k,v in pairs(data) do
+        if v.metadata and string.gsub(tostring(v.metadata.plate), '^%s*(.-)%s*$', '%1'):upper() == string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper() then
+            haskey = plate
+            if remove then
+                exports.ox_inventory:RemoveItem(source, 'keys', 1, nil, v.slot)
+            end
+            break
         end
     end
-    local keys = result and result[1] ~= nil and json.decode(result[1].keys) or false
-    cb(keys,players)
-end)
+    return haskey
+end
 
-RegisterNetEvent('renzu_garage:updategaragekeys')
-AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
-    if action == 'give' then
-        local xPlayer = GetPlayerFromIdentifier(data.playerslist)
-        local sender = GetPlayerFromId(source)
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
-            ['@identifier'] = xPlayer.identifier
-        })
-        
-        if result[1] then
-            local keys = json.decode(result[1].keys) or {}
-            local existkey = false
-            for k,v in ipairs(keys) do
-                if v.identifier == sender.identifier then
-                    existkey = true
-                    local newgarage = true
-                    for k,garage in pairs(v.garages or {}) do
-                        if garage == data.garages then
-                            newgarage = false
-                        end
-                    end
-                    if newgarage then
-                        table.insert(v.garages, data.garages)
-                    end
-                end
-            end
-            if not existkey then
-                table.insert(keys, {identifier = sender.identifier, name = sender.name, garages = {data.garages}})
-            end
-            MysqlGarage(Config.Mysql,'execute','UPDATE garagekeys SET `keys` = @keys WHERE identifier = @identifier', {
-                ['@keys'] = json.encode(keys),
-                ['@identifier'] = xPlayer.identifier,
-            })
-        else
-            result = {}
-            table.insert(result, {identifier = sender.identifier, name = sender.name, garages = {data.garages}})
-            MysqlGarage(Config.Mysql,'execute','INSERT INTO garagekeys (identifier, `keys`) VALUES (@identifier, @keys)', {
-                ['@identifier']   = xPlayer.identifier,
-                ['@keys']   = json.encode(result),
-            })
-        end
-        Config.Notify('success', 'You receive a Garage Key from '..sender.name,xPlayer)
-    elseif action == 'del' then
-        local xPlayer = GetPlayerFromId(source)
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
-            ['@identifier'] = xPlayer.identifier
-        })
-        local keys = json.decode(result[1] ~= nil and result[1].keys or '[]') or {}
-        for k,v in pairs(keys) do
-            if v.identifier == data then
-                keys[k] = nil
-            end
-        end
-        MysqlGarage(Config.Mysql,'execute','UPDATE garagekeys SET `keys` = @keys WHERE identifier = @identifier', {
-            ['@keys'] = json.encode(keys),
-            ['@identifier'] = xPlayer.identifier,
-        })
+GiveVehicleKey = function(plate,source)
+    local name = GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')] and GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')].name or plate
+    local metadata = {
+        description = plate..' Vehicle Key',
+        image = 'keys',
+        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1'),
+        label = name..' Vehicle Key'
+    }
+    if not DoesPlayerHaveKey(plate,source) then
+        exports.ox_inventory:AddItem(source,'keys',1,metadata,false, function(success, reason)
+        end)
     end
-end)
-
-RegisterServerEvent('renzu_garage:GetParkedVehicles')
-AddEventHandler('renzu_garage:GetParkedVehicles', function()
-    TriggerClientEvent('renzu_garage:update_parked',source,parkedvehicles, false, parkmeter)
-end)
-
-RegisterServerEvent('renzu_garage:park')
-AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props,data)
-    if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    else
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    end
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    if xPlayer and xPlayer.getMoney() >= data.fee then
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
-            ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
-            ['@plate'] = plate
-        })
-        if #result > 0 then
-            if result[1][vehiclemod] ~= nil then
-                local veh = json.decode(result[1][vehiclemod])
-                if veh.model == model then
-                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored, '..garage__id..' = @garage_id, '..vehiclemod..' = @vehicle , park_coord = @park_coord, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate and '..owner..' = @owner', {
-                        ['@vehicle'] = json.encode(props),
-                        ['@garage_id'] = 'PARKED',
-                        ['@plate'] = plate:upper(),
-                        ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier,
-                        ['@stored'] = 0,
-                        ['@park_coord'] = json.encode(coord),
-                        ['@isparked'] = state
-                    })
-                    Wait(800)
-                    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE isparked = 1', {}) or {}
-                    parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
-                    Wait(200)
-                    TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles, false, parkmeter)
-                    xPlayer.removeMoney(data.fee)
-                else
-                    print('exploiting')
-                end
-            end
-        else
-            xPlayer.showNotification(Message[77], 1, 0)
-        end
-    else
-        Config.Notify('warning','Not Enough Money to pay parking fee', xPlayer)
-    end
-end)
-
-RegisterServerEvent('renzu_garage:unpark')
-AddEventHandler('renzu_garage:unpark', function(plate,state,model)
-    if not Config.PlateSpace then
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    else
-        plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
-    end
-    local source = source
-    local xPlayer = GetPlayerFromId(source)
-    if xPlayer then
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
-            ['@plate'] = plate
-        })
-        if #result > 0 then
-  
-            if result[1][vehiclemod] ~= nil then
-                local veh = json.decode(result[1][vehiclemod])
-  
-                if veh.model == model or true then
-                    local result = MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored, '..garage__id..' = @garage_id, '..vehiclemod..' = @vehicle , park_coord = @park_coord, isparked = @isparked WHERE TRIM(UPPER(plate)) = @plate', {
-                        ['vehicle'] = result[1][vehiclemod],
-                        ['@garage_id'] = 'A',
-                        ['@plate'] = plate:upper(),
-                        ['@stored'] = 0,
-                        ['@park_coord'] = json.encode(coord),
-                        ['@isparked'] = 0
-                    })
-                    Wait(300)
-                    parkedvehicles = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE isparked = 1', {}) or {}
-                    Wait(200)
-                    parkmeter = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM parking_meter', {}) or {}
-                    TriggerClientEvent('renzu_garage:update_parked',-1,parkedvehicles,plate:upper(),parkmeter)
-                else
-                    print('exploiting')
-                end
-            end
-        else
-            xPlayer.showNotification(Message[77], 1, 0)
-        end
-    end
-end)
+end
 
 RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,state,garage_id,model,props,impound_cdata, public)
     if not Config.PlateSpace then
@@ -938,7 +181,9 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
     local source = source
     local xPlayer = GetPlayerFromId(source)
     local ply = Player(source).state
-    local identifier = ply.garagekey or globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or xPlayer.identifier
+    local identifier = ply.garagekey or globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] 
+    or GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')] and GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')].owner
+    or xPlayer.identifier
     if public then
         local r = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
             ['@plate'] = plate
@@ -995,6 +240,9 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                     end
                     if state == 1 then
                         Config.Notify( 'success',Message[78], xPlayer)
+                        if Config.Ox_Inventory then
+                            DoesPlayerHaveKey(plate,source,true)
+                        end
                     else
                         Config.Notify( 'success', Message[79], xPlayer)
                     end
@@ -1154,156 +402,6 @@ AddEventHandler('renzu_garage:SetPropState', function(data)
     GlobalState.VehiclesState = State
 end)
 
-RegisterServerEvent('statebugupdate') -- this will be removed once syncing of statebug from client is almost instant
-AddEventHandler('statebugupdate', function(name,value,net)
-    local vehicle = NetworkGetEntityFromNetworkId(net)
-    local ent = Entity(vehicle).state
-    ent[name] = value
-    if name == 'unlock' then
-        local val = 1
-        if not value then
-            val = 2
-        end
-        SetVehicleDoorsLocked(vehicle,tonumber(val))
-    end
-    if name == 'share' then
-        local plate = string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1')
-        local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys WHERE `plate` = @plate', {
-            ['@plate'] = plate
-        })
-        if result[1] then
-            MysqlGarage(Config.Mysql,'execute','UPDATE vehiclekeys SET `keys` = @keys WHERE `plate` = @plate', {
-                ['@keys'] = json.encode(ent.share),
-                ['@plate'] = plate,
-            })
-        else
-            MysqlGarage(Config.Mysql,'execute','INSERT INTO vehiclekeys (`plate`,`keys`) VALUES (@plate,@keys)', {
-                ['@plate']   = plate,
-                ['@keys']   = json.encode(ent.share),
-            })
-        end
-        globalkeys[plate] = ent.share
-        GlobalState.Gshare = globalkeys
-    end
-end)
-
--- esx
-AddEventHandler('esx:onPlayerJoined', function(src, char, data)
-	local src = src
-    local xPlayer = GetPlayerFromId(src)
-    players[src] = xPlayer
-end)
-
-AddEventHandler('entityRemoved', function(entity) -- prevent Gstate getting big because of temporary vehicles
-    local plate = DoesEntityExist(entity) and string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1') or 'aso'
-    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 and GlobalState.GVehicles[plate] then
-        local tempvehicles = GlobalState.GVehicles
-        if tempvehicles[plate] and tempvehicles[plate].temp then
-            tempvehicles[plate] = nil
-            GlobalState.GVehicles = tempvehicles
-            local share = GlobalState.Gshare
-            if share[plate] then
-                share[plate] = nil
-                GlobalState.Gshare = share
-            end
-        end
-    end
-end)
-
-AddEventHandler('entityCreated', function(entity)
-    local entity = entity
-    local havekeys = false
-    Wait(1000)
-    if Config.GiveKeystoMissionEntity and DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if vehicle is created with player (missions) eg. trucker, deliveries etc.
-        local ped = GetPedInVehicleSeat(entity,-1) ~= 0 and GetPedInVehicleSeat(entity,-1) or GetPedInVehicleSeat(entity,1) -- server native says driver seat is 1 but in my test its -1 like the client
-        local o = NetworkGetEntityOwner(entity)
-        if GetPlayerPed(o) == ped or #(GetEntityCoords(GetPlayerPed(o)) - GetEntityCoords(entity)) < 80 then -- check if driver is the owner of entity or if entity is nearby to owner of entity
-            havekeys = true
-        end
-    end
-    Wait(1000)
-    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
-        local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
-        local ent = Entity(entity).state
-        ent.unlock = true
-        ent.hotwired = false
-        ent.havekeys = false
-        ent.share = {}
-        --globalkeys[plate] = ent.share
-        --GlobalState.Gshare = globalkeys
-        vehicleshop = false
-        local gvehicles = GlobalState.GVehicles
-        for k,v in pairs(Config.VehicleShopCoord) do -- weird logic but its optimized compare to old one
-            if #(GetEntityCoords(entity) - v) < 100 then
-                vehicleshop = true
-            end
-        end
-        if not gvehicles[plate] and vehicleshop then -- lets assume its newly purchased from any vehicle shop
-            local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
-            if new_spawned[1] then
-                local tempvehicles = gvehicles
-                tempvehicles[plate] = new_spawned[1]
-                GlobalState.GVehicles = tempvehicles
-                local share = {}
-                share[new_spawned[1][owner]] = new_spawned[1][owner]
-                ent.share = share
-                globalkeys[plate] = ent.share
-                GlobalState.Gshare = globalkeys
-                --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
-                return
-            end
-        elseif gvehicles[plate] then -- owned vehicles
-            local share = GlobalState.Gshare[plate] or {}
-            share[gvehicles[plate][owner]] = gvehicles[plate][owner]
-            ent.share = share
-            globalkeys[plate] = ent.share
-            GlobalState.Gshare = globalkeys
-            return
-        end
-        local plyid = NetworkGetEntityOwner(entity)
-        local xPlayer = players[plyid] or GetPlayerFromId(plyid)
-        if plyid and not gvehicles[plate] and DoesEntityExist(entity) then
-            for k,v in pairs(jobplates) do
-                if string.find(plate, k) then
-                    local share = {}
-                    if xPlayer then
-                        local tempvehicles = gvehicles
-                        tempvehicles[plate] = {temp = true, plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
-                        GlobalState.GVehicles = tempvehicles
-                        share[xPlayer.identifier] = xPlayer.identifier
-                        ent.share = share
-                        globalkeys[plate] = ent.share
-                        GlobalState.Gshare = globalkeys
-                        havekeys = false -- remove pending vehicle key sharing , already shared vehicle
-                        return
-                    end
-                end
-            end
-            local share = {}
-            if havekeys and DoesEntityExist(entity) then -- if vehicle is not owned and not job vehicles, we will create a temporary vehicle key sharing for the player to avoid using hotwire eg. while in truck deliveries etc... which is created like a local vehicle
-                local xPlayer = xPlayer
-                if xPlayer then
-                    local tempvehicles = gvehicles
-                    tempvehicles[plate] = {temp = true, plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
-                    GlobalState.GVehicles = tempvehicles
-                    share[xPlayer.identifier] = xPlayer.identifier
-                    ent.share = share
-                    globalkeys[plate] = ent.share
-                    GlobalState.Gshare = globalkeys
-                    --print(plate,'Newly Mission Vehicles Found..Adding to Key system')
-                end
-            end
-        elseif plyid and xPlayer and gvehicles[plate] and xPlayer.identifier ~= GlobalState.GVehicles[plate][owner] then
-            -- another extra checks for vehicle sharing, garage sharing, eg. player 1 dont owned vehicle and he can spawned it.
-            local share = ent.share or {}
-            share[xPlayer.identifier] = xPlayer.identifier
-            globalkeys[plate] = share
-            GlobalState.Gshare = globalkeys
-            --print(plate, 'Already Owned Vehicles Spawned by other identifier... giving keys to network entity owner')
-        end
-    end
-end)
-
 RegisterUsableItem(Config.LockpickItem, function(source)
     TriggerClientEvent('renzu_garage:lockpick', source)
 end)
@@ -1311,19 +409,10 @@ end)
 RegisterServerCallBack_('renzu_garage:renamevehicle', function (source, cb, plate, name)
     local xPlayer = GetPlayerFromId(source)
     local result = json.decode(GetResourceKvpString('vehiclenicks') or '[]') or {}
-    -- local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
-    --     ['@owner'] = xPlayer.identifier,
-    --     ['@plate'] = string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1')
-    -- })
     if result then
         name = name:gsub('[%p%c]', '')
-        -- MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `nickname` = @nickname WHERE TRIM(UPPER(plate)) = @plate', {
-        --     ['@plate'] = string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1'),
-        --     ['@nickname'] = name
-        -- })
         result[plate] = name
         SetResourceKvp('vehiclenicks', json.encode(result))
-        --print(name,'change nick name')
         Config.Notify( 'success', plate..' has been set a Nickname to '..name,xPlayer)
         GlobalState.VehicleNickNames = result
         cb(name)

@@ -41,17 +41,22 @@ end
 GarageZone = {}
 GarageZone.Spheres = {}
 GarageZone.__index = {}
+GarageZone.CheckZone = function(garage,f)
+	if GarageZone.Spheres[garage] then
+		inGarage = false
+		local job = GarageZone.Spheres[garage].job
+		GarageZone.Spheres[garage]:remove()
+		if job == nil or job == PlayerData.job.name then
+			f.check()
+		end
+	end
+end
 GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
 	if not Config.Oxlib then return end
 	local garage = data.name
 	function onEnter(self)
 		CreateThread(function() -- create thread to suport multi zones
-			local self = self
-			local garage = data.name
-			local coord = coord
-			local job = job
-			local dist = dist
-			local tid = tid
+			local self = self local garage = data.name local coord = coord local job = job local dist = dist local tid = tid
 			tid = id
 			TID(id)
 			local msg = '[E] - Open '
@@ -60,24 +65,10 @@ GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
 			else
 				msg = ''..Message[7]..' [E] '..data.name..''
 			end
-			lib.showTextUI(msg, {
-				position = "left-center",
-				icon = 'car',
-				style = {
-					borderRadius = 5,
-					backgroundColor = '#212121',
-					color = 'white'
-				}
-			})
+			OxlibTextUi(msg)
 			local close = DrawInteraction_(id,coord,{3,4},msg,'renzu_garage:opengaragemenu',false,data,false)
-			if GarageZone.Spheres[garage] then
-				inGarage = false
-				local job = GarageZone.Spheres[garage].job
-				GarageZone.Spheres[garage]:remove()
-				if job == nil or job == PlayerData.job.name then
-					GarageZone.PrivateAdd(coord,garage,dist,job,id,data)
-				end
-			end
+			local data = {check = function() return GarageZone.PrivateAdd(coord,garage,dist,job,id,data) end}
+			GarageZone.CheckZone(garage,data)
 			lib.hideTextUI()
 		end)
     end
@@ -85,14 +76,7 @@ GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
     function onExit(self)
         lib.hideTextUI()
     end
-    local sphere = lib.zones.sphere({
-        coords = coord,
-        radius = dist or 4,
-        debug = false,
-        inside = false,
-        onEnter = onEnter,
-        onExit = onExit
-    })
+    local sphere = lib.zones.sphere({ coords = coord, radius = dist or 4, debug = false, inside = false, onEnter = onEnter, onExit = onExit })
 	sphere.job = job
     GarageZone.Spheres[garage] = sphere
 end
@@ -104,11 +88,7 @@ GarageZone.RealParkAdd = function(coord,garage,dist,job)
 	local dist = dist or 4
     function onEnter(self)
 		CreateThread(function() -- create thread to suport multi zones
-			local self = self
-			local garage = garage
-			local coord = coord
-			local job = job
-			local dist = dist
+			local self = self local garage = garage local coord = coord local job = job local dist = dist local tid = tid
 			RealPark()
 		end)
     end
@@ -116,21 +96,38 @@ GarageZone.RealParkAdd = function(coord,garage,dist,job)
     function onExit(self)
         lib.hideTextUI()
     end
-    
-    function inside(self)
-    end
-    local sphere = lib.zones.sphere({
-        coords = coord,
-        radius = dist or 4,
-        debug = false,
-        inside = false,
-        onEnter = onEnter,
-        onExit = onExit
-    })
+
+    local sphere = lib.zones.sphere({ coords = coord, radius = dist or 4, debug = false, inside = false, onEnter = onEnter, onExit = onExit })
 	sphere.job = job
     GarageZone.Spheres[garage] = sphere
     return GarageZone.Spheres[garage]
 end
+
+GarageZone.AddZone = function(coord,garage,dist,job,id)
+	if not Config.Oxlib then return end
+    function onEnter(self)
+		CreateThread(function() -- create thread to suport multi zones
+			local self = self local garage = garage local coord = coord local job = job local dist = dist local tid = tid
+			tid = id
+			TID(id)
+			local msg = '[E] - Request Vehicle Keys'
+			OxlibTextUi(msg)
+			local close = DrawInteraction_(garage,coord,{dist,dist+1},msg,'requestvehkey',false,false,false)
+			local data = {check = function() return GarageZone.AddZone(coord,garage,dist,job,tid) end}
+			GarageZone.CheckZone(garage,data)
+			lib.hideTextUI()
+		end)
+    end
+    
+    function onExit(self)
+        lib.hideTextUI()
+    end
+    
+	local sphere = lib.zones.box({ coords = coord, size = vec3(1, 1, 1), rotation = 45, radius = dist or 4, debug = false, inside = false, onEnter = onEnter, onExit = onExit })
+    GarageZone.Spheres[garage] = sphere
+    return GarageZone.Spheres[garage]
+end
+
 GarageZone.Add = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
     local garage = garage
@@ -140,12 +137,7 @@ GarageZone.Add = function(coord,garage,dist,job,id)
 	local id = id
     function onEnter(self)
 		CreateThread(function() -- create thread to suport multi zones
-			local self = self
-			local garage = garage
-			local coord = coord
-			local job = job
-			local dist = dist
-			local tid = tid
+			local self = self local garage = garage local coord = coord local job = job local dist = dist local tid = tid
 			tid = id
 			TID(id)
 			local msg = '[E] - Open Garage'
@@ -154,24 +146,10 @@ GarageZone.Add = function(coord,garage,dist,job,id)
 			else
 				msg = ''..Message[7]..' [E] '..Message[2]..' '..garage..''
 			end
-			lib.showTextUI(msg, {
-				position = "left-center",
-				icon = 'car',
-				style = {
-					borderRadius = 5,
-					backgroundColor = '#212121',
-					color = 'white'
-				}
-			})
+			OxlibTextUi(msg)
 			local close = DrawInteraction_(garage,coord,{dist,dist+2},msg,'opengarage',false,false,false)
-			if GarageZone.Spheres[garage] then
-				inGarage = false
-				local job = GarageZone.Spheres[garage].job
-				GarageZone.Spheres[garage]:remove()
-				if job == nil or job == PlayerData.job.name then
-					GarageZone.Add(coord,garage,dist,job,tid)
-				end
-			end
+			local data = {check = function() return GarageZone.Add(coord,garage,dist,job,tid) end}
+			GarageZone.CheckZone(garage,data)
 			lib.hideTextUI()
 		end)
     end
@@ -182,16 +160,7 @@ GarageZone.Add = function(coord,garage,dist,job,id)
     
     function inside(self)
     end
-	local sphere = lib.zones.box({
-        coords = coord,
-		size = vec3(1, 1, 1),
-    	rotation = 45,
-        radius = dist or 4,
-        debug = false,
-        inside = false,
-        onEnter = onEnter,
-        onExit = onExit
-    })
+	local sphere = lib.zones.box({ coords = coord, size = vec3(1, 1, 1), rotation = 45, radius = dist or 4, debug = false, inside = false, onEnter = onEnter, onExit = onExit })
 	sphere.job = job
     GarageZone.Spheres[garage] = sphere
     return GarageZone.Spheres[garage]
@@ -209,6 +178,18 @@ RecreateGarageInfo = function()
 			end
 		end
 	end
+end
+
+OxlibTextUi = function(msg)
+	lib.showTextUI(msg, {
+		position = "left-center",
+		icon = 'car',
+		style = {
+			borderRadius = 5,
+			backgroundColor = '#212121',
+			color = 'white'
+		}
+	})
 end
 
 function Playerloaded()
@@ -269,7 +250,6 @@ function Playerloaded()
 			end
 		end)
 	end
-	while not PlayerData.job do Wait(100) end
 end
 
 function SetJob()
@@ -356,3 +336,7 @@ ShowNotification = function(msg)
 		TriggerEvent('QBCore:Notify', msg)
 	end
 end
+
+Framework()
+SetJob()
+Playerloaded()

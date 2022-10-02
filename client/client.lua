@@ -1,9 +1,7 @@
 -- Renzu Garage
 Citizen.CreateThread(function()
     Wait(1000)
-    Framework()
-	SetJob()
-	Playerloaded()
+    while PlayerData.job == nil do Wait(111) end
     coordcache = garagecoord
     for k,v in pairs(garagecoord) do -- create job garage
         if v.job ~= nil and jobgarages[v.garage] == nil then
@@ -55,6 +53,11 @@ Citizen.CreateThread(function()
     if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
         for k,v in pairs(helispawn[PlayerData.job.name]) do
             GarageZone.Add(vector3(v.coords.x,v.coords.y,v.coords.z),v.garage,5,PlayerData.job.name,v.garage)
+        end
+    end
+    if Config.Ox_Inventory and Config.Oxlib then
+        for k,v in pairs(Config.RequestDuplicateCoord) do
+            GarageZone.AddZone(vector3(v.x,v.y,v.z),'requestvehiclekeys',3,nil,'requestvehiclekeys')
         end
     end
 end)
@@ -332,10 +335,7 @@ end)
 RegisterNetEvent('renzu_garage:receive_vehicles')
 AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     fetchdone = false
-    OwnedVehicles = nil
-    Wait(100)
     OwnedVehicles = {}
-    tableVehicles = nil
     tableVehicles = tb
     local vehdata = vehdata
     vehiclesdb = vehdata
@@ -410,8 +410,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
             if Config.use_renzu_vehthumb and gstate[tostring(props.model)] then
                 img = gstate[tostring(props.model)]
             end
-            local VTable = 
-            {
+            local VTable = {
                 brand = GetVehicleClassnamemodel(tonumber(props.model)),
                 name = vehname:upper(),
                 brake = brake,
@@ -844,6 +843,7 @@ RegisterNUICallback(
             end
         end
         local veh = nil
+        SetPedConfigFlag(PlayerPedId(),429,false)
     TriggerServerCallback_("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
         if stored and impound == 0 or ispolice and string.find(garageid, "impound") or not Config.EnableReturnVehicle and impound ~= 1 or impound == 1 and not Config.EnableImpound then
             local tempcoord = {}

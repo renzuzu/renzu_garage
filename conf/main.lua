@@ -23,9 +23,19 @@ Config.BlipNamesStatic = true -- if true no more garage a garage b blip names fr
 -- VEHICLE IMAGES
 Config.use_renzu_vehthumb = true
 
-Config.Oxlib = true -- ox_lib http://google.com/
+Config.Oxlib = true -- ox_lib https://github.com/overextended/ox_lib, for menus, contextmenu notification and etc.. if this is disable, it will use renzu_notify and renzu_contextmenu
+Config.Ox_Inventory = true -- ox_inventory for vehicle keys as item https://github.com/overextended/ox_inventory if this is enable, vehiclekeys command will be disable as vehicle sharing is now item based
+-- OX INV and ox lib is in BETA for this resource. use it in your own accord its enable by default if resource is started.
+-- everytime you get a vehicle from garage you will receive a item key.
+-- everytime you store vehicle (only public and private) item key will be removed.
+-- item are added without the checks if slots is full.
+-- the item works on other players. can use keylocks, park (real park and parkmeter), store vehicle, unpark vehicle.
 Config.Renzu_jobs = false -- Job business Impound (impound only for now)
 if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
+    Config.Oxlib = false
+end
+if Config.Ox_Inventory and GetResourceState('ox_inventory') ~= 'started' then
+    Config.Ox_Inventory = false
     Config.Oxlib = false
 end
 Config.EnableImpound = true -- enable/disable impound
@@ -75,7 +85,9 @@ Config.LockParkedLocalVehiclesOnly = true -- if this is true and Config.LockAllL
 Config.EnableLockpick = true -- enable lock pick item and command function
 Config.EnableDuplicateKeys = true -- Carlock Purpose and to bypass hotwired
 Config.GiveKeystoMissionEntity = true -- important if you dont want to hotwire mission vehicle, eg. trucker, taxi, delivery vehicles. (this will give car lock too)
-
+Config.RequestDuplicateCoord = {
+    [1] = vec3(218.74,-811.37,30.65), --x , y, z -- where the player can request duplicate keys
+}
 --Hotwire
 Config.EnableHotwire = true -- enable hotwire if keys is not present in state
 Config.HotwireLevel = 5 -- how many pins to complete (renzu_lockgame) https://github.com/renzuzu/renzu_lockgame

@@ -228,6 +228,59 @@ window.addEventListener('message', function(event) {
         document.getElementById("vehiclekeys").style.display = 'block';
     }
 
+    if (event.data.type == "requestvehiclekey") {
+        var vehicles = event.data.data.vehicles
+        var playersnearby = event.data.data.players
+        var current = event.data.data.current
+        $("#vehiclelist").html('')
+        $("#playerslist").html('')
+        $("#formidvehiclekeys").html('')
+      var givekey = `<form method="post" id="new_post" name="new_post"  action="" class="wpcf7-form" enctype="mu ltipart/form-data">
+        <div class="form-body">
+          <div class="spacer-b30">
+          <div class="tagline"><span>Request a Vehicle Key Duplicate</span></div><!-- .tagline -->
+          </div>          
+          
+          <div class="section">
+            <label class="field select">
+                <select id="vehiclelist" name="vehiclelist">
+                    <option value="">Select Vehicle</option>
+                </select>
+                <i class="arrow double"></i>                    
+            </label>  
+        </div><!-- end section -->
+          
+        </div><!-- end .form-body section -->
+        <div class="form-footer">
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(255, 1, 1);" id="requestvehkey"> Request Vehicle Key </button>
+          <button type="reset" class="button" id="cancel_reqvehkeys"> Cancel </button>
+        </div><!-- end .form-footer section -->
+      </form>`
+      $("#formidvehiclekeys").append(givekey)
+        if (current) {
+            $("#vehiclelist").html('')
+            document.getElementById("dupe_vehkey").style.display = 'inline-block';
+            $("#vehiclelist").append(`<option value="`+current.plate+`">Current `+current.name+` [`+current.plate+`] Key</option>`)
+        }
+        for (const i in vehicles) {
+            $("#vehiclelist").append(`<option value="`+vehicles[i].plate+`">`+vehicles[i].name+` [`+vehicles[i].plate+`] Key</option>`)
+        }
+        document.getElementById("requestvehkey").addEventListener("click", function(event){
+            var datagive = {}
+            for (const i in $( "form" ).serializeArray()) {
+                var data = $( "form" ).serializeArray()
+                datagive[data[i].name] = data[i].value
+            }
+            document.getElementById("requestvehiclekey").style.display = 'none';
+            $.post("https://renzu_garage/requestvehkey", JSON.stringify({ action: 'request', data: datagive}));
+        });
+        document.getElementById("cancel_reqvehkeys").addEventListener("click", function(event) {
+            document.getElementById("requestvehiclekey").style.display = 'none';
+            $.post("https://renzu_garage/requestvehkey", JSON.stringify({ garagekeysdata: 'cancel' }));
+        });
+        document.getElementById("requestvehiclekey").style.display = 'block';
+    }
+
     if (event.data.type == "garagekeys") {
         var garages = event.data.data.garages
         var mykeys = event.data.data.mykeys

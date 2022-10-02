@@ -46,15 +46,28 @@ function isVehicleUnlocked()
     local p = PlayerPedId()
     local mycoords = GetEntityCoords(p)
     local veh = nil
+    print('aso')
     if IsPedInAnyVehicle(p) then
         local v = GetVehiclePedIsIn(p)
         if GetPedInVehicleSeat(v, -1) == PlayerPedId() then
             local plate = GetVehicleNumberPlateText(v)
             plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
             local r = GetIsVehicleEngineRunning(v)
+            if Config.Ox_Inventory then
+                local ent = Entity(v).state
+                ent:set('havekeys', false, true)
+                SetPedConfigFlag(PlayerPedId(),429,false)
+                Wait(1)
+                print(ent.havekeys,'keys')
+                TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(v))
+                --TriggerServerEvent('renzu_garage:vehiclekeyhandler',plate,true)
+                --NetworkRequestControlOfEntity(v)
+                Wait(1000)
+                SetVehicleEngineOn(v,false,true,true)
+            end
             TaskLeaveVehicle(p,v,0)
             Wait(1000)
-            if r then
+            if r and not Config.Ox_Inventory then
                 SetVehicleEngineOn(v,true,true,false)
             end
             local props = GetVehicleProperties(v)
@@ -69,7 +82,6 @@ function isVehicleUnlocked()
         end
     end
     if not IsPedInAnyVehicle(p) and IsAnyVehicleNearPoint(mycoords.x,mycoords.y,mycoords.z,10.0) then
-        --print("ENTERING")
         veh = GetVehiclePedIsEntering(p)
         local c = 0
         while not veh or veh == 0 do
@@ -92,7 +104,12 @@ function isVehicleUnlocked()
                 plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
                 local ent = Entity(veh).state
                 local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
-                if not ent.havekeys then
+                if Config.Ox_Inventory and DoesPlayerHaveKey(plate) then
+                    ent:set('havekeys', true, true)
+                    TriggerServerEvent('statebugupdate','havekeys',true, VehToNet(veh))
+                    Wait(111)
+                end
+                if not ent.havekeys and not Config.Ox_Inventory then
                     ent.havekeys = owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] or false
                     if ent.hotwired and ent.havekeys then
                         ent.hotwired = false
@@ -106,7 +123,7 @@ function isVehicleUnlocked()
                         SetVehicleNeedsToBeHotwired(veh,false)
                         Wait(100)
                     end
-                elseif owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
+                elseif ent.havekeys or not Config.Ox_Inventory and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] == PlayerData.identifier or not Config.Ox_Inventory and ent.share ~= nil and ent.share[PlayerData.identifier] then
                     SetVehicleEngineOn(veh,false,true,false)
                     SetVehicleNeedsToBeHotwired(veh,false)
                     if ent.hotwired then
@@ -142,15 +159,30 @@ function isVehicleUnlocked()
                     end
                 end
                 sleep = 1
-                if not ent.havekeys then
-                    SetVehicleEngineOn(veh,false,true,true)
-                end
+                SetPedConfigFlag(PlayerPedId(),429,false)
                 if ent.unlock and not ent.havekeys then
                     local c = 0
-                    while not GetPedInVehicleSeat(veh,-1) == PlayerPedId() or c < 70 do SetVehicleEngineOn(veh,false,true,true) if GetPedInVehicleSeat(veh,-1) == PlayerPedId() then break end Wait(100) c = c + 1 end
+                    while not GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not IsPedInAnyVehicle(PlayerPedId()) or c < 70 do SetVehicleEngineOn(veh,false,true,true) if IsPedInAnyVehicle(PlayerPedId()) and GetPedInVehicleSeat(veh,-1) == PlayerPedId() then break end Wait(100) c = c + 1 end
+                end
+                if not ent.havekeys then
+                    SetVehicleEngineOn(veh,false,true,true)
+                    SetPedConfigFlag(PlayerPedId(),429,true)
+                    local vehkey = ent.havekeys
+                    while not vehkey and IsPedInAnyVehicle(PlayerPedId()) do
+                        local wait = 1000
+                        if GetPedInVehicleSeat(veh,-1) == PlayerPedId() then
+                            SetPedConfigFlag(PlayerPedId(),429,true)
+                            SetVehicleEngineOn(veh,false,true,true)
+                            wait = 0
+                        elseif GetIsVehicleEngineRunning(veh) then
+                            wait = 500
+                        end
+                        Wait(wait)
+                    end
                 end
                 Wait(100)
-                if Config.EnableHotwire and ent.unlock and not ent.havekeys and GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) then
+                local canhotwire = Config.Ox_Inventory and not ent.havekeys and not owned_vehicles[plate] or not Config.Ox_Inventory and not ent.havekeys
+                if Config.EnableHotwire and ent.unlock and canhotwire and GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) then
                     SetVehicleEngineOn(veh,false,true,true)
                     while GetPedInVehicleSeat(veh,-1) == PlayerPedId() and not GetIsVehicleEngineRunning(veh) do
                         ShowFloatingHelpNotification('[H] '..Message[52]..' <br> [F] to '..Message[53], GetEntityCoords(veh), true, 'hotwire')
@@ -249,27 +281,29 @@ function playanimation(animDict,name)
 	TaskPlayAnim(PlayerPedId(), animDict, name, 2.0, 2.0, -1, 47, 0, 0, 0, 0)
 end
 
-function Keyless()
-    local plate = nil
-    local vehiclesinarea = {}
-    -- ITERATE AND RETURN NEAREST OWNED VEHICLE
-    local mycoords = GetEntityCoords(PlayerPedId())
-    local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
-    for k,v in pairs(GetGamePool('CVehicle')) do
-        local p = GetVehicleNumberPlateText(v)
-        plate = string.gsub(p, '^%s*(.-)%s*$', '%1')
-        vehiclesinarea[plate] = {}
-        vehiclesinarea[plate].entity = v
-        vehiclesinarea[plate].plate = plate
-        vehiclesinarea[plate].distance = #(mycoords - GetEntityCoords(v, false))
-        vehiclesinarea[plate].owner = owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] or GlobalState.Gshare and GlobalState.Gshare[plate] or false
+
+DoesPlayerHaveKey = function(plate)
+    local haskey = false
+    local data = exports.ox_inventory:Search('slots', 'keys')
+    local gago = {}
+    if data then
+        for k,v in pairs(data) do
+            if v.metadata and v.metadata.plate == plate then
+                haskey = true
+                break
+            end
+        end
     end
-    local near = -1
-    local nearestveh = nil
-    local nearestplate = nil
-    for k,v in pairs(vehiclesinarea) do
+    return haskey
+end
+
+VehiclesinArea = function(data)
+    near = -1
+    nearestveh = nil
+    nearestplate = nil
+    nearestowner = nil
+    for k,v in pairs(data) do
         local ent = Entity(v.entity).state
-        --print(ent.share[PlayerData.identifier])
         if v.owner == PlayerData.identifier and near == -1  -- iterate 1st time checks if owned
         or near == -1 and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate 1st time check if shared
         or near > v.distance and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate distance checks and checked if shared
@@ -284,13 +318,38 @@ function Keyless()
             end
         end
     end
+    return near, nearestveh, nearestplate, nearestowner
+end
+
+function Keyless()
+    local plate = nil
+    local vehiclesinarea = {}
+    -- ITERATE AND RETURN NEAREST OWNED VEHICLE
+    local mycoords = GetEntityCoords(PlayerPedId())
+    local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
+    local ox = Config.Ox_Inventory
+    for k,v in pairs(GetGamePool('CVehicle')) do
+        local p = GetVehicleNumberPlateText(v)
+        plate = string.gsub(p, '^%s*(.-)%s*$', '%1')
+        vehiclesinarea[plate] = {}
+        vehiclesinarea[plate].entity = v
+        vehiclesinarea[plate].plate = plate
+        vehiclesinarea[plate].distance = #(mycoords - GetEntityCoords(v, false))
+        vehiclesinarea[plate].owner = not ox and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] or not ox and GlobalState.Gshare and GlobalState.Gshare[plate] 
+        or ox and DoesPlayerHaveKey(plate) and PlayerData.identifier or false
+    end
+    local near = -1
+    local nearestveh = nil
+    local nearestplate = nil
+    near, nearestveh, nearestplate, nearestowner = VehiclesinArea(vehiclesinarea)
     if not nearestveh then return end
     EnsureEntityStateBag(nearestveh)
     -- check nearest owned vehicle
     local ent = Entity(nearestveh).state
-    if owned_vehicles[nearestplate] and owned_vehicles[nearestplate][owner] == PlayerData.identifier -- player owned
-    or owned_vehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
-    or GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
+    if owned_vehicles[nearestplate] and owned_vehicles[nearestplate][owner] == PlayerData.identifier and not ox -- player owned
+    or ox and DoesPlayerHaveKey(nearestplate) -- ox inventory item keys 
+    or not oxy and owned_vehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
+    or not ox and GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
         ent.unlock = not ent.unlock
         PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)
         if not IsPedInAnyVehicle(PlayerPedId(), false) then 
@@ -317,7 +376,7 @@ function Keyless()
             SetVehicleEngineOn(nearestveh,false,true,false)
         end
         if ent.unlock then
-            ent.havekeys = true
+            --ent.havekeys = true
             ent:set('unlock', true, true)
             SetVehicleDoorsLocked(nearestveh,1)
             TriggerServerEvent('statebugupdate','unlock',true, VehToNet(nearestveh))
@@ -383,6 +442,7 @@ function HotWireVehicle(veh)
         local o = {
             dict = "anim@amb@clubhouse@tutorial@bkr_tut_ig3@",
             name = "machinic_loop_mechandplayer",
+            speed = 1,
             flag = 49,
         }
         local ret = exports.renzu_lockgame:CreateGame(Config.HotwireLevel,o,true)
@@ -433,6 +493,57 @@ end
 
 -- Vehicle Keys
 
+RegisterNUICallback("requestvehkey", function(data, cb)
+    SetNuiFocus(false,false)
+    vehiclekeysdata = data
+end)
+
+RegisterNetEvent('requestvehkey')
+AddEventHandler('requestvehkey', function()
+    TriggerServerCallback_("renzu_garage:getgaragekeys",function(sharedkeys,players)
+        if Config.GarageKeys and PlayerData.job ~= nil then
+            local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
+            local ped = PlayerPedId()
+            local coords = GetEntityCoords(ped)
+            local vehicles = {}
+            for k,v in pairs(owned_vehicles) do
+                vehicles[k] = {}
+                vehicles[k].plate = v.plate
+                vehicles[k].name = v.name
+            end
+            local p = GetVehicleNumberPlateText(GetVehiclePedIsIn(PlayerPedId()))
+            local plate = 'NULL'
+            if p then
+                plate = string.gsub(p, '^%s*(.-)%s*$', '%1')
+            end
+            SendNUIMessage(
+                {
+                    data = {vehicles = vehicles, players = players, current = Config.EnableDuplicateKeys and IsPedInAnyVehicle(PlayerPedId()) and vehicles[plate] or false},
+                    type = "requestvehiclekey"
+                }
+            )
+            SetNuiFocus(true, true)
+            while vehiclekeysdata == nil do Wait(100) end
+            if vehiclekeysdata.action == 'request' then
+                local owned = false
+                local vehicle = GetVehiclePedIsIn(PlayerPedId())
+                for k,v in pairs(owned_vehicles) do
+                    if vehiclekeysdata.data and string.gsub(v.plate, '^%s*(.-)%s*$', '%1') == string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1') and v[owner] == PlayerData.identifier then
+                        owned = true
+                        plate = string.gsub(vehiclekeysdata.data.vehiclelist, '^%s*(.-)%s*$', '%1')
+                        break
+                    end
+                end
+                if owned then
+                    TriggerServerEvent('renzu_garage:vehiclekeyhandler',plate,true)
+                    Config.Notify( 'success', "Duplicate Vehicle Key has been requested")
+                end
+            end
+            vehiclekeysdata = nil
+        end
+    end)
+end, false)
+
 RegisterNUICallback("receive_vehiclekeys", function(data, cb)
     SetNuiFocus(false,false)
     vehiclekeysdata = data
@@ -440,7 +551,7 @@ end)
 
 RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
     TriggerServerCallback_("renzu_garage:getgaragekeys",function(sharedkeys,players)
-        if Config.GarageKeys and PlayerData.job ~= nil then
+        if Config.GarageKeys and PlayerData.job ~= nil and not Config.Ox_Inventory then
             local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
             local ped = PlayerPedId()
             local coords = GetEntityCoords(ped)

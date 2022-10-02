@@ -17,7 +17,6 @@ function Park()
             if res then
                 veh = GetVehiclePedIsIn(PlayerPedId())
                 TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
-                print(json.encode(vehicle_prop.rgb),json.encode(vehicle_prop.rgb2))
                 Wait(2000)
                 v = GetVehiclePedIsIn(PlayerPedId(),true)
                 FreezeEntityPosition(v,true)
@@ -46,16 +45,7 @@ CreateThread(function()
         for k,v in pairs(parkmeter) do
             local parkcoord = json.decode(v.park_coord)
             local coord = GetEntityCoords(PlayerPedId())
-            --print(v[vehiclemod],v.vehicle)
             local vehicle = json.decode(v.vehicle)
-            --print(vehicle.rgb[1],vehicle.rgb['1'])
-            for k,v in pairs(vehicle) do
-                if k == 'rgb' then
-                    for k,v in pairs(v) do
-                        --print(k,v)
-                    end
-                end
-            end
             vehicle.plate = string.gsub(vehicle.plate, '^%s*(.-)%s*$', '%1')
             if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 50 and IsModelInCdimage(vehicle.model) then
                 if meter_cars[vehicle.plate] == nil then
@@ -93,9 +83,10 @@ CreateThread(function()
                     end)
                     SetVehicleDoorsLocked(meter_cars[vehicle.plate],2)
                 end
-                if #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and PlayerData.identifier == v.identifier -- originally owned
+                if Config.Ox_Inventory and #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and DoesPlayerHaveKey(vehicle.plate)
+                or #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and PlayerData.identifier == v.identifier -- originally owned
                 or #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and PlayerData.identifier ~= nil and GlobalState.Gshare and GlobalState.Gshare[vehicle.plate] and GlobalState.Gshare[vehicle.plate][PlayerData.identifier] and GlobalState.Gshare[vehicle.plate][PlayerData.identifier] then -- shared vehicle keys
-                    SetVehicleDoorsLocked(meter_cars[vehicle.plate],0)
+                    --SetVehicleDoorsLocked(meter_cars[vehicle.plate],0)
                     while #(coord - vector3(parkcoord.x,parkcoord.y,parkcoord.z)) < 3 and meter_cars[vehicle.plate] ~= nil do
                         coord = GetEntityCoords(PlayerPedId())
                         FreezeEntityPosition(meter_cars[vehicle.plate], false)
@@ -226,9 +217,10 @@ RealPark = function()
                             end)
                             SetVehicleDoorsLocked(spawned_cars[park.plate],2)
                         elseif spawned_cars[park.plate] and #(GetEntityCoords(PlayerPedId()) - vehicle_coord) < 5 then
-                            SetVehicleDoorsLocked(spawned_cars[park.plate],0)
+                            --SetVehicleDoorsLocked(spawned_cars[park.plate],0)
                             SetEntityCollision(spawned_cars[park.plate],true)
-                            if GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park[owner]
+                            if Config.Ox_Inventory and GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and DoesPlayerHaveKey(park.plate)
+                            or GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and PlayerData.identifier ~= nil and PlayerData.identifier == park[owner]
                             or GetVehiclePedIsIn(PlayerPedId()) == spawned_cars[park.plate] and GetVehicleDoorLockStatus(spawned_cars[park.plate]) ~= 2 and GlobalState.Gshare and GlobalState.Gshare[park.plate] and GlobalState.Gshare[park.plate][PlayerData.identifier] and GlobalState.Gshare[park.plate][PlayerData.identifier] then
                                 TriggerServerEvent("renzu_garage:unpark", park.plate, 0, tonumber(json.decode(park[vehiclemod]).model))
                                 Wait(100)

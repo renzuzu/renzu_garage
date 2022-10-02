@@ -13,6 +13,18 @@ housegarage = {}
 globalkeys = {}
 vehiclekeys = {}
 players = {}
+QBCore = nil
+vehicletable = 'owned_vehicles'
+vehiclemod = 'vehicle'
+owner = 'owner'
+stored = 'stored'
+garage__id = 'garage_id'
+type_ = 'type'
+users = 'users'
+identifier_ = 'identifier'
+RegisterServerCallBack_ = nil
+RegisterUsableItem = nil
+VehicleKeysData = {}
 function Initialized()
 	if Config.framework == 'ESX' then
 		ESX = exports['es_extended']:getSharedObject()
@@ -66,7 +78,7 @@ function Initialized()
 			vehicles_[GetHashKey(k)] = v
 		end
 		print("^2 vehicles ok ^7")
-		GlobalState.VehicleinDb = vehicles
+		GlobalState.VehicleinDb = vehicles_
 		if not GlobalState.VehiclesState then
 			GlobalState.VehiclesState = {}
 		end
@@ -392,3 +404,5 @@ LuaBoolShitLogic = function(val) -- tiny int vs int structure ( lua read int as 
     end
     return t
 end
+
+Initialized()

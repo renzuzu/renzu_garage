@@ -17,36 +17,40 @@ end
 RegisterNetEvent('renzu_garage:ingarage')
 AddEventHandler('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,housing)
     housingcustom = housing
-    DoScreenFadeOut(1)
+    DoScreenFadeOut(111)
+    Wait(111)
     SetEntityCoords(PlayerPedId(),garage.coords.x,garage.coords.y,garage.coords.z,true)
     SetEntityHeading(PlayerPedId(),garage.coords.w)
     Wait(1000)
-    DoScreenFadeIn(200)
+    DoScreenFadeIn(500)
     currentprivate = garage_id
     local t = json.decode(t ~= nil and t.vehicles or '[]')
-	Wait(500)
-    for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
-        vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
-    end
-    for k,v in pairs(vehicle_) do
-        if v.vehicle ~= nil and v.taken and vehicleinarea[v.vehicle.plate] == nil then
-			local ve = v.vehicle
-            local hash = tonumber(ve.model)
-            local count = 0
-            if not HasModelLoaded(hash) then
-                RequestModel(hash)
-                while not HasModelLoaded(hash) do
-                    RequestModel(hash)
-                    Citizen.Wait(10)
-                end
-            end
-            --local vehicle = CreateVehicle(hash,v.coord.x,v.coord.y,v.coord.z,v.coord.w,true,true)
-			-- SetEntityCollision(vehicle,false)
-			-- FreezeEntityPosition(vehicle, true)
-			Wait(10)
-			AntiDupe(vector3(v.coord.x,v.coord.y,v.coord.z),hash,v.coord.x,v.coord.y,v.coord.z,v.coord.w,v.vehicle)
+	Wait(1500)
+    CreateThread(function()
+        for k,vehicle in pairs(GetGamePool('CVehicle')) do -- unreliable
+            vehicleinarea[GetVehicleNumberPlateText(vehicle)] = true
         end
-    end
+        for k,v in pairs(vehicle_) do
+            if v.vehicle ~= nil and v.taken and vehicleinarea[v.vehicle.plate] == nil then
+                local ve = v.vehicle
+                local hash = tonumber(ve.model)
+                local count = 0
+                if not HasModelLoaded(hash) then
+                    RequestModel(hash)
+                    while not HasModelLoaded(hash) do
+                        RequestModel(hash)
+                        Citizen.Wait(10)
+                    end
+                end
+                --local vehicle = CreateVehicle(hash,v.coord.x,v.coord.y,v.coord.z,v.coord.w,true,true)
+                -- SetEntityCollision(vehicle,false)
+                -- FreezeEntityPosition(vehicle, true)
+                Wait(10)
+                AntiDupe(vector3(v.coord.x,v.coord.y,v.coord.z),hash,v.coord.x,v.coord.y,v.coord.z,v.coord.w,v.vehicle)
+            end
+        end
+        return
+    end)
     local garage = garage
     insidegarage = true
     CreateThread(function()
@@ -799,6 +803,7 @@ AddEventHandler('renzu_garage:choose', function(t,garage)
     SetVehicleBobo(vehicle)
     SetVehicleProp(vehicle, t)
     NetworkFadeInEntity(vehicle,1)
+    SetPedConfigFlag(PlayerPedId(),429,false)
     Wait(10)
     TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
     housingcustom = nil
