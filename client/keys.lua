@@ -282,6 +282,55 @@ function playanimation(animDict,name)
 end
 
 
+GetGarageKeys = function(id)
+    local options = {}
+    local menus = {}
+    local secondmenus = {}
+
+    local haskey = false
+    local data = exports.ox_inventory:Search('slots', 'keys')
+    local garage = promise:new()
+    table.insert(options,{
+        ['title'] = 'My Owned Garage',
+        ['arrow'] = true,
+        onSelect = function(args)
+            --garage = {identifier = PlayerData.identifier}
+            garage:resolve({identifier = PlayerData.identifier})
+        end,
+        ['description'] = 'Use my owned garage',
+    })
+    if data then
+        for k,v in pairs(data) do
+            if v.metadata and v.metadata.identifier and v.metadata.identifier ~= PlayerData.identifier and v.metadata.garage == id then
+                table.insert(options,{
+                    ['title'] = v.metadata.description,
+                    ['arrow'] = true,
+                    onSelect = function(args)
+                        garage:resolve(v.metadata)
+                    end,
+                    ['description'] = 'Choose this '..v.metadata.description,
+                })
+                haskey = true
+            end
+        end
+    end
+    if haskey then
+        lib.registerContext({
+            id = 'showgaragekeys',
+            title = 'Garage Keys',
+            onExit = function()
+                --garage = {identifier = PlayerData.identifier}
+                garage:resolve({identifier = PlayerData.identifier})
+            end,
+            options = options
+        })
+        lib.showContext('showgaragekeys')
+    else
+        garage:resolve({identifier = PlayerData.identifier})
+    end
+    return Citizen.Await(garage)
+end
+
 DoesPlayerHaveKey = function(plate)
     local haskey = false
     local data = exports.ox_inventory:Search('slots', 'keys')

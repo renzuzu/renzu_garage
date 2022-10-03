@@ -1,13 +1,13 @@
 -- MAIN SERVER GARAGE
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
-AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
+AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public,garagekey)
     local src = source 
     local xPlayer = GetPlayerFromId(src)
     players[src] = xPlayer.identifier
     local ply = Player(src).state
     local identifier = ply.garagekey or xPlayer.identifier
     local sharegarage = false
-    if not public and ply.garagekey and garageid and sharedgarage[xPlayer.identifier] and sharedgarage[xPlayer.identifier][ply.garagekey] then
+    if not Config.Ox_Inventory and not public and ply.garagekey and garageid and sharedgarage[xPlayer.identifier] and sharedgarage[xPlayer.identifier][ply.garagekey] then
         for k,v in pairs(sharedgarage[xPlayer.identifier][ply.garagekey]) do
             if garageid == v then
                 sharegarage = v
@@ -17,6 +17,9 @@ AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public)
             identifier = xPlayer.identifier
             sharegarage = garageid
         end
+    elseif Config.Ox_Inventory and garagekey and DoesPlayerHaveGarageKey(garageid,garagekey,source) then
+        identifier = garagekey.identifier
+        sharegarage = garagekey.garage
     end
     local Owned_Vehicle = {}
     if not public and sharegarage then
@@ -143,31 +146,18 @@ end)
 DoesPlayerHaveKey = function(plate,source,remove)
     local haskey = false
     local data = exports.ox_inventory:Search(source, 'slots', 'keys')
-    local gago = {}
-    for k,v in pairs(data) do
-        if v.metadata and string.gsub(tostring(v.metadata.plate), '^%s*(.-)%s*$', '%1'):upper() == string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper() then
-            haskey = plate
-            if remove then
-                exports.ox_inventory:RemoveItem(source, 'keys', 1, nil, v.slot)
+    if data then
+        for k,v in pairs(data) do
+            if v.metadata and string.gsub(tostring(v.metadata.plate), '^%s*(.-)%s*$', '%1'):upper() == string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper() then
+                haskey = plate
+                if remove then
+                    exports.ox_inventory:RemoveItem(source, 'keys', 1, nil, v.slot)
+                end
+                break
             end
-            break
         end
     end
     return haskey
-end
-
-GiveVehicleKey = function(plate,source)
-    local name = GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')] and GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')].name or plate
-    local metadata = {
-        description = plate..' Vehicle Key',
-        image = 'keys',
-        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1'),
-        label = name..' Vehicle Key'
-    }
-    if not DoesPlayerHaveKey(plate,source) then
-        exports.ox_inventory:AddItem(source,'keys',1,metadata,false, function(success, reason)
-        end)
-    end
 end
 
 RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,state,garage_id,model,props,impound_cdata, public)
@@ -326,6 +316,10 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                     end
                     if state == 1 then
                         Config.Notify( 'success', Message[80], xPlayer)
+                        Config.Notify( 'success',Message[78], xPlayer)
+                        if Config.Ox_Inventory then
+                            DoesPlayerHaveKey(plate,source,true)
+                        end
                     else
                         Config.Notify( 'success', Message[81],xPlayer)
                     end

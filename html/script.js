@@ -1036,6 +1036,7 @@ function GetVehicle(option) {
             case 'cancel':
                 break;
             case 'confirm':
+                $("#garage").fadeOut();
                 $.post('https://renzu_garage/flychopper', JSON.stringify(CurrentVehicle));
                 CurrentVehicle_ = CurrentVehicle
                 CurrentVehicle = {}
@@ -1048,6 +1049,7 @@ function GetVehicle(option) {
             case 'cancel':
                 break;
             case 'confirm':
+                $("#garage").fadeOut();
                 $.post('https://renzu_garage/GetVehicleFromGarage', JSON.stringify(CurrentVehicle));
                 CurrentVehicle_ = CurrentVehicle
                 CurrentVehicle = {}

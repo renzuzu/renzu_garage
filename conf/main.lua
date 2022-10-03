@@ -31,13 +31,6 @@ Config.Ox_Inventory = true -- ox_inventory for vehicle keys as item https://gith
 -- item are added without the checks if slots is full.
 -- the item works on other players. can use keylocks, park (real park and parkmeter), store vehicle, unpark vehicle.
 Config.Renzu_jobs = false -- Job business Impound (impound only for now)
-if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
-    Config.Oxlib = false
-end
-if Config.Ox_Inventory and GetResourceState('ox_inventory') ~= 'started' then
-    Config.Ox_Inventory = false
-    Config.Oxlib = false
-end
 Config.EnableImpound = true -- enable/disable impound
 Config.EnableHeliGarage = true -- enable/disable Helis
 Config.PlateSpace = true -- enable / disable plate spaces (compatibility with esx 1.1?)
@@ -116,7 +109,6 @@ Message = Locale[Config.Locale]
 Config.Renzu_notify = true -- if false we will use default framework notification
 Config.Notify = function(type,msg,xPlayer)
     if Config.Oxlib and not IsDuplicityVersion() then
-        print(type)
         lib.defaultNotify({
             title = 'Garage',
             description = msg,

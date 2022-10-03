@@ -1,4 +1,33 @@
 -- SERVER KEYS SYSTEM
+
+DoesPlayerHaveGarageKey = function(garage,garagekey,source)
+    local haskey = false
+    local data = exports.ox_inventory:Search(source, 'slots', 'keys')
+    if data then
+        for k,v in pairs(data) do
+            if v.metadata and v.metadata.garage == garage and v.metadata.identifier == garagekey.identifier then
+                haskey = true
+                break
+            end
+        end
+    end
+    return haskey
+end
+
+GiveVehicleKey = function(plate,source)
+    local name = GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')] and GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')].name or plate
+    local metadata = {
+        description = plate..' Vehicle Key',
+        image = 'keys',
+        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1'),
+        label = name..' Vehicle Key'
+    }
+    if not DoesPlayerHaveKey(plate,source) then
+        exports.ox_inventory:AddItem(source,'keys',1,metadata,false, function(success, reason)
+        end)
+    end
+end
+
 RegisterServerCallBack_('renzu_garage:getgaragekeys', function (source, cb)
     local xPlayer = GetPlayerFromId(source)
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
@@ -35,8 +64,18 @@ AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
             ['@identifier'] = xPlayer.identifier
         })
-        
-        if result[1] then
+        if Config.Ox_Inventory then
+            local name = data.garages
+            local metadata = {
+                description = xPlayer.name..' Garage '..data.garages..' Key ',
+                image = 'keys',
+                garage = data.garages,
+                identifier = sender.identifier,
+                label = name..' Garage Key'
+            }
+            exports.ox_inventory:AddItem(xPlayer.source,'keys',1,metadata,false, function(success, reason)
+            end)
+        elseif not Config.Ox_Inventory and result[1] then
             local keys = json.decode(result[1].keys) or {}
             local existkey = false
             for k,v in ipairs(keys) do
@@ -60,7 +99,7 @@ AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
                 ['@keys'] = json.encode(keys),
                 ['@identifier'] = xPlayer.identifier,
             })
-        else
+        elseif not Config.Ox_Inventory then
             result = {}
             table.insert(result, {identifier = sender.identifier, name = sender.name, garages = {data.garages}})
             MysqlGarage(Config.Mysql,'execute','INSERT INTO garagekeys (identifier, `keys`) VALUES (@identifier, @keys)', {
@@ -123,6 +162,7 @@ end)
 -- esx
 AddEventHandler('esx:onPlayerJoined', function(src, char, data)
 	local src = src
+    Wait(1000)
     local xPlayer = GetPlayerFromId(src)
     players[src] = xPlayer
 end)

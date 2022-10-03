@@ -2,6 +2,13 @@
 Citizen.CreateThread(function()
     Wait(1000)
     while PlayerData.job == nil do Wait(111) end
+    if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
+        Config.Oxlib = false
+    end
+    if Config.Ox_Inventory and GetResourceState('ox_inventory') ~= 'started' then
+        Config.Ox_Inventory = false
+        Config.Oxlib = false
+    end
     coordcache = garagecoord
     for k,v in pairs(garagecoord) do -- create job garage
         if v.job ~= nil and jobgarages[v.garage] == nil then
@@ -241,7 +248,14 @@ AddEventHandler('opengarage', function()
                     garageid = v.garage
                     tid = k
                     Config.Notify('info', Message[36])
-                    TriggerServerEvent("renzu_garage:GetVehiclesTable",garageid,v.garage_type == 'public' or false)
+                    local garagekey = nil
+                    if Config.Ox_Inventory then
+                        garagekey = GetGarageKeys(garageid)
+                        if garagekey and garagekey.identifier == PlayerData.identifier then
+                            garagekey = nil
+                        end
+                    end
+                    TriggerServerEvent("renzu_garage:GetVehiclesTable",garageid,v.garage_type == 'public' or false, garagekey)
                     fetchdone = false
                     garage_public = v.garage_type == 'public' or false
                     while not fetchdone do

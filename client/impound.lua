@@ -36,6 +36,7 @@ RegisterCommand('impound', function(source, args, rawCommand)
 end, false)
 
 function OpenImpound(garageid)
+    local garageid = garageid
     inGarage = true
     local ped = PlayerPedId()
     while not fetchdone do
@@ -76,7 +77,7 @@ function OpenImpound(garageid)
         for k,v2 in pairs(OwnedVehicles) do
             for k2,v in pairs(v2) do
                 if string.find(v.type, "car") then v.type = 'car' end
-                if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice 
+                if v.garage_id ~= 'private' and not nearbyvehicles[plate] and v.impound and ispolice 
                     or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
                     v.brand = v.brand:upper()
                     if v.stored == 1 then
@@ -126,7 +127,7 @@ function OpenImpound(garageid)
                 v.garage_id = impoundcoord[1].garage
             end
             local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
-            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and v.impound and ispolice 
+            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and v.impound and ispolice 
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
                 if cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() or 'police' ~= PlayerData.job.name then
