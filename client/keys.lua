@@ -46,7 +46,6 @@ function isVehicleUnlocked()
     local p = PlayerPedId()
     local mycoords = GetEntityCoords(p)
     local veh = nil
-    print('aso')
     if IsPedInAnyVehicle(p) then
         local v = GetVehiclePedIsIn(p)
         if GetPedInVehicleSeat(v, -1) == PlayerPedId() then
@@ -126,18 +125,16 @@ function isVehicleUnlocked()
                 elseif ent.havekeys or not Config.Ox_Inventory and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
                     SetVehicleEngineOn(veh,false,true,false)
                     SetVehicleNeedsToBeHotwired(veh,false)
-                    if ent.hotwired then
-                        ent.hotwired = false
-                        ent:set('hotwired', false, true)
-                        TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
-                        ent:set('havekeys', false, true)
-                        TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
-                        Wait(200)
-                        ent.havekeys = true
-                        SetVehicleEngineOn(veh,false,true,false)
-                        SetVehicleNeedsToBeHotwired(veh,false)
-                        Wait(100)
-                    end
+                    ent.hotwired = false
+                    ent:set('hotwired', false, true)
+                    TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
+                    ent:set('havekeys', false, true)
+                    TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
+                    Wait(200)
+                    ent.havekeys = true
+                    SetVehicleEngineOn(veh,false,true,false)
+                    SetVehicleNeedsToBeHotwired(veh,false)
+                    Wait(100)
                 end
                 if not ent.unlock and Config.LockAllLocalVehicle 
                 or not ent.unlock and GetEntityPopulationType(veh) == 7 and not Config.LockAllLocalVehicle then 
