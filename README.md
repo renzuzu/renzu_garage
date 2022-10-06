@@ -2,18 +2,7 @@
 - FIVEM - Garage HUD Advanced Vehicle Garage
 - REQUIRES ONE SYNC ENABLE!
 
-![image](https://user-images.githubusercontent.com/82306584/143224483-a2b91f35-68c6-45f2-a8a6-39de06ebda43.png)
-
-# New Feature Update 1.72 (most of newer updates requires onesync enable)
-- Garage Keys Sharing
-- Vehicle Keys Sharing
-- Built in Car lock
-- Built in Hotwire system
-- Configurable Lock System
-- Vehicle Category UI
-- New Impound System (with NEW UI Form)
-- GTA O Style Housing Garage (2 cars, 5, cars, 10 cars)
-
+![image](https://user-images.githubusercontent.com/82306584/193649853-2e408081-e348-4ff1-9fcd-2da39afbc7b0.png)
 
 # Main Feature
 - Vehicle Public Garage (Multi Location)
@@ -34,6 +23,19 @@
 - Built in Hotwire system
 - Configurable Lock System
 - Vehicle Category UI
+-
+- Key System. State Bags or item meta datas if using ox_inventory
+- item based meta datas vehicle and garage keys if using OX_inventory
+- Garage Keys Sharing - Shareable Garage System. Other player can share each other garage.
+- Vehicle Keys Sharing - Shareable Vehicle Keys other players can Keylock, park,unpark, store to public.
+- Built in Car lock
+- Built in Hotwire system
+- Configurable Lock System
+- Vehicle Category UI
+- New Impound System (with NEW UI Form)
+- GTA O Style Housing Garage (2 cars, 5, cars, 10 cars)
+- Vehicle Nicknames - change your NULL/ Blista to eg. my favorite car
+- Dispose Vehicle - Too much vehicle ? player can delete their own vehicle
 
 # video
 https://www.youtube.com/watch?v=rKYb0sRnP2A
@@ -42,7 +44,7 @@ https://www.youtube.com/watch?v=rKYb0sRnP2A
 - Vehicle Category
 ![image](https://user-images.githubusercontent.com/82306584/137624540-f94230e6-6c50-40a7-88df-3c43c45de680.png)
 - Quick Pick
-![image](https://user-images.githubusercontent.com/82306584/143224850-5708351f-17ad-4cad-9b5d-8d9f0d6dcc93.png)
+![image](https://user-images.githubusercontent.com/82306584/193649469-c3d84379-ae16-4d43-a5e2-3fab2b33c37e.png)
 
 # Inside garage
 ![image](https://user-images.githubusercontent.com/82306584/130008886-b8bf10b1-5d37-4eb8-929a-694b077a1654.png)
