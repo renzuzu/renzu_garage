@@ -167,23 +167,8 @@ AddEventHandler('esx:onPlayerJoined', function(src, char, data)
     players[src] = xPlayer
 end)
 
-AddEventHandler('entityRemoved', function(entity) -- prevent Gstate getting big because of temporary vehicles
-    local plate = DoesEntityExist(entity) and string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1') or 'aso'
-    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 and GlobalState.GVehicles[plate] then
-        local tempvehicles = GlobalState.GVehicles
-        if tempvehicles[plate] and tempvehicles[plate].temp then
-            tempvehicles[plate] = nil
-            GlobalState.GVehicles = tempvehicles
-            local share = GlobalState.Gshare
-            if share[plate] then
-                share[plate] = nil
-                GlobalState.Gshare = share
-            end
-        end
-    end
-end)
-
 AddEventHandler('entityCreated', function(entity)
+    if GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 then return end
     local entity = entity
     local havekeys = false
     Wait(1000)
@@ -229,7 +214,7 @@ AddEventHandler('entityCreated', function(entity)
                 --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
                 return
             end
-        elseif gvehicles[plate] then -- owned vehicles
+        elseif gvehicles[plate] and not Config.Ox_Inventory then -- owned vehicles
             local share = GlobalState.Gshare[plate] or {}
             share[gvehicles[plate][owner]] = gvehicles[plate][owner]
             ent.share = share
@@ -237,7 +222,7 @@ AddEventHandler('entityCreated', function(entity)
             GlobalState.Gshare = globalkeys
             return
         end
-        local plyid = NetworkGetEntityOwner(entity)
+        local plyid = NetworkGetEntityOwner(entity) -- this is accurate only if vehicle created from client
         local xPlayer = players[plyid] or GetPlayerFromId(plyid)
         if plyid and not gvehicles[plate] and DoesEntityExist(entity) then
             for k,v in pairs(jobplates) do
@@ -267,10 +252,10 @@ AddEventHandler('entityCreated', function(entity)
                     ent.share = share
                     globalkeys[plate] = ent.share
                     GlobalState.Gshare = globalkeys
-                    --print(plate,'Newly Mission Vehicles Found..Adding to Key system')
+                    print(plate,'Newly Mission Vehicles Found..Adding to Key system')
                 end
             end
-        elseif plyid and xPlayer and gvehicles[plate] and xPlayer.identifier ~= GlobalState.GVehicles[plate][owner] then
+        elseif plyid and xPlayer and gvehicles[plate] and xPlayer.identifier and xPlayer.identifier ~= GlobalState.GVehicles[plate][owner] then
             -- another extra checks for vehicle sharing, garage sharing, eg. player 1 dont owned vehicle and he can spawned it.
             local share = ent.share or {}
             share[xPlayer.identifier] = xPlayer.identifier

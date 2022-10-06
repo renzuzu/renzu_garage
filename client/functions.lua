@@ -79,15 +79,13 @@ function CloseNui()
         if LastVehicleFromGarage ~= nil then
             DeleteEntity(LastVehicleFromGarage)
         end
-
-        local ped = PlayerPedId()   
-        if not Config.Quickpick then  
-            RenderScriptCams(false)
-            DestroyAllCams(true)
-            ClearFocus()
-            DisplayHud(true)
-            DisplayRadar(true)
-        end
+    end
+    if not Config.Quickpick then  
+        RenderScriptCams(false)
+        DestroyAllCams(true)
+        ClearFocus()
+        DisplayHud(true)
+        DisplayRadar(true)
     end
     countspawn = 0
     garagejob = false

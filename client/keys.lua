@@ -123,7 +123,7 @@ function isVehicleUnlocked()
                         SetVehicleNeedsToBeHotwired(veh,false)
                         Wait(100)
                     end
-                elseif ent.havekeys or not Config.Ox_Inventory and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] == PlayerData.identifier or not Config.Ox_Inventory and ent.share ~= nil and ent.share[PlayerData.identifier] then
+                elseif ent.havekeys or not Config.Ox_Inventory and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] == PlayerData.identifier or ent.share ~= nil and ent.share[PlayerData.identifier] then
                     SetVehicleEngineOn(veh,false,true,false)
                     SetVehicleNeedsToBeHotwired(veh,false)
                     if ent.hotwired then
@@ -384,21 +384,21 @@ function Keyless()
         vehiclesinarea[plate].entity = v
         vehiclesinarea[plate].plate = plate
         vehiclesinarea[plate].distance = #(mycoords - GetEntityCoords(v, false))
-        vehiclesinarea[plate].owner = not ox and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] or not ox and GlobalState.Gshare and GlobalState.Gshare[plate] 
+        vehiclesinarea[plate].owner = not ox and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] or GlobalState.Gshare and GlobalState.Gshare[plate] 
         or ox and DoesPlayerHaveKey(plate) and PlayerData.identifier or false
     end
     local near = -1
     local nearestveh = nil
     local nearestplate = nil
     near, nearestveh, nearestplate, nearestowner = VehiclesinArea(vehiclesinarea)
-    if not nearestveh then return end
+    if not nearestveh or near > 40 then return end
     EnsureEntityStateBag(nearestveh)
     -- check nearest owned vehicle
     local ent = Entity(nearestveh).state
     if owned_vehicles[nearestplate] and owned_vehicles[nearestplate][owner] == PlayerData.identifier and not ox -- player owned
     or ox and DoesPlayerHaveKey(nearestplate) -- ox inventory item keys 
     or not oxy and owned_vehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
-    or not ox and GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
+    or GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
         ent.unlock = not ent.unlock
         PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)
         if not IsPedInAnyVehicle(PlayerPedId(), false) then 

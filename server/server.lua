@@ -3,7 +3,7 @@ RegisterServerEvent('renzu_garage:GetVehiclesTable')
 AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public,garagekey)
     local src = source 
     local xPlayer = GetPlayerFromId(src)
-    players[src] = xPlayer.identifier
+    players[src] = xPlayer
     local ply = Player(src).state
     local identifier = ply.garagekey or xPlayer.identifier
     local sharegarage = false
