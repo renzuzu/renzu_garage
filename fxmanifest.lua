@@ -1,12 +1,13 @@
 fx_version   'cerulean'
-use_experimental_fxv2_oal 'yes'
+
 lua54        'yes'
 game         'gta5'
-use_fxv2_oal 'yes'
+
 
 ui_page 'html/index.html'
 
 shared_scripts {
+	'@renzu_shield/init.lua',
 	'@ox_lib/init.lua',	
 	'conf/locale/*.lua',
 	'conf/main.lua',
