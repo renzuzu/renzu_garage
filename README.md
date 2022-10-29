@@ -6,6 +6,12 @@
 
 # newest branch
 - Latest Main branch needs Ox_lib and Ox_inventory
+- Keys are now items using ox_inventory metadatas (sharable) both Vehicle Keys and Garages Keys
+- replaced all menus, notifications, textuis etc.. to ox_lib interface
+- utilise ox_lib zones and static threads are disable by default if ox_lib is enable and it will be removed soon.
+- Vehicle Nicknames
+- Vehicle Disposing
+- Etc various enhancement and optimisations
 
 # Main Feature
 - Vehicle Public Garage (Multi Location)
