@@ -4,6 +4,9 @@
 
 ![image](https://user-images.githubusercontent.com/82306584/193649853-2e408081-e348-4ff1-9fcd-2da39afbc7b0.png)
 
+# newest branch
+- Latest Main branch needs Ox_lib and Ox_inventory
+
 # Main Feature
 - Vehicle Public Garage (Multi Location)
 - Job Garages (police garage for example) (support default vehicles for patrol)
@@ -325,8 +328,8 @@ ENGINE=InnoDB
 
 ```
 ensure renzu_garage
-ensure renzu_contextmenu
-ensure renzu_popui
+ensure ox_lib
+ensure ox_inventory
 ensure renzu_lockgame
-ensure renzu_notify
+
 ```
