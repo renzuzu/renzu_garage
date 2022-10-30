@@ -168,7 +168,7 @@ AddEventHandler('esx:onPlayerJoined', function(src, char, data)
 end)
 
 AddEventHandler('entityCreated', function(entity)
-    if GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 then return end
+    if GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or GetEntityPopulationType(entity) ~= 7 then return end
     local entity = entity
     local havekeys = false
     Wait(1000)
