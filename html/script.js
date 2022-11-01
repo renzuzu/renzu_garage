@@ -780,7 +780,7 @@ function ShowConfirm2(i){
         <div class="modal-content">
             <i style="    position: absolute;
             right: 20%;
-            font-size: 30px; top:-2px;" class="fas fa-garage-car"></i>
+            font-size: 30px; top:1.5vh;" class="fas fa-garage-car"></i>
             <p class="title">Impound:</p>
             <p class="vehicle">Vehicle is Unavailable</p>
         </div>
@@ -862,7 +862,7 @@ function ShowConfirm(){
         <div class="modal-content">
             <i style="    position: absolute;
             right: 20%;
-            font-size: 30px; top:-2px;" class="fas fa-garage-car"></i>
+            font-size: 30px; top:1.5vh;" class="fas fa-garage-car"></i>
             <p class="title">Impound:</p>
             <p class="vehicle">Vehicle is Unavailable</p>
         </div>

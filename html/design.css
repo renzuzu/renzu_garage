@@ -447,7 +447,7 @@
       .container .modal .modal-content{
           position: absolute;
           z-index:2;
-          padding:10px 15px;
+          padding:30px 25px;
           width: 100%;
           /* height: 35%; */
           top: 10px;
@@ -488,7 +488,7 @@
           /* justify-content: space-between; */
           /* margin-top: 20px; */
           position: absolute;
-          top: 39%;
+          top: 6vh;
           left: 25%;
       }
       .container .modal .modal-footer .modal-price{
@@ -720,7 +720,7 @@ body .right {/* left: auto; *//* float: right; */position: relative;/* height: 1
 width: 17vw;
 }
 }
-.app_inner {position: relative;background: #222729;}
+.app_inner {position: relative;background: #1d1e1e;}
 .app_inner input[type=radio] {
 display: none;
 }
@@ -794,7 +794,7 @@ width: 100%;
   transition: all 0.2s;
   background: #000000e0;
   background: rgb(4,38,71);
-  background: linear-gradient(90deg, rgb(49 51 53 / 18%) 0%, rgb(58 60 64 / 45%) 35%, rgb(75 81 86 / 41%) 100%);
+  background: linear-gradient(90deg, rgb(6 10 14 / 62%) 0%, rgb(4 6 10 / 45%) 35%, rgb(28 37 44 / 41%) 100%);
   /* background: #1a1d1c; */
 }
 .app_inner label:nth-of-type(1) .app_inner__tab .tab_left__image {
@@ -838,7 +838,7 @@ padding: 6px 20px;
 cursor: pointer;
 font-family: &quot;Roboto Condensed&quot;, sans-serif;
 outline: none;
-font-size: 11px;
+font-size: 9px;
 color: white;
 transition: all 0.3s;
 }
