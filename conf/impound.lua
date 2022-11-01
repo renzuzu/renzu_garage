@@ -15,7 +15,7 @@ impoundcoord = {
         job = "police",
         Type = "car",
         Dist = 5,
-        Blip = {color = 2, sprite = 289, scale = 0.6},
+        Blip = {color = 6, sprite = 68, scale = 0.75},
         garage_x = 459.18936157227, -- 454.23364257813,-1019.8027954102,27.892890930176,95.160804748535
         garage_y = -1008.4532470703,
         garage_z = 28.264139175415,
@@ -30,7 +30,7 @@ impoundcoord = {
         job = "police",
         Type = "car",
         Dist = 5,
-        Blip = {color = 2, sprite = 289, scale = 0.6},
+        Blip = {color = 6, sprite = 68, scale = 0.75},
         garage_x = 408.14019775391, -- 408.14019775391,-1624.2512207031,29.291955947876,336.10189819336
         garage_y = -1624.251220703,
         garage_z = 29.291955947876,
@@ -45,7 +45,7 @@ impoundcoord = {
         job = "police",
         Type = "car",
         Dist = 5,
-        Blip = {color = 2, sprite = 289, scale = 0.6},
+        Blip = {color = 6, sprite = 68, scale = 0.75},
         garage_x = -1056.6076660156, -- -1056.6076660156,-842.85260009766,5.0415687561035,33.330707550049
         garage_y = -842.85260009766,
         garage_z = 5.0415687561035,
