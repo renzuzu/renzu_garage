@@ -1104,6 +1104,7 @@ $(document).on('keydown', function(event) {
         }
         let page = 0
         let max = page + 40
+        datas = data
         for(i = page; i < (data.length); i++) {
             var modelUper = data[i].model;
             inGarageVehicle[i] = data[i]
