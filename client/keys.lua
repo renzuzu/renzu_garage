@@ -471,10 +471,11 @@ CreateThread(function()
     return
 end)
 
-RegisterNetEvent('renzu_garage:lockpick')
-AddEventHandler('renzu_garage:lockpick', function()
+RegisterNetEvent('renzu_garage:lockpick', function()
     LockPick()
 end)
+
+exports('lockpick', LockPick)
 
 function HotWireVehicle(veh)
     SetVehicleNeedsToBeHotwired(veh,false)
@@ -577,8 +578,7 @@ RegisterNUICallback("requestvehkey", function(data, cb)
     vehiclekeysdata = data
 end)
 
-RegisterNetEvent('requestvehkey')
-AddEventHandler('requestvehkey', function()
+RegisterNetEvent('requestvehkey', function()
     TriggerServerCallback_("renzu_garage:getgaragekeys",function(sharedkeys,players)
         if Config.GarageKeys and PlayerData.job ~= nil then
             local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}

@@ -1,12 +1,10 @@
-RegisterNetEvent('renzu_garage:storeprivatehouse')
-AddEventHandler('renzu_garage:storeprivatehouse', function(i, shell)
+RegisterNetEvent('renzu_garage:storeprivatehouse', function(i, shell)
     local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
     ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
     TriggerServerEvent('renzu_garage:storeprivate',i,{}, prop, shell)
 end)
 
-RegisterNetEvent('renzu_garage:property')
-AddEventHandler('renzu_garage:property', function(i, propertycoord, index, spawncoord)
+RegisterNetEvent('renzu_garage:property', function(i, propertycoord, index, spawncoord)
     local i = i
     DeleteEntity(LastVehicleFromGarage)
     LastVehicleFromGarage = nil
@@ -42,13 +40,11 @@ AddEventHandler('renzu_garage:property', function(i, propertycoord, index, spawn
     end
 end)
 
-RegisterNetEvent('renzu_garage:garagehousing_basic')
-AddEventHandler('renzu_garage:garagehousing_basic', function()
+RegisterNetEvent('renzu_garage:garagehousing_basic', function()
     GarageHousing_Basic()
 end)
 
-RegisterNetEvent('renzu_garage:garagehousing_advanced')
-AddEventHandler('renzu_garage:garagehousing_advanced', function(garageID,garagecoord,spawncoord,shell) -- spawncoord must be vector4 with headings
+RegisterNetEvent('renzu_garage:garagehousing_advanced', function(garageID,garagecoord,spawncoord,shell) -- spawncoord must be vector4 with headings
     GarageHousing_Adv(garageID,garagecoord,spawncoord,shell)
 end)
 

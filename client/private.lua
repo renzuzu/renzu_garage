@@ -14,8 +14,7 @@ function AntiDupe(coords, hash,x,y,z,w,prop)
     end
 end
 
-RegisterNetEvent('renzu_garage:ingarage')
-AddEventHandler('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,housing)
+RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,housing)
     housingcustom = housing
     DoScreenFadeOut(111)
     Wait(111)
@@ -385,8 +384,7 @@ function firstToUpper(str)
     return (str:gsub("^%l", string.upper))
 end
 
-RegisterNetEvent('renzu_garage:openinventory')
-AddEventHandler('renzu_garage:openinventory', function(current)
+RegisterNetEvent('renzu_garage:openinventory', function(current)
     local multimenu = {}
     local firstmenu = {}
     local openmenu = false
@@ -473,8 +471,7 @@ AddEventHandler('renzu_garage:openinventory', function(current)
     end,current,activeshare)
 end)
 
-RegisterNetEvent('renzu_garage:storemod')
-AddEventHandler('renzu_garage:storemod', function(current,mod,lvl,newprop,save,saveprop)
+RegisterNetEvent('renzu_garage:storemod', function(current,mod,lvl,newprop,save,saveprop)
     local newprop = newprop
     carrymode = false
     carrymod = false
@@ -486,8 +483,7 @@ AddEventHandler('renzu_garage:storemod', function(current,mod,lvl,newprop,save,s
     TriggerServerEvent('renzu_garage:storemod',current,mod,lvl,newprop,activeshare,save,saveprop)
 end)
 
-RegisterNetEvent('renzu_garage:installmod')
-AddEventHandler('renzu_garage:installmod', function(index,lvl,k,vehicle,mod)
+RegisterNetEvent('renzu_garage:installmod', function(index,lvl,k,vehicle,mod)
     local max = GetNumVehicleMods(vehicle, tonumber(index))
     if tonumber(lvl) <= max then
         carrymod = false
@@ -508,8 +504,7 @@ AddEventHandler('renzu_garage:installmod', function(index,lvl,k,vehicle,mod)
     end
 end)
 
-RegisterNetEvent('renzu_garage:getmod')
-AddEventHandler('renzu_garage:getmod', function(index,lvl,k)
+RegisterNetEvent('renzu_garage:getmod', function(index,lvl,k)
     TriggerServerCallback_("renzu_garage:itemavailable",function(inventory)
         if inventory then
             carrymod = true
@@ -579,8 +574,7 @@ AddEventHandler('renzu_garage:getmod', function(index,lvl,k)
     end,currentprivate,k,activeshare)
 end)
 
-RegisterNetEvent('renzu_garage:removevehiclemod')
-AddEventHandler('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
+RegisterNetEvent('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
     if mod ~= nil and GetVehicleMod(vehicle,tonumber(mod.index)) + 1 >= lvl then
         CarryMod("anim@heists@box_carry@","idle",mod.prop or 'hei_prop_heist_box',50,28422)
         carrymode = true
@@ -671,8 +665,7 @@ function SetModable(vehicle)
     end
 end
 
-RegisterNetEvent('renzu_garage:vehiclemod')
-AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
+RegisterNetEvent('renzu_garage:vehiclemod', function(vehicle)
     if DoesEntityExist(vehicle) and IsEntityAVehicle(vehicle) then
         local multimenu = {}
         local firstmenu = {}
@@ -769,8 +762,7 @@ AddEventHandler('renzu_garage:vehiclemod', function(vehicle)
     end
 end)
 
-RegisterNetEvent('renzu_garage:syncstate')
-AddEventHandler('renzu_garage:syncstate', function(plate,sender)
+RegisterNetEvent('renzu_garage:syncstate', function(plate,sender)
     if GetPlayerServerId(PlayerId()) == sender then return end
     for k,vehicle in pairs(GetGamePool('CVehicle')) do
         if string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1'):upper() == plate then
@@ -779,8 +771,7 @@ AddEventHandler('renzu_garage:syncstate', function(plate,sender)
     end
 end)
 
-RegisterNetEvent('renzu_garage:choose')
-AddEventHandler('renzu_garage:choose', function(t,garage)
+RegisterNetEvent('renzu_garage:choose', function(t,garage)
     insidegarage = false
     vehicleinarea = {}
     private_garages = {}
@@ -833,8 +824,7 @@ function GetClosestPlayer()
     return closestPlayer, closestDistance
 end
 
-RegisterNetEvent('renzu_garage:exitgarage')
-AddEventHandler('renzu_garage:exitgarage', function(t,exit)
+RegisterNetEvent('renzu_garage:exitgarage', function(t,exit)
     if not exit then
         insidegarage = false
         local closestplayer, dis = GetClosestPlayer()
@@ -880,8 +870,7 @@ AddEventHandler('renzu_garage:exitgarage', function(t,exit)
     end
 end)
 
-RegisterNetEvent('renzu_garage:opengaragemenu')
-AddEventHandler('renzu_garage:opengaragemenu', function(garageid,v)
+RegisterNetEvent('renzu_garage:opengaragemenu', function(garageid,v)
     local garage,t = garageid,v
     if not Config.Oxlib then
         TriggerServerCallback_("renzu_garage:isgarageowned",function(owned,share)

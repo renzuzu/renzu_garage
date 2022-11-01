@@ -136,8 +136,7 @@ CreateThread(function()
     end
 end)
 
-RegisterNetEvent('renzu_garage:update_parked')
-AddEventHandler('renzu_garage:update_parked', function(t,plate,p)
+RegisterNetEvent('renzu_garage:update_parked', function(t,plate,p)
     deleting = true
     Wait(1500)
     if p then

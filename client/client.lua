@@ -218,8 +218,7 @@ CreateThread(function()
     end
 end)
 
-RegisterNetEvent('opengarage')
-AddEventHandler('opengarage', function()
+RegisterNetEvent('opengarage', function()
     local sleep = 2000
     local ped = PlayerPedId()
     local vehiclenow = GetVehiclePedIsIn(PlayerPedId(), false)
@@ -337,8 +336,7 @@ AddEventHandler('opengarage', function()
     end
 end)
 
-RegisterNetEvent('renzu_garage:notify')
-AddEventHandler('renzu_garage:notify', function(type, message)    
+RegisterNetEvent('renzu_garage:notify', function(type, message)    
     lib.defaultNotify({
         title = Message[2],
         description = message,
@@ -346,8 +344,7 @@ AddEventHandler('renzu_garage:notify', function(type, message)
     })
 end)
 
-RegisterNetEvent('renzu_garage:receive_vehicles')
-AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
+RegisterNetEvent('renzu_garage:receive_vehicles', function(tb, vehdata)
     fetchdone = false
     OwnedVehicles = {}
     tableVehicles = tb
@@ -455,8 +452,7 @@ AddEventHandler('renzu_garage:receive_vehicles', function(tb, vehdata)
     fetchdone = true
 end)
 
-RegisterNetEvent('renzu_garage:getchopper')
-AddEventHandler('renzu_garage:getchopper', function(job, available)
+RegisterNetEvent('renzu_garage:getchopper', function(job, available)
     OwnedVehicles = {}
     Wait(100)
     tableVehicles = {}
@@ -522,8 +518,7 @@ RegisterNUICallback(
     end
 )
 
-RegisterNetEvent('renzu_garage:return')
-AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp,gid)
+RegisterNetEvent('renzu_garage:return', function(v,vehicle,property,actualShop,vp,gid)
     local vp = vp
     local v = v
     FreezeEntityPosition(PlayerPedId(),true)
@@ -615,8 +610,7 @@ AddEventHandler('renzu_garage:return', function(v,vehicle,property,actualShop,vp
 end)
 
 DoScreenFadeIn(333)
-RegisterNetEvent('renzu_garage:ingaragepublic')
-AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicle, property, propertycoord, gid)
+RegisterNetEvent('renzu_garage:ingaragepublic', function(coords, distance, vehicle, property, propertycoord, gid)
     local dist2 = 2
     if property and gid then
         spawn = propertycoord
@@ -769,8 +763,7 @@ AddEventHandler('renzu_garage:ingaragepublic', function(coords, distance, vehicl
     end,plate,garageid,false,patrolcars[plate] or false)
 end)
 
-RegisterNetEvent('renzu_garage:store')
-AddEventHandler('renzu_garage:store', function(i)
+RegisterNetEvent('renzu_garage:store', function(i)
     local vehicleProps = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId(), 0))
     garageid = i
     if garageid == nil then
