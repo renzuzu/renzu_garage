@@ -64,7 +64,7 @@ garagecoord = {
         garage = "D", --MIRROR
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = 1032.84,
         garage_y = -765.1,
         garage_z = 58.18,
@@ -77,7 +77,7 @@ garagecoord = {
         garage = "E", --BEACH
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = -1248.69,
         garage_y = -1425.71,
         garage_z = 4.32,
@@ -91,7 +91,7 @@ garagecoord = {
         garage = "F", --GO HIGHWAY
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = -2961.58,
         garage_y = 375.93,
         garage_z = 15.02,
@@ -104,7 +104,7 @@ garagecoord = {
         garage = "G", --SANDY WEST
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = 217.33,
         garage_y = 2605.65,
         garage_z = 46.04,
@@ -117,7 +117,7 @@ garagecoord = {
         garage = "H", --SANDY MAIN
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = 1878.44,
         garage_y = 3760.1,
         garage_z = 32.94,
@@ -130,7 +130,7 @@ garagecoord = {
         garage = "I", --VINEWOOD
         Type = "car",
         Dist = 7,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = 365.21,
         garage_y = 295.65,
         garage_z = 103.46,
@@ -143,7 +143,7 @@ garagecoord = {
         garage = "J", --GRAPESEED
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = 1713.06,
         garage_y = 4745.32,
         garage_z = 41.96,
@@ -156,7 +156,7 @@ garagecoord = {
         garage = "K", --PALETO
         Type = "car",
         Dist = 7,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = 107.32,
         garage_y = 6611.77,
         garage_z = 31.98,
@@ -169,7 +169,7 @@ garagecoord = {
         garage = "Bayview Garage", --PALETO
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = -686.14886474609,
         garage_y = 5782.2724609375,
         garage_z = 17.330951690674,
@@ -235,7 +235,7 @@ garagecoord = {
         job = "sheriff",
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = -450.94107055664,
         garage_y = 5989.919921875,
         garage_z = 31.338258743286,
@@ -249,7 +249,7 @@ garagecoord = {
         job = "ambulance",
         Type = "car",
         Dist = 3,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = 291.01055908203,
         garage_y = -566.08709716797,
         garage_z = 43.260692596436,
@@ -273,7 +273,7 @@ garagecoord = {
         job = "mechanic",
         Type = "car",
         Dist = 10,
-        Blip = {{color = 0, sprite = 357, scale = 0.75},
+        Blip = {color = 0, sprite = 357, scale = 0.75},
         garage_x = -192.95492553711,
         garage_y = -1296.2727050781,
         garage_z = 31.295988082886,
