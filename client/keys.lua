@@ -491,7 +491,22 @@ function HotWireVehicle(veh)
             speed = 1,
             flag = 49,
         }
-        local ret = exports.renzu_lockgame:CreateGame(Config.HotwireLevel,o,true)
+        SetTimeout(1000,function()
+            local lockpick = lib.progressBar({
+                duration = 5000,
+                label = 'Hot Wiring..',
+                useWhileDead = false,
+                canCancel = true,
+                anim = {
+                    dict = 'anim@amb@clubhouse@tutorial@bkr_tut_ig3@',
+                    clip = 'machinic_loop_mechandplayer' 
+                },
+            })
+        end)
+        local ret = lib.skillCheck({'easy', 'easy', {areaSize = 60, speedMultiplier = 2}, 'easy'})
+        if lib.progressActive() then
+            lib.cancelProgress()
+        end
         if ret then
             SetVehicleEngineOn(veh,false,true,false)
             SetVehicleNeedsToBeHotwired(veh,true)
@@ -517,7 +532,25 @@ function LockPick()
         if veh ~= 0 then
             local ent = Entity(veh).state
             if not ent.unlock then
-                local ret = exports.renzu_lockgame:CreateGame(Config.LockpickLevel)
+                SetTimeout(1000,function()
+                    local lockpick = lib.progressBar({
+                        duration = 5000,
+                        label = 'Lockpicking..',
+                        useWhileDead = false,
+                        canCancel = true,
+                        disable = {
+                            car = true,
+                        },
+                        anim = {
+                            dict = 'veh@break_in@0h@p_m_one@',
+                            clip = 'low_force_entry_ds' 
+                        },
+                    })
+                end)
+                local ret = lib.skillCheck({'easy', 'easy', {areaSize = 60, speedMultiplier = 2}, 'easy'})
+                if lib.progressActive() then
+                    lib.cancelProgress()
+                end
                 if ret then
                     ent.unlock = not ent.unlock
                     ent:set('unlock', ent.unlock, true)
