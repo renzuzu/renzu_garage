@@ -336,8 +336,8 @@ RegisterNetEvent('opengarage', function()
     end
 end)
 
-RegisterNetEvent('renzu_garage:notify', function(type, message)    
-    lib.defaultNotify({
+RegisterNetEvent('renzu_garage:notify', function(type, message)
+    lib.notify({
         title = Message[2],
         description = message,
         status = type

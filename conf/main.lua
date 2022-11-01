@@ -109,7 +109,8 @@ Message = Locale[Config.Locale]
 Config.Renzu_notify = true -- if false we will use default framework notification
 Config.Notify = function(type,msg,xPlayer)
     if Config.Oxlib and not IsDuplicityVersion() then
-        lib.defaultNotify({
+        if type == 'info' then type = 'inform' end -- nice logic
+        lib.notify({
             title = 'Garage',
             description = msg,
             status = type

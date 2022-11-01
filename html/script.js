@@ -11,6 +11,7 @@ var impound_fine = 0
 var impound_loc = 0
 let datas = {}
 let lastab = 0
+let getEl = function( id ) { return document.getElementById( id )}
 function getTimeRemaining(endtime) {
     const total = Date.parse(endtime) - Date.parse(new Date());
     const seconds = Math.floor((total / 1000) % 60);
@@ -28,7 +29,7 @@ function getTimeRemaining(endtime) {
   }
   
   function initializeClock(id, endtime) {
-    const clock = document.getElementById(id);
+    const clock = getEl(id);
     const daysSpan = clock.querySelector('.days');
     const hoursSpan = clock.querySelector('.hours');
     const minutesSpan = clock.querySelector('.minutes');
@@ -60,17 +61,17 @@ window.addEventListener('message', function(event) {
         cleanup()
     }
     if (event.data.type == 'removeveh') {
-        document.getElementById("tabid_"+lastab).remove();
+        getEl("tabid_"+lastab).remove();
     }
     if (event.data.type == "onimpound") {
         impound_loc = event.data.garage
         impound_fine = event.data.fee
         onimpound();
-        if (document.getElementById("impoundloc")) {
-            document.getElementById("impoundloc").innerHTML = impound_loc;
+        if (getEl("impoundloc")) {
+            getEl("impoundloc").innerHTML = impound_loc;
         }
-        if (document.getElementById("fineamount")) {
-            document.getElementById("fineamount").innerHTML = impound_fine;
+        if (getEl("fineamount")) {
+            getEl("fineamount").innerHTML = impound_fine;
         }
         impound_fine = 0
     }
@@ -93,49 +94,49 @@ window.addEventListener('message', function(event) {
             impound_left = duration_left
             //impound_left = impound_left.replace(",", "")
         }
-        document.getElementById("dateissue").innerHTML = humanDateFormat;
+        getEl("dateissue").innerHTML = humanDateFormat;
         for(var [key,value] of Object.entries(data.info)){
             for(var [k,v] of Object.entries(value)){
                 if (k == 'firstname') {
-                    document.getElementById("ownerinfo").innerHTML = ''+v+' '+value.lastname+'';
+                    getEl("ownerinfo").innerHTML = ''+v+' '+value.lastname+'';
                 }
                 if (k == 'phone_number') {
-                    document.getElementById("contact").innerHTML = v;
+                    getEl("contact").innerHTML = v;
                 }
                 if (k == 'job') {
-                    document.getElementById("job").innerHTML = v;
+                    getEl("job").innerHTML = v;
                 }
             }     
         }
-        document.getElementById("reason").innerHTML = impound_data.reason || 'not specified';
-        document.getElementById("impounder").innerHTML = impound_data.impounder || 'not specified';
-        document.getElementById("duration").innerHTML = impound_data.duration || 'not specified';
-        document.getElementById("fine").innerHTML = impound_data.fine || 'not specified';
+        getEl("reason").innerHTML = impound_data.reason || 'not specified';
+        getEl("impounder").innerHTML = impound_data.impounder || 'not specified';
+        getEl("duration").innerHTML = impound_data.duration || 'not specified';
+        getEl("fine").innerHTML = impound_data.fine || 'not specified';
     }
     if (event.data.chopper) {
         chopper = true
     }
     if (event.data.type == "stats") {
         if (event.data.show) {
-            document.getElementById("perf").style.display = 'block';
+            getEl("perf").style.display = 'block';
             if (!event.data.public) {
-                document.getElementById("seemod").style.display = 'block';
+                getEl("seemod").style.display = 'block';
             }
             for(var [k,v] of Object.entries(event.data.perf)){
                 if (k =='name' || k =='plate' || k =='turbo') {
                     if (v == 'Not Installed') {
-                        document.getElementById(k).style.color = 'grey';
+                        getEl(k).style.color = 'grey';
                     } else if (v == 'Installed') {
-                        document.getElementById(k).style.color = 'lime';
+                        getEl(k).style.color = 'lime';
                     }
-                    document.getElementById(k).innerHTML = v;
+                    getEl(k).innerHTML = v;
                 } else {
-                    document.getElementById(k).style.width = ''+v+'%';
+                    getEl(k).style.width = ''+v+'%';
                 }
             }
         } else {
-            document.getElementById("perf").style.display = 'none';
-            document.getElementById("seemod").style.display = 'none';
+            getEl("perf").style.display = 'none';
+            getEl("seemod").style.display = 'none';
         }
     }
     if (event.data.type == "impoundform") {
@@ -149,7 +150,7 @@ window.addEventListener('message', function(event) {
         for (const i in durations) {
             $("#impound_duration").append(`<option value="`+durations[i]+`">`+durations[i]+` Hours</option>`)
         }
-        document.getElementById("impoundform").style.display = 'block';
+        getEl("impoundform").style.display = 'block';
     }
 
     if (event.data.type == "vehiclekeys") {
@@ -192,10 +193,10 @@ window.addEventListener('message', function(event) {
       $("#formidvehicle").append(givekey)
         if (current) {
             $("#vehiclelist").html('')
-            document.getElementById("dupe_vehkey").style.display = 'inline-block';
+            getEl("dupe_vehkey").style.display = 'inline-block';
             $("#vehiclelist").append(`<option value="`+current.plate+`">Current `+current.name+` [`+current.plate+`] Key</option>`)
         } else {
-            document.getElementById("dupe_vehkey").style.display = 'none';
+            getEl("dupe_vehkey").style.display = 'none';
         }
         for (const i in playersnearby) {
             $("#playerslist").append(`<option value="`+playersnearby[i].identifier+`">`+playersnearby[i].name+` - [`+playersnearby[i].source+`]</option>`)
@@ -203,29 +204,29 @@ window.addEventListener('message', function(event) {
         for (const i in vehicles) {
             $("#vehiclelist").append(`<option value="`+vehicles[i].plate+`">`+vehicles[i].name+` [`+vehicles[i].plate+`] Key</option>`)
         }
-        document.getElementById("give_vehkey").addEventListener("click", function(event){
+        getEl("give_vehkey").addEventListener("click", function(event){
             var datagive = {}
             for (const i in $( "form" ).serializeArray()) {
                 var data = $( "form" ).serializeArray()
                 datagive[data[i].name] = data[i].value
             }
-            document.getElementById("vehiclekeys").style.display = 'none';
+            getEl("vehiclekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ action: 'give', data: datagive}));
         });
-        document.getElementById("dupe_vehkey").addEventListener("click", function(event){
+        getEl("dupe_vehkey").addEventListener("click", function(event){
             var datagive = {}
             for (const i in $( "form" ).serializeArray()) {
                 var data = $( "form" ).serializeArray()
                 datagive[data[i].name] = data[i].value
             }
-            document.getElementById("vehiclekeys").style.display = 'none';
+            getEl("vehiclekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ action: 'dupe', data: datagive}));
         });
-        document.getElementById("cancel_vehkeys").addEventListener("click", function(event) {
-            document.getElementById("vehiclekeys").style.display = 'none';
+        getEl("cancel_vehkeys").addEventListener("click", function(event) {
+            getEl("vehiclekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_vehiclekeys", JSON.stringify({ garagekeysdata: 'cancel' }));
         });
-        document.getElementById("vehiclekeys").style.display = 'block';
+        getEl("vehiclekeys").style.display = 'block';
     }
 
     if (event.data.type == "requestvehiclekey") {
@@ -259,26 +260,26 @@ window.addEventListener('message', function(event) {
       $("#formidvehiclekeys").append(givekey)
         if (current) {
             $("#vehiclelist").html('')
-            document.getElementById("dupe_vehkey").style.display = 'inline-block';
+            getEl("dupe_vehkey").style.display = 'inline-block';
             $("#vehiclelist").append(`<option value="`+current.plate+`">Current `+current.name+` [`+current.plate+`] Key</option>`)
         }
         for (const i in vehicles) {
             $("#vehiclelist").append(`<option value="`+vehicles[i].plate+`">`+vehicles[i].name+` [`+vehicles[i].plate+`] Key</option>`)
         }
-        document.getElementById("requestvehkey").addEventListener("click", function(event){
+        getEl("requestvehkey").addEventListener("click", function(event){
             var datagive = {}
             for (const i in $( "form" ).serializeArray()) {
                 var data = $( "form" ).serializeArray()
                 datagive[data[i].name] = data[i].value
             }
-            document.getElementById("requestvehiclekey").style.display = 'none';
+            getEl("requestvehiclekey").style.display = 'none';
             $.post("https://renzu_garage/requestvehkey", JSON.stringify({ action: 'request', data: datagive}));
         });
-        document.getElementById("cancel_reqvehkeys").addEventListener("click", function(event) {
-            document.getElementById("requestvehiclekey").style.display = 'none';
+        getEl("cancel_reqvehkeys").addEventListener("click", function(event) {
+            getEl("requestvehiclekey").style.display = 'none';
             $.post("https://renzu_garage/requestvehkey", JSON.stringify({ garagekeysdata: 'cancel' }));
         });
-        document.getElementById("requestvehiclekey").style.display = 'block';
+        getEl("requestvehiclekey").style.display = 'block';
     }
 
     if (event.data.type == "garagekeys") {
@@ -356,27 +357,27 @@ window.addEventListener('message', function(event) {
         for (const i in mykeys) {
             $("#mygaragekeys").append(`<option value="`+mykeys[i].identifier+`">`+mykeys[i].name+` Key</option>`)
         }
-        document.getElementById("use_key").addEventListener("click", function(event){
+        getEl("use_key").addEventListener("click", function(event){
             var givedata = {}
             for (const i in $( "#use" ).serializeArray()) {
                 var data = $( "#use" ).serializeArray()
                 givedata[data[i].name] = data[i].value
             }
-            document.getElementById("garagekeys").style.display = 'none';
+            getEl("garagekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ action: 'use', data: givedata}));
         });
-        document.getElementById("del_key").addEventListener("click", function(event){
+        getEl("del_key").addEventListener("click", function(event){
             var givedata = {}
             for (const i in $( "#use" ).serializeArray()) {
                 var data = $( "#use" ).serializeArray()
                 givedata[data[i].name] = data[i].value
             }
-            document.getElementById("garagekeys").style.display = 'none';
+            getEl("garagekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ action: 'del', data: givedata}));
         });
         
-        document.getElementById("cancel_keys").addEventListener("click", function(event) {
-            document.getElementById("garagekeys").style.display = 'none';
+        getEl("cancel_keys").addEventListener("click", function(event) {
+            getEl("garagekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ garagekeysdata: 'cancel' }));
         });
       } else {
@@ -387,21 +388,21 @@ window.addEventListener('message', function(event) {
         for (const i in garages) {
             $("#garages").append(`<option value="`+garages[i].garage+`">Garage `+garages[i].garage+` Key</option>`)
         }
-        document.getElementById("give_key").addEventListener("click", function(event){
+        getEl("give_key").addEventListener("click", function(event){
             var datagive = {}
             for (const i in $( "form" ).serializeArray()) {
                 var data = $( "form" ).serializeArray()
                 datagive[data[i].name] = data[i].value
             }
-            document.getElementById("garagekeys").style.display = 'none';
+            getEl("garagekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ action: 'give', data: datagive}));
         });
-        document.getElementById("cancel_keys").addEventListener("click", function(event) {
-            document.getElementById("garagekeys").style.display = 'none';
+        getEl("cancel_keys").addEventListener("click", function(event) {
+            getEl("garagekeys").style.display = 'none';
             $.post("https://renzu_garage/receive_garagekeys", JSON.stringify({ garagekeysdata: 'cancel' }));
         });
       }
-        document.getElementById("garagekeys").style.display = 'block';
+        getEl("garagekeys").style.display = 'block';
     }
     if (event.data.type == "cats") {
         var cats = event.data.cats
@@ -470,8 +471,8 @@ window.addEventListener('message', function(event) {
         if (!event.data.view) {
             $("#appdiv").css("right","0")
         }
-        if (document.getElementById("finediv")) {
-            document.getElementById("finediv").style.display = 'none';
+        if (getEl("finediv")) {
+            getEl("finediv").style.display = 'none';
         }
     }
 
@@ -492,7 +493,7 @@ window.addEventListener('message', function(event) {
         
         `)
         
-        setTimeout(function(){ $("#messagePopup").fadeOut(500);         document.getElementById("messagePopup").innerHTML = ''; }, 3000);
+        setTimeout(function(){ $("#messagePopup").fadeOut(500);         getEl("messagePopup").innerHTML = ''; }, 3000);
 
     }
 
@@ -503,18 +504,18 @@ function choosecat(i) {
     $.post("https://renzu_garage/choosecat", JSON.stringify({ cat: i }));
 }
 
-document.getElementById("confirm_impound").addEventListener("click", function(event){
+getEl("confirm_impound").addEventListener("click", function(event){
     var impound_data = {}
     for (const i in $( "form" ).serializeArray()) {
         var data = $( "form" ).serializeArray()
         impound_data[data[i].name] = data[i].value
     }
-    document.getElementById("impoundform").style.display = 'none';
+    getEl("impoundform").style.display = 'none';
     $.post("https://renzu_garage/receive_impound", JSON.stringify({ impound_data: impound_data }));
 });
 
-document.getElementById("cancel_impound").addEventListener("click", function(event) {
-    document.getElementById("impoundform").style.display = 'none';
+getEl("cancel_impound").addEventListener("click", function(event) {
+    getEl("impoundform").style.display = 'none';
     $.post("https://renzu_garage/receive_impound", JSON.stringify({ impound_data: 'cancel' }));
 });
 
@@ -572,14 +573,14 @@ let lastcarid = 0
 function ShowVehicle(currentTarget) {
         var data = inGarageVehicle[currentTarget]
         if (lastcarid !== undefined) {
-            if (document.getElementById('changer_'+lastcarid)) {
+            if (getEl('changer_'+lastcarid)) {
                 //$('#changer_'+lastcarid).css("display","none");   
-                document.getElementById('changer_'+lastcarid).style.display = 'none'
+                getEl('changer_'+lastcarid).style.display = 'none'
             }
         }
-        if (document.getElementById('changer_'+currentTarget)) {
+        if (getEl('changer_'+currentTarget)) {
             //$('#changer_'+currentTarget).css("display","block");
-            document.getElementById('changer_'+currentTarget).style.display = 'inline'
+            getEl('changer_'+currentTarget).style.display = 'inline'
         }
         lastcarid = currentTarget
         if (data && currentcar !== currentTarget) {
@@ -593,17 +594,17 @@ function ShowVehicle(currentTarget) {
             if(!itemDisabled && garage_id.search("impound") == -1) {
                 $(currentTarget).addClass('active');
                 $('.modal').css("display","none");
-                if (document.getElementById("nameBrand")) {
-                    document.getElementById("nameBrand").innerHTML = '';
+                if (getEl("nameBrand")) {
+                    getEl("nameBrand").innerHTML = '';
                 }
-                if (document.getElementById("vehicleclass")) {
-                    document.getElementById("vehicleclass").innerHTML = '';
+                if (getEl("vehicleclass")) {
+                    getEl("vehicleclass").innerHTML = '';
                 }
-                if (document.getElementById("contentVehicle")) {
-                    document.getElementById("contentVehicle").innerHTML = '';
+                if (getEl("contentVehicle")) {
+                    getEl("contentVehicle").innerHTML = '';
                 }
-                if (document.getElementById("vehicleclass")) {
-                    document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
+                if (getEl("vehicleclass")) {
+                    getEl("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
                 }     
 
                 if (data.brand && data.name) {
@@ -677,17 +678,17 @@ function ShowVehicle(currentTarget) {
 
                 $('.modal').css("display","none");
 
-                if (document.getElementById("nameBrand")) {
-                    document.getElementById("nameBrand").innerHTML = '';
+                if (getEl("nameBrand")) {
+                    getEl("nameBrand").innerHTML = '';
                 }
-                if (document.getElementById("vehicleclass")) {
-                    document.getElementById("vehicleclass").innerHTML = '';
+                if (getEl("vehicleclass")) {
+                    getEl("vehicleclass").innerHTML = '';
                 }
-                if (document.getElementById("contentVehicle")) {
-                    document.getElementById("contentVehicle").innerHTML = '';
+                if (getEl("contentVehicle")) {
+                    getEl("contentVehicle").innerHTML = '';
                 }
-                if (document.getElementById("vehicleclass")) {
-                    document.getElementById("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
+                if (getEl("vehicleclass")) {
+                    getEl("vehicleclass").innerHTML = ' <img id="vehicle_class_image" src="https://forum.cfx.re/uploads/default/original/4X/b/1/9/b196908c7e5dfcd60aa9dca0020119fa55e184cb.png">';
                 }
 
                 if (data !== undefined && data.brand !== undefined && data.name !== undefined) {
@@ -766,10 +767,10 @@ function garage() {
 }
 
 function ShowConfirm2(i){
-    document.getElementById("closemenu").innerHTML = '';
+    getEl("closemenu").innerHTML = '';
     $("#vehicle_cat").html('')
-    if (document.getElementById("finediv")) {
-        document.getElementById("finediv").style.display = 'none';
+    if (getEl("finediv")) {
+        getEl("finediv").style.display = 'none';
     }
     $('.modal').css("display","flex");
     if (impound_left !== '0') {
@@ -834,12 +835,12 @@ function ShowConfirm2(i){
             </div>
         </div>
         `);
-        //document.getElementById("tabid_"+i).remove();
+        //getEl("tabid_"+i).remove();
         lastab = i
-        document.getElementById("finediv").style.display = 'none';
+        getEl("finediv").style.display = 'none';
         if (!isimpounder && impound_fine > 0) {
-            document.getElementById("fineamount").innerHTML = impound_fine;
-            document.getElementById("finediv").style.display = 'block';
+            getEl("fineamount").innerHTML = impound_fine;
+            getEl("finediv").style.display = 'block';
         }
         impound_fine = 0
     }
@@ -848,10 +849,10 @@ function ShowConfirm2(i){
 }
 
 function ShowConfirm(){
-    document.getElementById("closemenu").innerHTML = '';
+    getEl("closemenu").innerHTML = '';
     $("#vehicle_cat").html('')
-    if (document.getElementById("finediv")) {
-        document.getElementById("finediv").style.display = 'none';
+    if (getEl("finediv")) {
+        getEl("finediv").style.display = 'none';
     }
     $('.modal').css("display","flex");
     if (impound_left !== '0') {
@@ -916,10 +917,10 @@ function ShowConfirm(){
             </div>
         </div>
         `);
-        document.getElementById("finediv").style.display = 'none';
+        getEl("finediv").style.display = 'none';
         if (!isimpounder && impound_fine > 0) {
-            document.getElementById("fineamount").innerHTML = impound_fine;
-            document.getElementById("finediv").style.display = 'block';
+            getEl("fineamount").innerHTML = impound_fine;
+            getEl("finediv").style.display = 'block';
         }
         impound_fine = 0
     }
@@ -928,7 +929,7 @@ function ShowConfirm(){
 }
 
 function returnveh(){    
-    document.getElementById("closemenu").innerHTML = '';
+    getEl("closemenu").innerHTML = '';
     $("#vehicle_cat").html('')
 
     $('.modal').css("display","flex");
@@ -955,7 +956,7 @@ function returnveh(){
 }
 
 function onimpound(){    
-    document.getElementById("closemenu").innerHTML = '';
+    getEl("closemenu").innerHTML = '';
     $("#vehicle_cat").html('')
 
     $('.modal').css("display","flex");
@@ -1072,7 +1073,7 @@ function returnvehicle(option) {
 }
 
 function cleanup() {
-    document.getElementById("vehlist").innerHTML = '';
+    getEl("vehlist").innerHTML = '';
 }
 
 var scrollAmount = 0
@@ -1099,8 +1100,8 @@ $(document).on('keydown', function(event) {
     function OpenGarage(data,impound,police) {
         $('.vehiclegarage').empty();
         $('.app_inner').empty();
-        if (document.getElementById("vehlist")) {
-            document.getElementById("vehlist").innerHTML = '';
+        if (getEl("vehlist")) {
+            getEl("vehlist").innerHTML = '';
         }
         let page = 0
         let max = page + 40
@@ -1123,7 +1124,7 @@ $(document).on('keydown', function(event) {
     $("#garage").fadeOut();
 
     function Search(string) {
-        var val = document.getElementById('SearchData').value
+        var val = getEl('SearchData').value
         val = val.replace(' ','')
         $('.app_inner').empty();
         for(i = 0; i < (datas.length); i++) {
