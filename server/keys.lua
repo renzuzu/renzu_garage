@@ -28,6 +28,8 @@ GiveVehicleKey = function(plate,source)
     end
 end
 
+exports('GiveVehicleKey', GiveVehicleKey)
+
 RegisterServerCallBack_('renzu_garage:getgaragekeys', function (source, cb)
     local xPlayer = GetPlayerFromId(source)
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
