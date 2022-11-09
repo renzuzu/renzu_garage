@@ -132,7 +132,8 @@ RegisterServerEvent('statebugupdate') -- this will be removed once syncing of st
 AddEventHandler('statebugupdate', function(name,value,net)
     local vehicle = NetworkGetEntityFromNetworkId(net)
     local ent = Entity(vehicle).state
-    ent[name] = value
+    ent:set(name,value,true)
+    EnsureEntityStateBag(veicle)
     if name == 'unlock' then
         local val = 1
         if not value then
