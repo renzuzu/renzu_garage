@@ -72,7 +72,7 @@ function CloseNui()
     end
     garagecoord = coordcache
     neargarage = false
-    FreezeEntityPosition(PlayerPedId(),false)
+    FreezeEntityPosition(cache.ped,false)
     SetNuiFocus(false, false)
     InGarageShell('exit')
     if inGarage then
@@ -145,7 +145,7 @@ function CheckWanderingVehicle(plate)
 end
 
 function SpawnChopperLocal(model, props)
-    local ped = PlayerPedId()
+    local ped = cache.ped
 
     SetNuiFocus(true, true)
     if LastVehicleFromGarage ~= nil then
@@ -177,7 +177,7 @@ function SpawnChopperLocal(model, props)
                 DeleteEntity(LastVehicleFromGarage)
                 SetModelAsNoLongerNeeded(hash)
             end
-            TaskWarpPedIntoVehicle(PlayerPedId(), LastVehicleFromGarage, -1)
+            TaskWarpPedIntoVehicle(cache.ped, LastVehicleFromGarage, -1)
             InGarageShell('enter')
         end
     end
@@ -195,7 +195,7 @@ function Storevehicle(vehicle,impound, impound_data, public)
         garage___id = impound_data['impounds'] or impoundcoord[1].garage
     end
     Wait(100)
-    TaskLeaveVehicle(PlayerPedId(),GetVehiclePedIsIn(PlayerPedId()),1)
+    TaskLeaveVehicle(cache.ped,GetVehiclePedIsIn(cache.ped),1)
     Wait(2000)
     TriggerServerCallback_("renzu_garage:changestate",function(ret)
         local ent = Entity(vehicle).state
@@ -229,14 +229,14 @@ function GetClosestVehicle(c,dist)
 end
 
 function SpawnVehicleLocal(model, props)
-    local ped = PlayerPedId()
+    local ped = cache.ped
 
     SetNuiFocus(true, true)
     if LastVehicleFromGarage ~= nil then
         ReqAndDelete(LastVehicleFromGarage)
         SetModelAsNoLongerNeeded(hash)
     end
-    local nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
+    local nearveh = GetClosestVehicle(GetEntityCoords(cache.ped), 2.000, 0, 70)
     ReqAndDelete(nearveh)
 
     if string.find(garageid, "impound") then
@@ -247,7 +247,7 @@ function SpawnVehicleLocal(model, props)
                 local zaxis = actualShop.garage_z
                 local hash = tonumber(model)
                 local count = 0
-                FreezeEntityPosition(PlayerPedId(),true)
+                FreezeEntityPosition(cache.ped,true)
                 if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                     RequestModel(hash)
                     while not HasModelLoaded(hash) do
@@ -260,7 +260,7 @@ function SpawnVehicleLocal(model, props)
                 FreezeEntityPosition(LastVehicleFromGarage, true)
                 SetEntityCollision(LastVehicleFromGarage,false)
                 SetVehicleProp(LastVehicleFromGarage, props)
-                TaskWarpPedIntoVehicle(PlayerPedId(), LastVehicleFromGarage, -1)
+                TaskWarpPedIntoVehicle(cache.ped, LastVehicleFromGarage, -1)
                 InGarageShell('enter')
             end
         end
@@ -272,7 +272,7 @@ function SpawnVehicleLocal(model, props)
                 local zaxis = actualShop.garage_z
                 local hash = tonumber(model)
                 local count = 0
-                FreezeEntityPosition(PlayerPedId(),true)
+                FreezeEntityPosition(cache.ped,true)
                 if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
                     RequestModel(hash)
                     while not HasModelLoaded(hash) do
@@ -285,7 +285,7 @@ function SpawnVehicleLocal(model, props)
                 FreezeEntityPosition(LastVehicleFromGarage, true)
                 SetEntityCollision(LastVehicleFromGarage,false)
                 SetVehicleProp(LastVehicleFromGarage, props)
-                TaskWarpPedIntoVehicle(PlayerPedId(), LastVehicleFromGarage, -1)
+                TaskWarpPedIntoVehicle(cache.ped, LastVehicleFromGarage, -1)
                 InGarageShell('enter')
             end
         end
@@ -338,8 +338,8 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                 })
                 stats_show = vehicle
             end
-            while dist < 3 and not IsPedInAnyVehicle(PlayerPedId()) and ingarage do
-                coords = GetEntityCoords(PlayerPedId())
+            while dist < 3 and not IsPedInAnyVehicle(cache.ped) and ingarage do
+                coords = GetEntityCoords(cache.ped)
                 vehcoords = GetEntityCoords(vehicle)
                 dist = #(coords-vehcoords)
                 Wait(100)
@@ -352,7 +352,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                 show = false,
             })
             stats_show = nil
-            while IsPedInAnyVehicle(PlayerPedId()) and ingarage do
+            while IsPedInAnyVehicle(cache.ped) and ingarage do
                 local table = {
                     ['key'] = 'E', -- key
                     ['event'] = 'renzu_garage:ingaragepublic',
@@ -361,17 +361,17 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                     ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
                     ['invehicle_title'] = Message[7]..' [E] '..Message[16],
                     ['fa'] = '<i class="fas fa-car"></i>',
-                    ['custom_arg'] = {GetEntityCoords(PlayerPedId()), distance, vehicle, property or false, propertycoord or false, gid}, -- example: {1,2,3,4}
+                    ['custom_arg'] = {GetEntityCoords(cache.ped), distance, vehicle, property or false, propertycoord or false, gid}, -- example: {1,2,3,4}
                 }
                 TriggerEvent('renzu_popui:drawtextuiwithinput',table)
-                while IsPedInAnyVehicle(PlayerPedId()) and ingarage do
-                    coords = GetEntityCoords(PlayerPedId())
+                while IsPedInAnyVehicle(cache.ped) and ingarage do
+                    coords = GetEntityCoords(cache.ped)
                     vehcoords = GetEntityCoords(vehicle)
                     dist = #(coords-vehcoords)
                     Wait(500)
                 end
                 TriggerEvent('renzu_popui:closeui')
-                coords = GetEntityCoords(PlayerPedId())
+                coords = GetEntityCoords(cache.ped)
                 vehcoords = GetEntityCoords(vehicle)
                 dist = #(coords-vehcoords)
                 Citizen.Wait(500)
@@ -422,7 +422,7 @@ function GarageVehicle()
     Citizen.CreateThread(function()
         while ingarage do
             local sleep = 2000
-            local ped = PlayerPedId()
+            local ped = cache.ped
             if ingarage then
                 sleep = 0
             end
@@ -656,7 +656,7 @@ end
 DoScreenFadeIn(0)
 function GotoGarage(garageid, property, propertycoord, job)
     if job == nil then job = false end
-    FreezeEntityPosition(PlayerPedId(),true)
+    FreezeEntityPosition(cache.ped,true)
     vehtable = {}
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
@@ -709,7 +709,7 @@ function GotoGarage(garageid, property, propertycoord, job)
     end
     lastcat = nil
     garage_id = garageid
-    local ped = PlayerPedId()
+    local ped = cache.ped
     local garage_coords = {}
     if not property then
         if string.find(garageid, "impound") then
@@ -749,7 +749,7 @@ function GotoGarage(garageid, property, propertycoord, job)
         Wait(100)
     end
     DoScreenFadeIn(0)
-    FreezeEntityPosition(PlayerPedId(),false)
+    FreezeEntityPosition(cache.ped,false)
     local leftx = 4.0
     local lefty = 4.0
     local rightx = 4.0
@@ -801,12 +801,12 @@ function GotoGarage(garageid, property, propertycoord, job)
     GarageVehicle()
     while ingarage do
         VehiclesinGarage(GetEntityCoords(ped), 3.0, property or false, propertycoord or false, garageid)
-        local dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(PlayerPedId()))
+        local dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(cache.ped))
         while dist2 < 5 and ingarage do
             DrawMarker(36, shell_door_coords.x,shell_door_coords.y,shell_door_coords.z+1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7,  255,255,255, math.random(1,255), 0, 0, 1, 1, 0, 0, 0)
-            dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(PlayerPedId()))
+            dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(cache.ped))
             if IsControlJustPressed(0, 38) then
-                local ped = PlayerPedId()
+                local ped = cache.ped
                 CloseNui()
                 if string.find(garageid, "impound") then
                     for k,v in pairs(impoundcoord) do
@@ -847,7 +847,7 @@ end
 
 function CreateGarageShell()
     print('creating')
-    local ped = PlayerPedId()
+    local ped = cache.ped
     garage_coords = GetEntityCoords(ped)+vector3(0,0,20)
     local count = 0
     local model = GetHashKey('garage')
@@ -960,7 +960,7 @@ end
 
 function CreateGarageShell()
     print('creating')
-    local ped = PlayerPedId()
+    local ped = cache.ped
     garage_coords = GetEntityCoords(ped)+vector3(0,0,20)
     local count = 0
     local model = GetHashKey('garage')
@@ -1111,7 +1111,7 @@ end
 
 function OpenGarage(garageid,garage_type,jobonly,default)
     inGarage = true
-    local ped = PlayerPedId()
+    local ped = cache.ped
     if not Config.Quickpick and garage_type == 'car' and propertyspawn.x == nil then
         CreateGarageShell()
     end
@@ -1268,10 +1268,10 @@ function OpenGarage(garageid,garage_type,jobonly,default)
         end
     else
         Config.Notify('info', Message[38])
-        if not propertyspawn.x and #(GetEntityCoords(PlayerPedId()) - vector3(garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z)) > 15 then
-            SetEntityCoords(PlayerPedId(), garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
-        elseif propertyspawn.x and #(GetEntityCoords(PlayerPedId()) - vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)) > 15 then
-            SetEntityCoords(PlayerPedId(), propertyspawn.x,propertyspawn.y,propertyspawn.z, false, false, false, true)
+        if not propertyspawn.x and #(GetEntityCoords(cache.ped) - vector3(garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z)) > 15 then
+            SetEntityCoords(cache.ped, garagecoord[tid].garage_x,garagecoord[tid].garage_y,garagecoord[tid].garage_z, false, false, false, true)
+        elseif propertyspawn.x and #(GetEntityCoords(cache.ped) - vector3(propertyspawn.x,propertyspawn.y,propertyspawn.z)) > 15 then
+            SetEntityCoords(cache.ped, propertyspawn.x,propertyspawn.y,propertyspawn.z, false, false, false, true)
         end
         CloseNui()
     end
@@ -1280,7 +1280,7 @@ end
 
 
 function OpenHeli(garageid)
-    local ped = PlayerPedId()
+    local ped = cache.ped
     while not fetchdone do
         Citizen.Wait(1)
     end
@@ -1735,10 +1735,10 @@ function DrawZuckerburg(name,v,reqdist)
     if inGarage then Config.UseMarker = true return end
     CreateThread(function()
         local reqdist = reqdist
-        dist = #(v - GetEntityCoords(PlayerPedId()))
+        dist = #(v - GetEntityCoords(cache.ped))
         r,g,b = 0,100,200
         while dist < reqdist and neargarage and not inGarage do
-            dist = #(v - GetEntityCoords(PlayerPedId()))
+            dist = #(v - GetEntityCoords(cache.ped))
             r,g,b = r + 0.1,g + 0.1,b + 0.1
             if r >= 255 then
                 r = 0
@@ -1759,7 +1759,7 @@ end
 function DrawInteraction(i,v,reqdist,msg,event,server,var,disablemarker)
     local i = i
     if not markers[i] and i ~= nil and not inGarage then
-        local ped = PlayerPedId()
+        local ped = cache.ped
         local inveh = IsPedInAnyVehicle(ped)
         Citizen.CreateThread(function()
             markers[i] = true
@@ -1795,7 +1795,7 @@ end
 function DrawInteraction_(i,v,reqdist,msg,event,server,var,disablemarker)
     local i = i
     if not markers[i] and i ~= nil and not inGarage then
-        local ped = PlayerPedId()
+        local ped = cache.ped
         local inveh = IsPedInAnyVehicle(ped)
         --Citizen.CreateThread(function()
             markers[i] = true
@@ -1845,9 +1845,9 @@ function PopUI(name,v,reqdist,event)
         ['use_cursor'] = false, -- USE MOUSE CURSOR INSTEAD OF INPUT (ENTER)
     }
     TriggerEvent('renzu_popui:showui',t)
-    local dist = #(v - GetEntityCoords(PlayerPedId()))
+    local dist = #(v - GetEntityCoords(cache.ped))
     while dist < reqdist and neargarage do
-        dist = #(v - GetEntityCoords(PlayerPedId()))
+        dist = #(v - GetEntityCoords(cache.ped))
         Wait(100)
     end
     TriggerEvent('renzu_popui:closeui')

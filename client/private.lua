@@ -18,8 +18,8 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
     housingcustom = housing
     DoScreenFadeOut(111)
     Wait(111)
-    SetEntityCoords(PlayerPedId(),garage.coords.x,garage.coords.y,garage.coords.z,true)
-    SetEntityHeading(PlayerPedId(),garage.coords.w)
+    SetEntityCoords(cache.ped,garage.coords.x,garage.coords.y,garage.coords.z,true)
+    SetEntityHeading(cache.ped,garage.coords.w)
     Wait(1000)
     DoScreenFadeIn(500)
     currentprivate = garage_id
@@ -54,7 +54,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
     insidegarage = true
     CreateThread(function()
         while insidegarage do
-            local distance = #(GetEntityCoords(PlayerPedId()) - vec3(garage.garage_exit.x,garage.garage_exit.y,garage.garage_exit.z))
+            local distance = #(GetEntityCoords(cache.ped) - vec3(garage.garage_exit.x,garage.garage_exit.y,garage.garage_exit.z))
             if distance < 3 then
                 if Config.Oxlib then
                     local msg = '[E] - Exit Garage'
@@ -67,7 +67,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                             color = 'white'
                         }
                     })
-                    while #(GetEntityCoords(PlayerPedId()) - vec3(garage.garage_exit.x,garage.garage_exit.y,garage.garage_exit.z)) < 3 do
+                    while #(GetEntityCoords(cache.ped) - vec3(garage.garage_exit.x,garage.garage_exit.y,garage.garage_exit.z)) < 3 do
                         if IsControlJustPressed(0,38) then
                             lib.hideTextUI()
                             local options = {}
@@ -123,7 +123,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                     }
                     TriggerEvent('renzu_popui:drawtextuiwithinput',t)
                     while distance < 3 do
-                        distance = #(GetEntityCoords(PlayerPedId()) - garage.garage_exit)
+                        distance = #(GetEntityCoords(cache.ped) - garage.garage_exit)
                         Wait(500)
                     end
                     TriggerEvent('renzu_popui:closeui')
@@ -135,7 +135,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
     CreateThread(function()
         local stats_show = nil
         while insidegarage do
-            local nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70) or GetVehiclePedIsIn(PlayerPedId())
+            local nearveh = GetClosestVehicle(GetEntityCoords(cache.ped), 2.000, 0, 70) or GetVehiclePedIsIn(cache.ped)
             if nearveh ~= 0 and not carrymod then
                 local name = 'not found'
                 for k,v in pairs(vehiclesdb) do
@@ -170,7 +170,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                     })
                     stats_show = nearveh
                     CreateThread(function()
-                        while nearveh ~= 0 and not IsPedInAnyVehicle(PlayerPedId()) do
+                        while nearveh ~= 0 and not IsPedInAnyVehicle(cache.ped) do
                             if IsControlPressed(0,38) then
                                 TriggerEvent('renzu_garage:vehiclemod',nearveh)
                                 Wait(100)
@@ -180,8 +180,8 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                         end
                         return
                     end)
-                    while nearveh ~= 0 and not IsPedInAnyVehicle(PlayerPedId()) do
-                        nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70) or GetVehiclePedIsIn(PlayerPedId())
+                    while nearveh ~= 0 and not IsPedInAnyVehicle(cache.ped) do
+                        nearveh = GetClosestVehicle(GetEntityCoords(cache.ped), 2.000, 0, 70) or GetVehiclePedIsIn(cache.ped)
                         Wait(200)
                     end
                 end
@@ -194,7 +194,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                 })
             end
             local inv = garage.garage_inventory
-            local inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+            local inventorydis = #(GetEntityCoords(cache.ped) - vector3(inv.x,inv.y,inv.z))
             if inventorydis < 3 and not carrymode and not carrymod then
                 if Config.Oxlib then
                     local msg = Message[7]..' [E] '..Message[15]
@@ -210,7 +210,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                     })
                     CreateThread(function()
                         while inventorydis < 3 and not carrymode do
-                            inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                            inventorydis = #(GetEntityCoords(cache.ped) - vector3(inv.x,inv.y,inv.z))
                             Wait(500)
                         end
                         return
@@ -236,7 +236,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                     }
                     TriggerEvent('renzu_popui:drawtextuiwithinput',t)
                     while inventorydis < 3 and not carrymode do
-                        inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                        inventorydis = #(GetEntityCoords(cache.ped) - vector3(inv.x,inv.y,inv.z))
                         Wait(500)
                     end
                     TriggerEvent('renzu_popui:closeui')
@@ -256,7 +256,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                     })
                     CreateThread(function()
                         while inventorydis < 3 and not carrymode and carrymod do
-                            inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                            inventorydis = #(GetEntityCoords(cache.ped) - vector3(inv.x,inv.y,inv.z))
                             Wait(500)
                         end
                         return
@@ -283,14 +283,14 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                     }
                     TriggerEvent('renzu_popui:drawtextuiwithinput',t)
                     while inventorydis < 3 and not carrymode and carrymod do
-                        inventorydis = #(GetEntityCoords(PlayerPedId()) - vector3(inv.x,inv.y,inv.z))
+                        inventorydis = #(GetEntityCoords(cache.ped) - vector3(inv.x,inv.y,inv.z))
                         Wait(500)
                     end
                     TriggerEvent('renzu_popui:closeui')
                 end
             end
-            if IsPedInAnyVehicle(PlayerPedId()) then
-                local vehicle_prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
+            if IsPedInAnyVehicle(cache.ped) then
+                local vehicle_prop = GetVehicleProperties(GetVehiclePedIsIn(cache.ped))
                 if Config.Oxlib then
                     local msg = '[E] - Choose Vehicle'
                     lib.showTextUI(msg, {
@@ -302,7 +302,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                             color = 'white'
                         }
                     })
-                    while IsPedInAnyVehicle(PlayerPedId()) do
+                    while IsPedInAnyVehicle(cache.ped) do
                         if IsControlJustPressed(0,38) then
                             DoScreenFadeOut(1)
                             TriggerServerEvent('renzu_garage:exitgarage',garage,vehicle_prop,garage_id,true,activeshare)
@@ -330,7 +330,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
                         ['custom_arg'] = {garage,vehicle_prop,garage_id,true,activeshare}, -- example: {1,2,3,4}
                     }
                     TriggerEvent('renzu_popui:drawtextuiwithinput',t)
-                    while IsPedInAnyVehicle(PlayerPedId()) do
+                    while IsPedInAnyVehicle(cache.ped) do
                         if stats_show ~= nil then
                             stats_show = nil
                             SendNUIMessage({
@@ -350,7 +350,7 @@ RegisterNetEvent('renzu_garage:ingarage', function(t,garage,garage_id, vehicle_,
 end)
 
 function CarryMod(dict,anim,prop,flag,hand,pos1,pos2,pos3,pos4,pos5,pos6)
-	local ped = PlayerPedId()
+	local ped = cache.ped
 
 	RequestModel(GetHashKey(prop))
 	while not HasModelLoaded(GetHashKey(prop)) do
@@ -476,7 +476,7 @@ RegisterNetEvent('renzu_garage:storemod', function(current,mod,lvl,newprop,save,
     carrymode = false
     carrymod = false
     ReqAndDelete(object)
-    ClearPedTasks(PlayerPedId())
+    ClearPedTasks(cache.ped)
     if tonumber(mod.index) == 48 then -- fix broken native of getvehiclelivery
         newprop.modLivery = -1
     end
@@ -497,7 +497,7 @@ RegisterNetEvent('renzu_garage:installmod', function(index,lvl,k,vehicle,mod)
         Wait(150)
         newprop = GetVehicleProperties(vehicle)
         TriggerServerEvent('renzu_garage:storemod',currentprivate,mod,lvl,newprop,activeshare,true)
-        ClearPedTasks(PlayerPedId())
+        ClearPedTasks(cache.ped)
         ReqAndDelete(object)
     else
         Config.Notify('error', Message[20])
@@ -511,10 +511,10 @@ RegisterNetEvent('renzu_garage:getmod', function(index,lvl,k)
             CarryMod("anim@heists@box_carry@","idle",Config.VehicleMod[index].prop or 'hei_prop_heist_box',50,28422)
             tostore = {index,lvl,k,false,Config.VehicleMod[index]}
             while carrymod do
-                local nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
+                local nearveh = GetClosestVehicle(GetEntityCoords(cache.ped), 2.000, 0, 70)
                 newprop = GetVehicleProperties(nearveh)
                 if nearveh ~= 0 then
-                    local dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(nearveh))
+                    local dist = #(GetEntityCoords(cache.ped) - GetEntityCoords(nearveh))
                     if dist < 3 then
                         if Config.Oxlib then
                             local msg = ''..Message[7]..' [E] '..Message[21]..' '..Config.VehicleMod[index].label..' '..Message[23]..' '..lvl..''
@@ -531,8 +531,8 @@ RegisterNetEvent('renzu_garage:getmod', function(index,lvl,k)
                             CreateThread(function()
                                 while dist < 3 do
                                     newprop = GetVehicleProperties(nearveh)
-                                    nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
-                                    dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(nearveh))
+                                    nearveh = GetClosestVehicle(GetEntityCoords(cache.ped), 2.000, 0, 70)
+                                    dist = #(GetEntityCoords(cache.ped) - GetEntityCoords(nearveh))
                                     Wait(500)
                                 end
                                 return
@@ -558,8 +558,8 @@ RegisterNetEvent('renzu_garage:getmod', function(index,lvl,k)
                             TriggerEvent('renzu_popui:drawtextuiwithinput',t)
                             while dist < 3 do
                                 newprop = GetVehicleProperties(nearveh)
-                                nearveh = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 2.000, 0, 70)
-                                dist = #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(nearveh))
+                                nearveh = GetClosestVehicle(GetEntityCoords(cache.ped), 2.000, 0, 70)
+                                dist = #(GetEntityCoords(cache.ped) - GetEntityCoords(nearveh))
                                 Wait(500)
                             end
                             TriggerEvent('renzu_popui:closeui')
@@ -593,7 +593,7 @@ RegisterNetEvent('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
                 shell = housingcustom.shell
             end
             local vec = private_garage[shell].garage_inventory
-            local distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
+            local distance = #(GetEntityCoords(cache.ped) - vector3(vec.x,vec.y,vec.z))
             if distance < 3 then
                 if Config.Oxlib then
                     local msg = ''..Message[7]..' [E] '..Message[25]..' '..mod.label..''
@@ -610,7 +610,7 @@ RegisterNetEvent('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
                     CreateThread(function()
                         while distance < 3 do
                             newprop = GetVehicleProperties(vehicle)
-                            distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
+                            distance = #(GetEntityCoords(cache.ped) - vector3(vec.x,vec.y,vec.z))
                             Wait(500)
                         end
                         return
@@ -636,7 +636,7 @@ RegisterNetEvent('renzu_garage:removevehiclemod', function(mod,lvl,vehicle)
                     TriggerEvent('renzu_popui:drawtextuiwithinput',t)
                     while distance < 3 do
                         newprop = GetVehicleProperties(vehicle)
-                        distance = #(GetEntityCoords(PlayerPedId()) - vector3(vec.x,vec.y,vec.z))
+                        distance = #(GetEntityCoords(cache.ped) - vector3(vec.x,vec.y,vec.z))
                         Wait(500)
                     end
                     TriggerEvent('renzu_popui:closeui')
@@ -794,9 +794,9 @@ RegisterNetEvent('renzu_garage:choose', function(t,garage)
     SetVehicleOwned(vehicle)
     SetVehicleProp(vehicle, t)
     NetworkFadeInEntity(vehicle,1)
-    SetPedConfigFlag(PlayerPedId(),429,false)
+    SetPedConfigFlag(cache.ped,429,false)
     Wait(10)
-    TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
+    TaskWarpPedIntoVehicle(cache.ped, vehicle, -1)
     housingcustom = nil
     DoScreenFadeOut(1)
 	DoScreenFadeIn(333)
@@ -806,7 +806,7 @@ function GetClosestPlayer()
     local players = GetActivePlayers()
     local closestDistance = -1
     local closestPlayer = -1
-    local ply = PlayerPedId()
+    local ply = cache.ped
     local plyCoords = GetEntityCoords(ply, 0)
 
     for index,value in ipairs(players) do
@@ -860,9 +860,9 @@ RegisterNetEvent('renzu_garage:exitgarage', function(t,exit)
         private_garages = {}
         --DoScreenFadeOut(1)
         if housingcustom then
-            SetEntityCoords(PlayerPedId(),housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z)
+            SetEntityCoords(cache.ped,housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z)
         else
-            SetEntityCoords(PlayerPedId(),t.buycoords.x,t.buycoords.y,t.buycoords.z)
+            SetEntityCoords(cache.ped,t.buycoords.x,t.buycoords.y,t.buycoords.z)
         end
         Wait(3500)
         housingcustom = nil
@@ -901,12 +901,12 @@ RegisterNetEvent('renzu_garage:opengaragemenu', function(garageid,v)
                 end
                 TriggerEvent('renzu_contextmenu:insertmulti',multimenu,Message[29],false,Message[29])
                 TriggerEvent('renzu_contextmenu:show')
-            elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
+            elseif not owned and IsPedInAnyVehicle(cache.ped) then
                 Config.Notify( 'error',Message[31])
                 opened = true
-            elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
-                local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
-                ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
+            elseif owned and IsPedInAnyVehicle(cache.ped) then
+                local prop = GetVehicleProperties(GetVehiclePedIsIn(cache.ped))
+                ReqAndDelete(GetVehiclePedIsIn(cache.ped))
                 TriggerServerEvent('renzu_garage:storeprivate',garageid,v, prop)
                 opened = true
             elseif owned then
@@ -987,12 +987,12 @@ RegisterNetEvent('renzu_garage:opengaragemenu', function(garageid,v)
                     }
                 })
                 lib.showContext('privategarage')
-            elseif not owned and IsPedInAnyVehicle(PlayerPedId()) then
+            elseif not owned and IsPedInAnyVehicle(cache.ped) then
                 Config.Notify( 'error',Message[31])
                 opened = true
-            elseif owned and IsPedInAnyVehicle(PlayerPedId()) then
-                local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
-                ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
+            elseif owned and IsPedInAnyVehicle(cache.ped) then
+                local prop = GetVehicleProperties(GetVehiclePedIsIn(cache.ped))
+                ReqAndDelete(GetVehiclePedIsIn(cache.ped))
                 TriggerServerEvent('renzu_garage:storeprivate',garageid,t, prop)
                 opened = true
             elseif owned then
@@ -1050,7 +1050,7 @@ CreateThread(function()
     Wait(500)
     while Config.Private_Garage and not Config.Oxlib do
         for k,v in pairs(private_garage) do
-            local distance = #(GetEntityCoords(PlayerPedId()) - vector3(v.buycoords.x,v.buycoords.y,v.buycoords.z))
+            local distance = #(GetEntityCoords(cache.ped) - vector3(v.buycoords.x,v.buycoords.y,v.buycoords.z))
             if distance < 3 then
                 opened = false
                 local t = {
@@ -1065,7 +1065,7 @@ CreateThread(function()
                 }
                 TriggerEvent('renzu_popui:drawtextuiwithinput',t)
                 while distance < 3 and not opened do
-                    distance = #(GetEntityCoords(PlayerPedId()) - vector3(v.buycoords.x,v.buycoords.y,v.buycoords.z))
+                    distance = #(GetEntityCoords(cache.ped) - vector3(v.buycoords.x,v.buycoords.y,v.buycoords.z))
                     Wait(500)
                 end
                 TriggerEvent('renzu_popui:closeui')

@@ -2128,6 +2128,6 @@ exports('GetHousingShellType', function(coord) -- return applicable and preconfi
 end)
 
 RegisterCommand('getneargarage', function(source, args, rawCommand)
-  local ret = exports.renzu_garage:GetHousingShellType(GetEntityCoords(PlayerPedId()))
+  local ret = exports.renzu_garage:GetHousingShellType(GetEntityCoords(cache.ped))
   print(ret.dist,ret.coord,ret.shell)
 end)

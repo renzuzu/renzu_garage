@@ -1,6 +1,6 @@
 RegisterNetEvent('renzu_garage:storeprivatehouse', function(i, shell)
-    local prop = GetVehicleProperties(GetVehiclePedIsIn(PlayerPedId()))
-    ReqAndDelete(GetVehiclePedIsIn(PlayerPedId()))
+    local prop = GetVehicleProperties(GetVehiclePedIsIn(cache.ped))
+    ReqAndDelete(GetVehiclePedIsIn(cache.ped))
     TriggerServerEvent('renzu_garage:storeprivate',i,{}, prop, shell)
 end)
 
@@ -19,8 +19,8 @@ RegisterNetEvent('renzu_garage:property', function(i, propertycoord, index, spaw
         propertygarage = i
         garageid = i
         tid = i
-        if IsPedInAnyVehicle(PlayerPedId()) then
-            Storevehicle(GetVehiclePedIsIn(PlayerPedId()))
+        if IsPedInAnyVehicle(cache.ped) then
+            Storevehicle(GetVehiclePedIsIn(cache.ped))
         else
             OpenGarage(garageid,'car',garagejob or false,{})
         end
@@ -28,8 +28,8 @@ RegisterNetEvent('renzu_garage:property', function(i, propertycoord, index, spaw
         garageid = i
         tid = i
         propertygarage = i
-        if IsPedInAnyVehicle(PlayerPedId()) then
-            Storevehicle(GetVehiclePedIsIn(PlayerPedId()))
+        if IsPedInAnyVehicle(cache.ped) then
+            Storevehicle(GetVehiclePedIsIn(cache.ped))
         else
             if Config.PropertyQuickPick then
                 OpenGarage(garageid,'car',garagejob or false,{})
@@ -49,10 +49,10 @@ RegisterNetEvent('renzu_garage:garagehousing_advanced', function(garageID,garage
 end)
 
 function GarageHousing_Basic()
-    local ret = exports.renzu_garage:GetHousingShellType(GetEntityCoords(PlayerPedId()))
+    local ret = exports.renzu_garage:GetHousingShellType(GetEntityCoords(cache.ped))
     if ret.id then
         local garageID = "garage_"..ret.id
-        if IsPedInAnyVehicle(PlayerPedId()) then -- STORE
+        if IsPedInAnyVehicle(cache.ped) then -- STORE
             TriggerEvent('renzu_garage:storeprivatehouse',garageID)
         else
             local var = {ret.shell, {},false,garageID,ret.coord}
@@ -67,7 +67,7 @@ function GarageHousing_Adv(gid,garagecoord,spawncoord,shell)
     local ret = exports.renzu_garage:GetHousingShellType(garagecoord)
     gid = gid:gsub('garage_','')
     local garageID = "garage_"..gid
-    if IsPedInAnyVehicle(PlayerPedId()) then -- STORE
+    if IsPedInAnyVehicle(cache.ped) then -- STORE
         TriggerEvent('renzu_garage:storeprivatehouse',garageID, shell)
     else
         local var = {shell or ret.shell, {},false,garageID,spawncoord}

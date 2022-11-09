@@ -5,7 +5,7 @@ end)
 
 RegisterCommand('impound', function(source, args, rawCommand)
     if Config.EnableImpound and PlayerData.job ~= nil and JobImpounder[PlayerData.job.name] then
-        local ped = PlayerPedId()
+        local ped = cache.ped
         local coords = GetEntityCoords(ped)
         local vehicle = GetNearestVehicleinPool(coords, 5)
         SendNUIMessage(
@@ -38,7 +38,7 @@ end, false)
 function OpenImpound(garageid)
     local garageid = garageid
     inGarage = true
-    local ped = PlayerPedId()
+    local ped = cache.ped
     while not fetchdone do
     Citizen.Wait(333)
     end
@@ -195,7 +195,7 @@ function OpenImpound(garageid)
         SetNuiFocus(true, true)
         if not Config.Quickpick then
             for k,v in pairs(impoundcoord) do
-                local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(PlayerPedId()))
+                local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(cache.ped))
                 if dist <= 70.0 then
                     cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", v.garage_x-5.0, v.garage_y, v.garage_z+22.0, 360.00, 0.00, 0.00, 60.00, false, 0)
                     PointCamAtCoord(cam, v.garage_x, v.garage_y, v.garage_z+20.0)
@@ -217,7 +217,7 @@ function OpenImpound(garageid)
             DeleteEntity(LastVehicleFromGarage)
         end
     else
-        SetEntityCoords(PlayerPedId(), impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
+        SetEntityCoords(cache.ped, impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
         CloseNui()
         Config.Notify( 'info', Message[39])
     end
