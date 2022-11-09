@@ -712,3 +712,23 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
         end
     end)
 end, false)
+
+CheckKeysOnItemRemove = function(item,count)
+    Wait(1000)
+    local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
+    if item == 'keys' then
+        for k,v in pairs(GetAllVehicleFromPool()) do
+            if GetEntityPopulationType(v) > 4 then
+                local plate = string.gsub(GetVehicleNumberPlateText(v), '^%s*(.-)%s*$', '%1')
+                if owned_vehicles[plate] and not DoesPlayerHaveKey(plate) then
+                    local ent = Entity(v).state
+                    ent:set('havekeys', false, true)
+                    TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(v))
+                end
+            end
+        end
+    end
+end
+
+RegisterNetEvent('esx:removeInventoryItem', CheckKeysOnItemRemove)
+RegisterNetEvent('ox_inventory:itemCount', CheckKeysOnItemRemove)
