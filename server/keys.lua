@@ -170,7 +170,7 @@ AddEventHandler('esx:onPlayerJoined', function(src, char, data)
 end)
 
 AddEventHandler('entityCreated', function(entity)
-    if GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or GetEntityPopulationType(entity) ~= 7 then return end
+    if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then return end
     local entity = entity
     local havekeys = false
     Wait(1000)
@@ -201,17 +201,18 @@ AddEventHandler('entityCreated', function(entity)
         if not gvehicles[plate] and vehicleshop then -- lets assume its newly purchased from any vehicle shop
             local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
-                local tempvehicles = gvehicles
-                tempvehicles[plate] = new_spawned[1]
-                GlobalState.GVehicles = tempvehicles
-                local share = {}
-                share[new_spawned[1][owner]] = new_spawned[1][owner]
-                ent.share = share
-                globalkeys[plate] = ent.share
-                GlobalState.Gshare = globalkeys
                 if Config.Ox_Inventory then
                     local source = GetPlayerFromIdentifier(new_spawned[1][owner]).source
                     GiveVehicleKey(plate,source)
+                else
+                    local tempvehicles = gvehicles
+                    tempvehicles[plate] = new_spawned[1]
+                    GlobalState.GVehicles = tempvehicles
+                    local share = {}
+                    share[new_spawned[1][owner]] = new_spawned[1][owner]
+                    ent.share = share
+                    globalkeys[plate] = ent.share
+                    GlobalState.Gshare = globalkeys
                 end
                 --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
                 return

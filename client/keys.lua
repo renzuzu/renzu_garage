@@ -57,7 +57,6 @@ function isVehicleUnlocked()
                 ent:set('havekeys', false, true)
                 SetPedConfigFlag(PlayerPedId(),429,false)
                 Wait(1)
-                print(ent.havekeys,'keys')
                 TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(v))
                 --TriggerServerEvent('renzu_garage:vehiclekeyhandler',plate,true)
                 --NetworkRequestControlOfEntity(v)
@@ -333,8 +332,10 @@ DoesPlayerHaveKey = function(plate)
     local data = exports.ox_inventory:Search('slots', 'keys')
     local gago = {}
     if data then
+        local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
         for k,v in pairs(data) do
-            if v.metadata and v.metadata.plate == plate then
+            local metaplate = v.metadata and v.metadata.plate
+            if metaplate and string.gsub(tostring(metaplate), '^%s*(.-)%s*$', '%1') == plate then
                 haskey = true
                 break
             end
@@ -350,18 +351,11 @@ VehiclesinArea = function(data)
     nearestowner = nil
     for k,v in pairs(data) do
         local ent = Entity(v.entity).state
-        if v.owner == PlayerData.identifier and near == -1  -- iterate 1st time checks if owned
-        or near == -1 and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate 1st time check if shared
-        or near > v.distance and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- iterate distance checks and checked if shared
-        or near == -1 and GlobalState.Gshare and GlobalState.Gshare[v.plate] and GlobalState.Gshare[v.plate][PlayerData.identifier] and GlobalState.Gshare[v.plate][PlayerData.identifier] -- check if identifier included in global keys
-        or near > v.distance and GlobalState.Gshare and GlobalState.Gshare[v.plate] and GlobalState.Gshare[v.plate][PlayerData.identifier] and GlobalState.Gshare[v.plate][PlayerData.identifier] -- check if identifier included in global keys
-        or near > v.distance and v.owner == PlayerData.identifier then -- iterate distance checks and checked if owned
-            if v.owner and near > v.distance or v.owner and near == -1 then
-                near = v.distance
-                nearestveh = v.entity
-                nearestplate = v.plate
-                nearestowner = v.owner
-            end
+        if near > v.distance or near == -1 then
+            near = v.distance
+            nearestveh = v.entity
+            nearestplate = v.plate
+            nearestowner = v.owner
         end
     end
     return near, nearestveh, nearestplate, nearestowner
@@ -392,9 +386,9 @@ function Keyless()
     EnsureEntityStateBag(nearestveh)
     -- check nearest owned vehicle
     local ent = Entity(nearestveh).state
-    if owned_vehicles[nearestplate] and owned_vehicles[nearestplate][owner] == PlayerData.identifier and not ox -- player owned
-    or ox and DoesPlayerHaveKey(nearestplate) -- ox inventory item keys 
-    or not oxy and owned_vehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
+    if ox and DoesPlayerHaveKey(nearestplate) -- priorities ox
+    or owned_vehicles[nearestplate] and owned_vehicles[nearestplate][owner] == PlayerData.identifier and not ox -- player owned
+    or not ox and owned_vehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
     or GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
         ent.unlock = not ent.unlock
         PlaySoundFromEntity(-1, "Remote_Control_Fob", PlayerPedId(), "PI_Menu_Sounds", 1, 0)

@@ -891,6 +891,16 @@ RegisterNUICallback(
                     end
                 end
                 local vehicle = CreateVehicle(tonumber(props.model), tempcoord[tid].spawn_x,tempcoord[tid].spawn_y,tempcoord[tid].spawn_z, tempcoord[tid].heading, 1, 1)
+                while not DoesEntityExist(vehicle) do Wait(1) end
+                -- incase server setter.
+                SetEntityAsMissionEntity(vehicle,true,true)
+                NetworkRequestControlOfEntity(vehicle)
+                local attempt = 0
+                while not NetworkHasControlOfEntity(vehicle) and attempt < 500 and DoesEntityExist(vehicle) do
+                    NetworkRequestControlOfEntity(vehicle)
+                    Citizen.Wait(0)
+                    attempt = attempt + 1
+                end
                 SetVehicleProp(vehicle, props)
                 --SetVehicleBobo(vehicle)
                 if not propertygarage then
