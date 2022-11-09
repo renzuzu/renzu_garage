@@ -544,7 +544,7 @@ RegisterNetEvent('renzu_garage:return', function(v,vehicle,property,actualShop,v
             Wait(100)
             local vehicle = CreateVehicle(tonumber(vp.model), tonumber(v.spawn_x)*1.0,tonumber(v.spawn_y)*1.0,tonumber(v.spawn_z)*1.0, tonumber(v.heading), 1, 1)
             while not DoesEntityExist(vehicle) do Wait(1) print(vp.model,'loading model') end
-            SetVehicleBobo(vehicle)
+            SetVehicleOwned(vehicle)
             Wait(100)
             SetVehicleProp(vehicle, vp)
             local mycoord = GetEntityCoords(vehicle)
@@ -646,7 +646,7 @@ RegisterNetEvent('renzu_garage:ingaragepublic', function(coords, distance, vehic
                 end
             end
             v = CreateVehicle(model, tempcoord[tid].spawn_x,tempcoord[tid].spawn_y,tempcoord[tid].spawn_z, tempcoord[tid].heading, 1, 1)
-            SetVehicleBobo(v)
+            SetVehicleOwned(v)
             CheckWanderingVehicle(vp.plate)
             vp.health = GetVehicleEngineHealth(GetVehiclePedIsIn(PlayerPedId()))
             SetVehicleProp(v, vp)
@@ -893,16 +893,8 @@ RegisterNUICallback(
                 local vehicle = CreateVehicle(tonumber(props.model), tempcoord[tid].spawn_x,tempcoord[tid].spawn_y,tempcoord[tid].spawn_z, tempcoord[tid].heading, 1, 1)
                 while not DoesEntityExist(vehicle) do Wait(1) end
                 -- incase server setter.
-                SetEntityAsMissionEntity(vehicle,true,true)
-                NetworkRequestControlOfEntity(vehicle)
-                local attempt = 0
-                while not NetworkHasControlOfEntity(vehicle) and attempt < 500 and DoesEntityExist(vehicle) do
-                    NetworkRequestControlOfEntity(vehicle)
-                    Citizen.Wait(0)
-                    attempt = attempt + 1
-                end
+                SetVehicleOwned(vehicle)
                 SetVehicleProp(vehicle, props)
-                --SetVehicleBobo(vehicle)
                 if not propertygarage then
                     Spawn_Vehicle_Forward(vehicle, vector3(tempcoord[tid].spawn_x,tempcoord[tid].spawn_y,tempcoord[tid].spawn_z),tempcoord[tid].spawns or false)
                 end
@@ -1040,7 +1032,7 @@ RegisterNUICallback(
                     end
                 end
                 vehicle = CreateVehicle(hash, v.x,v.y,v.z, 256.0, 1, 1)
-                SetVehicleBobo(vehicle)
+                SetVehicleOwned(vehicle)
                 Spawn_Vehicle_Forward(vehicle, vector3(v.x,v.y,v.z),v and v.spawns or false)
                 DoScreenFadeIn(333)
                 while not DoesEntityExist(vehicle) do
@@ -1105,7 +1097,7 @@ RegisterNUICallback(
                         end
                     end
                     vehicle = CreateVehicle(tonumber(data.modelcar), garagecoord[tid].spawn_x,garagecoord[tid].spawn_y,garagecoord[tid].spawn_z, garagecoord[tid].heading, 1, 1)
-                    SetVehicleBobo(vehicle)
+                    SetVehicleOwned(vehicle)
                     SetVehicleProp(vehicle, props)
                     if not propertygarage then
                         Spawn_Vehicle_Forward(vehicle, vector3(garagecoord[tid].spawn_x,garagecoord[tid].spawn_y,garagecoord[tid].spawn_z),garagecoord[tid].spawns or false)

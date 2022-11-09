@@ -791,7 +791,7 @@ RegisterNetEvent('renzu_garage:choose', function(t,garage)
     else
         vehicle = CreateVehicle(t.model,garage.buycoords.x,garage.buycoords.y,garage.buycoords.z,garage.buycoords.w,true,true)
     end
-    SetVehicleBobo(vehicle)
+    SetVehicleOwned(vehicle)
     SetVehicleProp(vehicle, t)
     NetworkFadeInEntity(vehicle,1)
     SetPedConfigFlag(PlayerPedId(),429,false)

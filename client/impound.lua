@@ -127,8 +127,9 @@ function OpenImpound(garageid)
                 v.garage_id = impoundcoord[1].garage
             end
             local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
-            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and v.impound and ispolice 
-            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier
+            if v.garage_id ~= 'private' and not nearbyvehicles[plate] and v.impound and ispolice  -- job list of impounded vehicles
+            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier -- list impounded vehicles if garage id is impound and if its owned
+            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not stored and Impoundforall and v.identifier == PlayerData.identifier -- list impounded vehicles if not stored and if its owned
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
                 if cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() or 'police' ~= PlayerData.job.name then
 

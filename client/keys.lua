@@ -219,9 +219,18 @@ CreateThread(function()
 	return
 end)
 
-function SetVehicleBobo(vehicle)
+function SetVehicleOwned(vehicle)
+    while not DoesEntityExist(vehicle) do Wait(1) end
     local netid = NetworkGetNetworkIdFromEntity(vehicle)
     SetNetworkIdExistsOnAllMachines(netid,true)
+    SetEntityAsMissionEntity(vehicle,true,true)
+    NetworkRequestControlOfEntity(vehicle)
+    local attempt = 0
+    while not NetworkHasControlOfEntity(vehicle) and attempt < 500 and DoesEntityExist(vehicle) do
+        NetworkRequestControlOfEntity(vehicle)
+        Citizen.Wait(0)
+        attempt = attempt + 1
+    end
 end
 
 function getveh()

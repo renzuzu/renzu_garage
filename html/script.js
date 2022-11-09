@@ -1104,7 +1104,7 @@ $(document).on('keydown', function(event) {
             getEl("vehlist").innerHTML = '';
         }
         let page = 0
-        let max = page + 40
+        let max = page + 70
         datas = data
         for(i = page; i < (data.length); i++) {
             var modelUper = data[i].model;
