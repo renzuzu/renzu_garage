@@ -28,8 +28,6 @@ GiveVehicleKey = function(plate,source)
     end
 end
 
-exports('GiveVehicleKey', GiveVehicleKey)
-
 RegisterServerCallBack_('renzu_garage:getgaragekeys', function (source, cb)
     local xPlayer = GetPlayerFromId(source)
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM garagekeys WHERE identifier = @identifier', {
@@ -38,8 +36,12 @@ RegisterServerCallBack_('renzu_garage:getgaragekeys', function (source, cb)
     local players = {}
     for i=0, GetNumPlayerIndices()-1 do
         local x = GetPlayerFromId(tonumber(GetPlayerFromIndex(i)))
-        if x.identifier ~= xPlayer.identifier then
-            table.insert(players,x)
+        if x ~= nil then
+            if x.identifier ~= xPlayer.identifier then
+                table.insert(players,x)
+            end
+        else
+            return
         end
     end
     local keys = result and result[1] ~= nil and json.decode(result[1].keys) or false
@@ -132,8 +134,7 @@ RegisterServerEvent('statebugupdate') -- this will be removed once syncing of st
 AddEventHandler('statebugupdate', function(name,value,net)
     local vehicle = NetworkGetEntityFromNetworkId(net)
     local ent = Entity(vehicle).state
-    ent:set(name,value,true)
-    EnsureEntityStateBag(veicle)
+    ent[name] = value
     if name == 'unlock' then
         local val = 1
         if not value then
@@ -163,15 +164,18 @@ AddEventHandler('statebugupdate', function(name,value,net)
 end)
 
 -- esx
-AddEventHandler('esx:onPlayerJoined', function(src, char, data)
-	local src = src
+RegisterNetEvent('esx:onPlayerJoined')
+AddEventHandler('esx:onPlayerJoined', function(char, data)
+	local src = source
     Wait(1000)
     local xPlayer = GetPlayerFromId(src)
     players[src] = xPlayer
 end)
 
 AddEventHandler('entityCreated', function(entity)
-    if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then return end
+    if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then
+        return
+    end
     local entity = entity
     local havekeys = false
     Wait(1000)
@@ -202,18 +206,17 @@ AddEventHandler('entityCreated', function(entity)
         if not gvehicles[plate] and vehicleshop then -- lets assume its newly purchased from any vehicle shop
             local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
+                local tempvehicles = gvehicles
+                tempvehicles[plate] = new_spawned[1]
+                GlobalState.GVehicles = tempvehicles
+                local share = {}
+                share[new_spawned[1][owner]] = new_spawned[1][owner]
+                ent.share = share
+                globalkeys[plate] = ent.share
+                GlobalState.Gshare = globalkeys
                 if Config.Ox_Inventory then
                     local source = GetPlayerFromIdentifier(new_spawned[1][owner]).source
                     GiveVehicleKey(plate,source)
-                else
-                    local tempvehicles = gvehicles
-                    tempvehicles[plate] = new_spawned[1]
-                    GlobalState.GVehicles = tempvehicles
-                    local share = {}
-                    share[new_spawned[1][owner]] = new_spawned[1][owner]
-                    ent.share = share
-                    globalkeys[plate] = ent.share
-                    GlobalState.Gshare = globalkeys
                 end
                 --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
                 return
