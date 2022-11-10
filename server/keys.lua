@@ -38,7 +38,7 @@ RegisterServerCallBack_('renzu_garage:getgaragekeys', function (source, cb)
     local players = {}
     for i=0, GetNumPlayerIndices()-1 do
         local x = GetPlayerFromId(tonumber(GetPlayerFromIndex(i)))
-        if x.identifier ~= xPlayer.identifier then
+        if x and x.identifier ~= xPlayer.identifier then
             table.insert(players,x)
         end
     end
