@@ -129,7 +129,7 @@ Config.Notify = function(type,msg,xPlayer)
 end
 
 if not IsDuplicityVersion() then
-    if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
+    if GetResourceState('ox_lib') ~= 'started' then
         cache = {}
     end
     ESX = nil
