@@ -804,7 +804,7 @@ function GotoGarage(garageid, property, propertycoord, job)
         VehiclesinGarage(GetEntityCoords(ped), 3.0, property or false, propertycoord or false, garageid)
         local dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(cache.ped))
         while dist2 < 5 and ingarage do
-            DrawMarker(36, shell_door_coords.x,shell_door_coords.y,shell_door_coords.z+1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7,  255,255,255, math.random(1,255), 0, 0, 1, 1, 0, 0, 0)
+            DrawMarker(36, shell_door_coords.x,shell_door_coords.y,shell_door_coords.z+1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.7,  255,255,255, 255, 0, 0, 1, 1, 0, 0, 0)
             dist2 = #(vector3(shell_door_coords.x,shell_door_coords.y,shell_door_coords.z) - GetEntityCoords(cache.ped))
             if IsControlJustPressed(0, 38) then
                 local ped = cache.ped
@@ -840,7 +840,7 @@ function GotoGarage(garageid, property, propertycoord, job)
                 DoScreenFadeIn(1000)
                 DeleteGarage() 
             end
-            Citizen.Wait(5)
+            Citizen.Wait(4)
         end
         Citizen.Wait(1000)
     end
