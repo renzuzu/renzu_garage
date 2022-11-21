@@ -179,10 +179,10 @@ RecreateGarageInfo = function()
 	if Config.Oxlib then
 		lib.hideTextUI()
 		for k,v in pairs(garagecoord) do
-			if GarageZone.Spheres[v.garage] then
+			if GarageZone.Spheres[v.garage] and GarageZone.Spheres[v.garage].remove then
 				GarageZone.Spheres[v.garage]:remove()
 			end
-			if v.job ~= nil and v.job == PlayerData.job.name and GarageZone.Spheres[v.garage] or v.job == nil and GarageZone.Spheres[v.garage] then
+			if v.job ~= nil and v.job == PlayerData.job.name or v.job == nil and GarageZone.Spheres[v.garage] then
 				GarageZone.Add(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,4,v.job ~= nil and v.job == PlayerData.job.name and v.job or nil,tid)
 			end
 		end
@@ -262,6 +262,7 @@ function Playerloaded()
 end
 
 function SetJob()
+	print('setjob')
 	if Config.framework == 'ESX' then
 		RegisterNetEvent('esx:setJob')
 		AddEventHandler('esx:setJob', function(job)
