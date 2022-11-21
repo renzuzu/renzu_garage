@@ -655,6 +655,7 @@ end
 
 DoScreenFadeIn(0)
 function GotoGarage(garageid, property, propertycoord, job)
+    TriggerServerEvent('safecoords', GetEntityCoords(PlayerPedId()))
     if job == nil then job = false end
     FreezeEntityPosition(cache.ped,true)
     vehtable = {}
@@ -835,6 +836,7 @@ function GotoGarage(garageid, property, propertycoord, job)
                         end
                     end
                 end
+                TriggerServerEvent('safecoords', nil)
                 DoScreenFadeIn(1000)
                 DeleteGarage() 
             end

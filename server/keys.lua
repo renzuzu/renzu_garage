@@ -171,6 +171,11 @@ RegisterCommand('exitgarage', function(source)
         SetPlayerRoutingBucket(source,0) -- default world
     end
 end)
+
+RegisterNetEvent('safecoords', function(coord)
+    local xPlayer = GetPlayerFromId(source)
+    safecoords[xPlayer.identifier] = coord
+end)
 -- esx
 AddEventHandler('esx:onPlayerJoined', function(src, char, data)
 	local src = src
