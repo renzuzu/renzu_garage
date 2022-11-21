@@ -162,12 +162,40 @@ AddEventHandler('statebugupdate', function(name,value,net)
     end
 end)
 
+RegisterCommand('exitgarage', function(source)
+    local xPlayer = GetPlayerFromId(source)
+    if safecoords[xPlayer.identifier] then
+        print(safecoords[xPlayer.identifier])
+        SetEntityCoords(GetPlayerPed(source),safecoords[xPlayer.identifier])
+        safecoords[xPlayer.identifier] = nil
+        SetPlayerRoutingBucket(source,0) -- default world
+    end
+end)
 -- esx
 AddEventHandler('esx:onPlayerJoined', function(src, char, data)
 	local src = src
     Wait(1000)
     local xPlayer = GetPlayerFromId(src)
     players[src] = xPlayer
+    Wait(3000)
+    if safecoords[xPlayer.identifier] then
+        SetEntityCoords(GetPlayerPed(src),safecoords[xPlayer.identifier])
+        safecoords[xPlayer.identifier] = nil
+    end
+end)
+
+AddEventHandler('QBCore:Server:PlayerLoaded', function(data)
+	local src = data.PlayerData.source
+    Wait(1000)
+    local xPlayer = GetPlayerFromId(src)
+    players[src] = xPlayer
+    Wait(3000)
+    print(safecoords[xPlayer.identifier],'awww',xPlayer.identifier)
+    if safecoords[xPlayer.identifier] then
+        data.Functions.SetPlayerData('position', safecoords[xPlayer.identifier])
+        SetEntityCoords(GetPlayerPed(src),safecoords[xPlayer.identifier])
+        safecoords[xPlayer.identifier] = nil
+    end
 end)
 
 AddEventHandler('entityCreated', function(entity)

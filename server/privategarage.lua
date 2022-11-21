@@ -334,12 +334,13 @@ AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
     result = {}
     vehicle_ = {}
 end)
-
+safecoords = setmetatable({},{})
 RegisterServerEvent('renzu_garage:gotogarage')
 AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
     local source = source
     local xPlayer = GetPlayerFromId(source)
     local identifier = xPlayer.identifier
+    safecoords[identifier] = GetEntityCoords(GetPlayerPed(source))
     if share and not DoiOwnthis(xPlayer,id) then
         identifier = v.owner or xPlayer.identifier
     end
@@ -451,6 +452,7 @@ AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
         result = {}
     end
     lastgarage[source] = nil
+    safecoords[source] = nil
 end)
 
 RegisterServerCallBack_('renzu_garage:isgarageowned', function (source, cb, id, v)
