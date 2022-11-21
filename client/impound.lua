@@ -97,7 +97,7 @@ function OpenImpound(garageid)
                 end
             end
         end
-        if totalcats > 1 then
+        if totalcats > 0 then
             SendNUIMessage(
                 {
                     cats = cats,
@@ -131,8 +131,7 @@ function OpenImpound(garageid)
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier -- list impounded vehicles if garage id is impound and if its owned
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not stored and Impoundforall and v.identifier == PlayerData.identifier -- list impounded vehicles if not stored and if its owned
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
-                if cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() or 'police' ~= PlayerData.job.name then
-
+                if cat ~= nil and totalcats > 0 and v.brand:upper() == cat:upper() or 'police' ~= PlayerData.job.name then
                     c = c + 1
                     if vehtable[v.impound] == nil then
                         vehtable[v.impound] = {}
@@ -217,6 +216,7 @@ function OpenImpound(garageid)
             DeleteEntity(LastVehicleFromGarage)
         end
     else
+        print('no veh')
         SetEntityCoords(cache.ped, impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
         CloseNui()
         Config.Notify( 'info', Message[39])
