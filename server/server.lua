@@ -1,4 +1,10 @@
 -- MAIN SERVER GARAGE
+if Config.Ox_Inventory and GetResourceState('ox_inventory') ~= 'started' then
+    Config.Ox_Inventory = false
+end
+if Config.framework == 'QBCORE' then
+    StopResource('qb-vehiclekeys') -- conflict
+end
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
 AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public,garagekey)
     local src = source 

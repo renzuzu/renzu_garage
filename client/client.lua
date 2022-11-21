@@ -4,16 +4,10 @@ Citizen.CreateThread(function()
     while PlayerData.job == nil do Wait(111) end
     if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
         Config.Oxlib = false
-        cache.ped = function()
-            return PlayerPedId()
-        end
+        cache.ped = PlayerPedId()
     end
     if Config.Ox_Inventory and GetResourceState('ox_inventory') ~= 'started' then
         Config.Ox_Inventory = false
-        Config.Oxlib = false
-        cache.ped = function()
-            return PlayerPedId()
-        end
     end
     coordcache = garagecoord
     for k,v in pairs(garagecoord) do -- create job garage

@@ -3,7 +3,7 @@ Config.Locale = "en" -- en,es,de or any language support
 --FRAMEWORK
 Config.framework = 'ESX' -- ESX, QBCORE
 --GENERAL SETTING
-Config.Mysql = 'mysql-async' -- "ghmattisql", "mysql-async", "oxmysql"
+Config.Mysql = 'oxmysql' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.VehicleShopCoord = {
     [1] = vec3(-35.65,-1095.9,26.4), --x , y, z
 } --x,y,z of the current vehicle shop
@@ -129,7 +129,7 @@ Config.Notify = function(type,msg,xPlayer)
 end
 
 if not IsDuplicityVersion() then
-    if Config.Oxlib and GetResourceState('ox_lib') ~= 'started' then
+    if GetResourceState('ox_lib') ~= 'started' then
         cache = {}
     end
     ESX = nil
