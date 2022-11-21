@@ -156,7 +156,7 @@ GarageZone.Add = function(coord,garage,dist,job,id)
 				msg = ''..Message[7]..' [E] '..Message[2]..' '..garage..''
 			end
 			OxlibTextUi(msg)
-			local close = DrawInteraction_(garage,coord,{dist,dist+2},msg,'opengarage',false,false,false)
+			local close = DrawInteraction_(garage,coord,{dist,dist+1},msg,'opengarage',false,false,false)
 			local data = {check = function() return GarageZone.Add(coord,garage,dist,job,tid) end}
 			GarageZone.CheckZone(garage,data)
 			lib.hideTextUI()
@@ -262,7 +262,6 @@ function Playerloaded()
 end
 
 function SetJob()
-	print('setjob')
 	if Config.framework == 'ESX' then
 		RegisterNetEvent('esx:setJob')
 		AddEventHandler('esx:setJob', function(job)

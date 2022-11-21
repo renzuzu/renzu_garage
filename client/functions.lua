@@ -1803,7 +1803,7 @@ function DrawInteraction_(i,v,reqdist,msg,event,server,var,disablemarker)
             --local reqdist = reqdist[2]
             local coord = v
             local dist = #(GetEntityCoords(ped) - coord)
-            while dist < reqdist[2] and not cancel do
+            while dist < reqdist[1] and not cancel do
                 if inveh ~= IsPedInAnyVehicle(ped) then
                     break
                 end
