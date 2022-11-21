@@ -1155,7 +1155,7 @@ function OpenGarage(garageid,garage_type,jobonly,default)
             end
         end
     end
-    if totalcats > 1 then
+    if totalcats > 0 then
         SendNUIMessage(
             {
                 cats = cats,
@@ -1182,8 +1182,8 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                 if v.stored == 0 then
                     v.stored = false
                 end
-                if cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() and not ImpoundedLostVehicle or totalcats == 1 and not ImpoundedLostVehicle or cat == nil and not ImpoundedLostVehicle 
-                or cat ~= nil and totalcats > 1 and v.brand:upper() == cat:upper() and ImpoundedLostVehicle and v.stored or totalcats == 1 and ImpoundedLostVehicle and v.stored or cat == nil and ImpoundedLostVehicle and v.stored then
+                if cat ~= nil and totalcats > 0 and v.brand:upper() == cat:upper() and not ImpoundedLostVehicle or totalcats == 1 and not ImpoundedLostVehicle or cat == nil and not ImpoundedLostVehicle 
+                or cat ~= nil and totalcats > 0 and v.brand:upper() == cat:upper() and ImpoundedLostVehicle and v.stored or totalcats == 1 and ImpoundedLostVehicle and v.stored or cat == nil and ImpoundedLostVehicle and v.stored then
                     cars = cars + 1
                     if string.find(v.garage_id, "impound") or v.garage_id == nil then
                         v.garage_id = 'A'
