@@ -1162,8 +1162,9 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                 type = "cats"
             }
         )
-        while cat == nil do Wait(1000) end
+        while cat == nil  and inGarage do Wait(1000) end
     end
+    if not inGarage then return end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil

@@ -104,10 +104,10 @@ function OpenImpound(garageid)
                     type = "cats"
                 }
             )
-            while cat == nil do Wait(1000) end
+            while cat == nil and inGarage do Wait(1000) end
         end
     end
-
+    if not inGarage then return end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if v.stored == 0 then
