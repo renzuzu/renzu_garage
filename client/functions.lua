@@ -1111,6 +1111,25 @@ function GetVehicleClassname(vehicle)
     return classlist(class)
 end
 
+GarageType = {
+    car = function(model)
+        local class = GetVehicleClassnamemodel(model)
+        return class ~= 'Boats' and class ~= 'Helicopters' and class ~= 'Planes'
+    end,
+    boat = function(model)
+        local class = GetVehicleClassnamemodel(model)
+        return class == 'Boats'
+    end,
+    helicopters = function(model)
+        local class = GetVehicleClassnamemodel(model)
+        return class == 'Helicopters'
+    end,
+    air = function(model)
+        local class = GetVehicleClassnamemodel(model)
+        return class == 'Planes'
+    end,
+}
+
 function OpenGarage(garageid,garage_type,jobonly,default)
     inGarage = true
     local ped = cache.ped
@@ -1146,7 +1165,7 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                 if v.stored == 0 then
                     v.stored = false
                 end
-                if v.stored and ImpoundedLostVehicle or not ImpoundedLostVehicle then
+                if v.stored and ImpoundedLostVehicle and GarageType[garage_type](v.model) or not ImpoundedLostVehicle and GarageType[garage_type](v.model) then
                     if cats[v.brand] == nil then
                         cats[v.brand] = 0
                         totalcats = totalcats + 1
