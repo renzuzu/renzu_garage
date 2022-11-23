@@ -96,8 +96,8 @@ RegisterServerCallBack_('renzu_garage:isvehicleingarage', function (source, cb, 
             end
         end
         if string.find(id, "impound") and Impoundforall and not ispolice then
-            local money = impound_G[garage_impound] ~= nil and impound_G[garage_impound][plate] ~= nil and impound_G[garage_impound][plate].fine or ImpoundPayment
-            if xPlayer.getMoney() >= tonumber(money) then
+            local money = impound_G[garage_impound] ~= nil and impound_G[garage_impound][plate] ~= nil and tonumber(impound_G[garage_impound][plate].fine) or ImpoundPayment
+            if xPlayer.getMoney() >= (tonumber(money) or ImpoundPayment) then
                 xPlayer.removeMoney(tonumber(money))
                 if Config.Renzu_jobs then
                     local job = 'police'
@@ -107,6 +107,9 @@ RegisterServerCallBack_('renzu_garage:isvehicleingarage', function (source, cb, 
                         end
                     end
                     exports.renzu_jobs:addMoney(tonumber(money),job,source,'money',true)
+                end
+                if Config.Ox_Inventory then
+                    GiveVehicleKey(plate,source)
                 end
                 Config.Notify( 'success',Message[75],xPlayer)
                 cb(1,0)
@@ -308,6 +311,9 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                     })
                     if impound_G[impoundid] then
                         impound_G[impoundid] = impound_data
+                    end
+                    if GlobalState.VehiclePersistData[plate] then
+                        SetVehiclePersistent({props = {plate = plate}},true,true)
                     end
                     if updatepark then
                         Wait(300)
