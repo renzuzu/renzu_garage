@@ -345,7 +345,7 @@ window.addEventListener('message', function(event) {
           
         </div><!-- end .form-body section -->
         <div class="form-footer">
-          <button type="submit" class="button btn" style = "color:white; background-color: rgb(47, 109, 255);" id="give_key"> Transfer Vehicle </button>
+          <button type="submit" class="button btn" style = "color:white; background-color: rgb(47, 109, 255);" id="give_key"> Share </button>
           <button type="reset" class="button" id="cancel_keys"> Cancel </button>
         </div><!-- end .form-footer section -->
       </form>`

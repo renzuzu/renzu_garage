@@ -16,9 +16,17 @@ RegisterCommand(Config.GarageKeysCommand, function(source, args, rawCommand)
                     table.insert(mykeys,v)
                 end
             end
+            local ownedgarage = {}
+            for k,v in pairs(garagecoord) do
+                if #(GetEntityCoords(cache.ped) - vec3(v.garage_x,v.garage_y,v.garage_z)) < 20 then
+                    if v.job == nil or v.job == PlayerData?.job?.name then
+                        table.insert(ownedgarage,v)
+                    end
+                end
+            end
             SendNUIMessage(
                 {
-                    data = {garages = garagecoord, mykeys = mykeys, action = args[1], players = players},
+                    data = {garages = ownedgarage, mykeys = mykeys, action = args[1], players = players},
                     type = "garagekeys"
                 }
             )
