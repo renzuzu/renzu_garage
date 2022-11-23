@@ -185,6 +185,7 @@ AddEventHandler('esx:onPlayerJoined', function(src, char, data)
     Wait(3000)
     if safecoords[xPlayer.identifier] then
         SetEntityCoords(GetPlayerPed(src),safecoords[xPlayer.identifier])
+        TriggerEvent('esx:updateCoords')
         safecoords[xPlayer.identifier] = nil
     end
 end)
