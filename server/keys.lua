@@ -128,8 +128,34 @@ AddEventHandler('renzu_garage:updategaragekeys', function(action,data)
     end
 end)
 
+GlobalState.VehiclePersistData = json.decode(GetResourceKvpString('VehiclePersistData') or '[]') or {}
+Citizen.CreateThreadNow(function()
+    Wait(1000)
+    for k,v in pairs(GlobalState.VehiclePersistData) do
+        local vehicle = CreateVehicle(v.props.model, v.coord.x,v.coord.y,v.coord.z,v.coord.w, 1, 1)
+        while not DoesEntityExist(vehicle) do Wait(1) end
+        local state = Entity(vehicle).state
+        state:set('vehicleproperties', v.props, true)
+        state:set('unlock',false,true)
+        SetVehicleDoorsLocked(vehicle,2)
+    end
+end)
+
+local temp_persist = GlobalState.VehiclePersistData
+SetVehiclePersistent = function(data,state,remove)
+    local persist = GlobalState.VehiclePersistData
+    local plate = string.gsub(data.props.plate, '^%s*(.-)%s*$', '%1')
+    if not persist[plate] and not state and not remove then
+        persist[plate] = data
+    elseif state or remove and persist[plate] then
+        persist[plate] = nil
+    end
+    GlobalState.VehiclePersistData = persist
+    SetResourceKvp('VehiclePersistData', json.encode(persist))
+end
+
 RegisterServerEvent('statebugupdate') -- this will be removed once syncing of statebug from client is almost instant
-AddEventHandler('statebugupdate', function(name,value,net)
+AddEventHandler('statebugupdate', function(name,value,net, props)
     local vehicle = NetworkGetEntityFromNetworkId(net)
     local ent = Entity(vehicle).state
     ent:set(name,value,true)
@@ -140,6 +166,9 @@ AddEventHandler('statebugupdate', function(name,value,net)
             val = 2
         end
         SetVehicleDoorsLocked(vehicle,tonumber(val))
+    end
+    if name == 'unlock' then
+        SetVehiclePersistent({coord = vec4(GetEntityCoords(vehicle), GetEntityHeading(vehicle)), props = props}, value)
     end
     if name == 'share' then
         local plate = string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1')
@@ -219,6 +248,7 @@ AddEventHandler('entityCreated', function(entity)
     Wait(1000)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
         local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
+        if temp_persist[plate] then return end
         local ent = Entity(entity).state
         ent.unlock = true
         ent.hotwired = false

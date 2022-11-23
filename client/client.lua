@@ -609,6 +609,23 @@ RegisterNetEvent('renzu_garage:return', function(v,vehicle,property,actualShop,v
     end)
 end)
 
+AddStateBagChangeHandler('vehicleproperties' --[[key filter]], nil --[[bag filter]], function(bagName, key, value, _unused, replicated)
+    Wait(0)
+    if not value then return end
+    local net = tonumber(bagName:gsub('entity:', ''), 10)
+    local vehicle = NetworkGetEntityFromNetworkId(net)
+    if NetworkGetEntityOwner(vehicle) == PlayerId() then
+        SetVehicleOwned(vehicle)
+        SetVehicleProp(vehicle, value)
+        SetVehicleDoorsLocked(vehicle,2)
+        for i = -1 , 7 do
+            --SetVehicleDoorCanBreak(vehicle,i,false)
+        end
+        Entity(vehicle).state:set('unlock',false,true)
+        Entity(vehicle).state:set('havekeys',false,true)
+    end
+end)
+
 DoScreenFadeIn(333)
 RegisterNetEvent('renzu_garage:ingaragepublic', function(coords, distance, vehicle, property, propertycoord, gid)
     local dist2 = 2
