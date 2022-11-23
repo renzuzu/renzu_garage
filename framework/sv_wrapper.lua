@@ -284,6 +284,7 @@ function GetPlayerFromId(src)
 	elseif Config.framework == 'QBCORE' then
 		selfcore = {}
 		selfcore.data = QBCore.Functions.GetPlayer(self.src)
+		if not selfcore.data then return false end
 		if selfcore.data.identifier == nil then
 			selfcore.data.identifier = selfcore.data.PlayerData.license
 		end

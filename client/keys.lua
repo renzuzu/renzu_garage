@@ -1,3 +1,4 @@
+Config.Ox_Inventory = GetResourceState('ox_inventory') == 'started'
 RegisterNUICallback("receive_garagekeys", function(data, cb)
     SetNuiFocus(false,false)
     garagekeysdata = data
@@ -124,7 +125,7 @@ function isVehicleUnlocked()
                 plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
                 local ent = Entity(veh).state
                 local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
-                local havekeys = DoesPlayerHaveKey(plate)
+                local havekeys = Config.Ox_Inventory and DoesPlayerHaveKey(plate)
                 if Config.Ox_Inventory and havekeys then
                     ent:set('havekeys', true, true)
                     TriggerServerEvent('statebugupdate','havekeys',true, VehToNet(veh))

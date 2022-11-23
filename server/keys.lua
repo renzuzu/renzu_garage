@@ -131,13 +131,22 @@ end)
 GlobalState.VehiclePersistData = json.decode(GetResourceKvpString('VehiclePersistData') or '[]') or {}
 Citizen.CreateThreadNow(function()
     Wait(1000)
+    while GetNumPlayerIndices() == 0 do Wait(1000) end
+    local id = GetPlayerFromIndex(GetNumPlayerIndices()-1)
+    while not DoesEntityExist(GetPlayerPed(id)) do Wait(111) end
     for k,v in pairs(GlobalState.VehiclePersistData) do
-        local vehicle = CreateVehicle(v.props.model, v.coord.x,v.coord.y,v.coord.z,v.coord.w, 1, 1)
-        while not DoesEntityExist(vehicle) do Wait(1) end
-        local state = Entity(vehicle).state
-        state:set('vehicleproperties', v.props, true)
-        state:set('unlock',false,true)
-        SetVehicleDoorsLocked(vehicle,2)
+        Citizen.CreateThreadNow(function()
+            local CreateAutoMobile = function(model, x, y, z, heading) return Citizen.InvokeNative(`CREATE_AUTOMOBILE`, model, x, y, z, heading) end
+            local vehicle = CreateVehicle(v.props.model, v.coord.x,v.coord.y,v.coord.z,v.coord.w, 1, 1)
+            while not DoesEntityExist(vehicle) do Wait(1) end
+            EnsureEntityStateBag(vehicle)
+            while NetworkGetEntityOwner(vehicle) == -1 do Wait(5000) end -- queing
+            local state = Entity(vehicle).state
+
+            state:set('vehicleproperties', v.props, true)
+            state:set('unlock',false,true)
+            SetVehicleDoorsLocked(vehicle,2)
+        end)
     end
 end)
 
@@ -248,7 +257,7 @@ AddEventHandler('entityCreated', function(entity)
     Wait(1000)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
         local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
-        if plate and temp_persist[plate] then return end
+        if plate and temp_persist and temp_persist[plate] then return end
         local ent = Entity(entity).state
         ent.unlock = true
         ent.hotwired = false
