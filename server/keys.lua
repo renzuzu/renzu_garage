@@ -248,7 +248,7 @@ AddEventHandler('entityCreated', function(entity)
     Wait(1000)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
         local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
-        if temp_persist[plate] then return end
+        if plate and temp_persist[plate] then return end
         local ent = Entity(entity).state
         ent.unlock = true
         ent.hotwired = false
