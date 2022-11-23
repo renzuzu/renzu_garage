@@ -612,6 +612,7 @@ end)
 DoScreenFadeIn(333)
 RegisterNetEvent('renzu_garage:ingaragepublic', function(coords, distance, vehicle, property, propertycoord, gid)
     local dist2 = 2
+    SetPedConfigFlag(cache.ped,429,false)
     if property and gid then
         spawn = propertycoord
         found, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(spawn.x + math.random(1, 2), spawn.y + math.random(1, 2), spawn.z, 0, 3, 0)

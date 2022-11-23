@@ -89,7 +89,6 @@ function CloseNui()
     end
     countspawn = 0
     garagejob = false
-
     inGarage = false
     DeleteGarage()
     drawtext = false
@@ -353,24 +352,67 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
             })
             stats_show = nil
             while IsPedInAnyVehicle(cache.ped) and ingarage do
-                local table = {
-                    ['key'] = 'E', -- key
-                    ['event'] = 'renzu_garage:ingaragepublic',
-                    ['title'] = Message[7]..' [E] '..Message[16],
-                    ['server_event'] = false, -- server event or client
-                    ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
-                    ['invehicle_title'] = Message[7]..' [E] '..Message[16],
-                    ['fa'] = '<i class="fas fa-car"></i>',
-                    ['custom_arg'] = {GetEntityCoords(cache.ped), distance, vehicle, property or false, propertycoord or false, gid}, -- example: {1,2,3,4}
-                }
-                TriggerEvent('renzu_popui:drawtextuiwithinput',table)
-                while IsPedInAnyVehicle(cache.ped) and ingarage do
-                    coords = GetEntityCoords(cache.ped)
-                    vehcoords = GetEntityCoords(vehicle)
-                    dist = #(coords-vehcoords)
-                    Wait(500)
+                if Config.Oxlib then
+                    local options = {}
+                    table.insert(options,{
+                        ['title'] = 'Choose Vehicle',
+                        ['icon'] = 'garage',
+                        menu = 'confirmoutvehicle',
+                    })
+                    lib.registerContext({
+                        id = 'usevehicle',
+                        title = 'Use Vehicle',
+                        onExit = function()
+                        end,
+                        options = options,
+                        {
+                            id = 'confirmoutvehicle',
+                            title = 'Are you Sure?',
+                            menu = 'usevehicle',
+                            options = {
+                                {
+                                    title = 'Yes',
+                                    description = 'Confirm to use',
+                                    onSelect = function(args)
+                                    TriggerEvent('renzu_garage:ingaragepublic',GetEntityCoords(cache.ped), distance, vehicle, property or false, propertycoord or false, gid)
+                                    end
+                                },
+                                {
+                                    title = 'No',
+                                    description = 'ill Stay',
+                                    onSelect = function(args)
+                                    end
+                                },
+                            }
+                        }
+                    })
+                    lib.showContext('usevehicle')
+                    while IsPedInAnyVehicle(cache.ped) and ingarage do
+                        coords = GetEntityCoords(cache.ped)
+                        vehcoords = GetEntityCoords(vehicle)
+                        dist = #(coords-vehcoords)
+                        Wait(500)
+                    end
+                else
+                    local table = {
+                        ['key'] = 'E', -- key
+                        ['event'] = 'renzu_garage:ingaragepublic',
+                        ['title'] = Message[7]..' [E] '..Message[16],
+                        ['server_event'] = false, -- server event or client
+                        ['unpack_arg'] = true, -- send args as unpack 1,2,3,4 order
+                        ['invehicle_title'] = Message[7]..' [E] '..Message[16],
+                        ['fa'] = '<i class="fas fa-car"></i>',
+                        ['custom_arg'] = {GetEntityCoords(cache.ped), distance, vehicle, property or false, propertycoord or false, gid}, -- example: {1,2,3,4}
+                    }
+                    TriggerEvent('renzu_popui:drawtextuiwithinput',table)
+                    while IsPedInAnyVehicle(cache.ped) and ingarage do
+                        coords = GetEntityCoords(cache.ped)
+                        vehcoords = GetEntityCoords(vehicle)
+                        dist = #(coords-vehcoords)
+                        Wait(500)
+                    end
+                    TriggerEvent('renzu_popui:closeui')
                 end
-                TriggerEvent('renzu_popui:closeui')
                 coords = GetEntityCoords(cache.ped)
                 vehcoords = GetEntityCoords(vehicle)
                 dist = #(coords-vehcoords)
@@ -418,6 +460,8 @@ GetClosestVehicle = function(coord,distance)
     end
     return entity
 end
+
+local garage_coords = {}
 function GarageVehicle()
     Citizen.CreateThread(function()
         while ingarage do
@@ -431,7 +475,7 @@ function GarageVehicle()
                 garageid = garage_id
                 for k,v2 in pairs(OwnedVehicles) do
                     for k2,v in pairs(v2) do
-                        if garageid == v.garage_id and not string.find(v.garage_id, "impound") then
+                        if garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.brand:upper() == lastcat:upper() and IsModelInCdimage(joaat(v.model)) then
                             if vehtable[k] == nil then
                                 vehtable[k] = {}
                             end
@@ -510,14 +554,11 @@ function GarageVehicle()
                             local hash = tonumber(v.model2)
                             local count = 0
                             if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
-                                RequestModel(hash)
-                                while not HasModelLoaded(hash) do
-                                    RequestModel(hash)
-                                    Citizen.Wait(1)
-                                end
+                                lib.requestModel(hash)
                             end
                             local indexnew = tonumber('1'..i2..'')
                             spawnedgarage[indexnew] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
+                            while not DoesEntityExist(spawnedgarage[indexnew]) do Wait(1) end
                             SetVehicleProp(spawnedgarage[indexnew], props)
                             SetEntityNoCollisionEntity(spawnedgarage[indexnew], shell, false)
                             SetModelAsNoLongerNeeded(hash)
@@ -549,7 +590,7 @@ function GarageVehicle()
                 garageid = garage_id
                 for k,v2 in pairs(OwnedVehicles) do
                     for k2,v in pairs(v2) do
-                        if garageid == v.garage_id and not string.find(v.garage_id, "impound") then
+                        if garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.brand:upper() == lastcat:upper() and IsModelInCdimage(joaat(v.model)) then
                             if vehtable[k] == nil then
                                 vehtable[k] = {}
                             end
@@ -620,14 +661,11 @@ function GarageVehicle()
                                 local hash = tonumber(v.model2)
                                 local count = 0
                                 if not HasModelLoaded(hash) and IsModelInCdimage(hash) then
-                                    RequestModel(hash)
-                                    while not HasModelLoaded(hash) do
-                                        RequestModel(hash)
-                                        Citizen.Wait(1)
-                                    end
+                                    lib.requestModel(hash)
                                 end
                                 local indexnew = tonumber('2'..i2..'')
                                 spawnedgarage[indexnew] = CreateVehicle(tonumber(v.model2), x,garage_coords.y+leftplus,garage_coords.z, lefthead, 0, 1)
+                                while not DoesEntityExist(spawnedgarage[indexnew]) do Wait(1) end
                                 SetVehicleProp(spawnedgarage[indexnew], props)
                                 SetEntityNoCollisionEntity(spawnedgarage[indexnew], shell, false)
                                 SetModelAsNoLongerNeeded(hash)
@@ -708,22 +746,22 @@ function GotoGarage(garageid, property, propertycoord, job)
             end
         end
     end
-    lastcat = nil
+
     garage_id = garageid
     local ped = cache.ped
-    local garage_coords = {}
+    garage_coords = {}
     if not property then
         if string.find(garageid, "impound") then
             for k,v in pairs(impoundcoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 100.0 and garageid == v.garage then
+                if garageid == v.garage then
                     garage_coords =vector3(v.garage_x,v.garage_y-9.0,v.garage_z + 30.0)
                 end
             end
         else
             for k,v in pairs(garagecoord) do
                 local dist = #(vector3(v.garage_x,v.garage_y,v.garage_z) - GetEntityCoords(ped))
-                if dist <= 100.0 and garageid == v.garage then
+                if garageid == v.garage then
                     garage_coords =vector3(v.garage_x,v.garage_y-9.0,v.garage_z + 30.0)
                 end
             end
@@ -1132,6 +1170,7 @@ GarageType = {
 
 function OpenGarage(garageid,garage_type,jobonly,default)
     inGarage = true
+    lastcat = nil
     local ped = cache.ped
     if not Config.Quickpick and garage_type == 'car' and propertyspawn.x == nil then
         CreateGarageShell()

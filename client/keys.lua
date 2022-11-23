@@ -51,6 +51,7 @@ RegisterCommand(Config.GarageKeysCommand, function(source, args, rawCommand)
 end, false)
 
 function isVehicleUnlocked()
+    if ingarage then return end
     local p = cache.ped
     local mycoords = GetEntityCoords(p)
     local veh = nil
