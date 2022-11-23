@@ -300,7 +300,7 @@ function playanimation(animDict,name)
 		Wait(1)
 		RequestAnimDict(animDict)
 	end
-	TaskPlayAnim(cache.ped, animDict, name, 2.0, 2.0, -1, 47, 0, 0, 0, 0)
+	TaskPlayAnim(cache.ped, animDict, name, 2.0, 2.0, -1, 49, 0, 0, 0, 0)
 end
 
 
@@ -714,7 +714,6 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
 end, false)
 
 CheckKeysOnItemRemove = function(item,count)
-    Wait(1000)
     local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
     if item == 'keys' then
         for k,v in pairs(GetAllVehicleFromPool()) do
