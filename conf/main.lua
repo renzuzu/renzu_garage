@@ -81,6 +81,7 @@ Config.GiveKeystoMissionEntity = true -- important if you dont want to hotwire m
 Config.RequestDuplicateCoord = {
     [1] = vec3(218.74,-811.37,30.65), --x , y, z -- where the player can request duplicate keys
 }
+Config.RemoveKeys = true -- remove keys upon storing vehicle
 --Hotwire
 Config.EnableHotwire = true -- enable hotwire if keys is not present in state
 Config.HotwireLevel = 5 -- how many pins to complete (renzu_lockgame) https://github.com/renzuzu/renzu_lockgame

@@ -237,7 +237,7 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                     if state == 1 then
                         Config.Notify( 'success',Message[78], xPlayer)
                         if Config.Ox_Inventory then
-                            DoesPlayerHaveKey(plate,source,true)
+                            DoesPlayerHaveKey(plate,source,Config.RemoveKeys)
                         end
                     else
                         Config.Notify( 'success', Message[79], xPlayer)
@@ -324,7 +324,7 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
                         Config.Notify( 'success', Message[80], xPlayer)
                         Config.Notify( 'success',Message[78], xPlayer)
                         if Config.Ox_Inventory then
-                            DoesPlayerHaveKey(plate,source,true)
+                            DoesPlayerHaveKey(plate,source,Config.RemoveKeys)
                         end
                     else
                         Config.Notify( 'success', Message[81],xPlayer)
