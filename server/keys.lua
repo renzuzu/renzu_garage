@@ -246,6 +246,7 @@ local servervehicles = {}
 AddEventHandler('entityCreated', function(entity)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then return end
     local entity = entity
+    local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
     local havekeys = false
     if servervehicles[plate] and DoesEntityExist(NetworkGetEntityFromNetworkId(servervehicles[plate])) and GetEntityType(NetworkGetEntityFromNetworkId(servervehicles[plate])) == 2 and servervehicles[GetVehicleNumberPlateText(NetworkGetEntityFromNetworkId(servervehicles[plate]))] then
         DeleteEntity(NetworkGetEntityFromNetworkId(servervehicles[plate])) -- delete duplicate vehicle with the same plate wandering in the server
@@ -261,7 +262,6 @@ AddEventHandler('entityCreated', function(entity)
     end
     Wait(1000)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
-        local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
         if plate and temp_persist and temp_persist[plate] then return end
         local ent = Entity(entity).state
         ent.unlock = true
