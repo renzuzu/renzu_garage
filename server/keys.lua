@@ -242,10 +242,15 @@ AddEventHandler('QBCore:Server:PlayerLoaded', function(data)
     end
 end)
 
+local servervehicles = {}
 AddEventHandler('entityCreated', function(entity)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then return end
     local entity = entity
     local havekeys = false
+    if servervehicles[plate] and DoesEntityExist(NetworkGetEntityFromNetworkId(servervehicles[plate])) and GetEntityType(NetworkGetEntityFromNetworkId(servervehicles[plate])) == 2 and servervehicles[GetVehicleNumberPlateText(NetworkGetEntityFromNetworkId(servervehicles[plate]))] then
+        DeleteEntity(NetworkGetEntityFromNetworkId(servervehicles[plate])) -- delete duplicate vehicle with the same plate wandering in the server
+    end
+    servervehicles[plate] = NetworkGetNetworkIdFromEntity(entity)
     Wait(1000)
     if Config.GiveKeystoMissionEntity and DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if vehicle is created with player (missions) eg. trucker, deliveries etc.
         local ped = GetPedInVehicleSeat(entity,-1) ~= 0 and GetPedInVehicleSeat(entity,-1) or GetPedInVehicleSeat(entity,1) -- server native says driver seat is 1 but in my test its -1 like the client
