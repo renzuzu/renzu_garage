@@ -217,10 +217,8 @@ Giveaccess to player private owned garage
 # Dependency for now
 - ESX - ALL ESX <= LEGACY
 - Qbcore latest
-- https://github.com/renzuzu/renzu_popui
-- https://github.com/renzuzu/renzu_contextmenu
-- https://github.com/renzuzu/renzu_notify
-- https://github.com/renzuzu/renzu_lockgame
+- Ox_lib
+- Ox_inventory
 
 # Installation
 
@@ -336,6 +334,5 @@ ENGINE=InnoDB
 ensure renzu_garage
 ensure ox_lib
 ensure ox_inventory
-ensure renzu_lockgame
 
 ```
