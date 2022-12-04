@@ -1187,16 +1187,16 @@ function OpenGarage(garageid,garage_type,jobonly,default)
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
             if string.find(v.type, "car") then v.type = 'car' end
-            if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
+            if Config.UniqueCarperGarage and garageid == v.garage_id and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
             -- personal job garage
-            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
             -- public job garage
-            or v.garage_type == 'public' and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or v.garage_type == 'public' and garageid ~= nil and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
             --
-            or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
-            or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
-            or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
+            or string.find(garageid, "impound") and string.find(v.garage_id, "impound")  and propertyspawn.x == nil
+            or propertyspawn.x ~= nil and Config.UniqueProperty and jobonly == false and not v.job and v.garage_id == garageid
+            or propertyspawn.x ~= nil and not Config.UniqueProperty and jobonly == false and not v.job and v.garage_id ~= 'private' then
                 v.brand = v.brand:upper()
                 if v.stored == 1 then
                     v.stored = true
@@ -1227,16 +1227,16 @@ function OpenGarage(garageid,garage_type,jobonly,default)
     if not inGarage then return end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
-            if Config.UniqueCarperGarage and garageid == v.garage_id and garage_type == v.type and v.garage_id ~= 'private' and propertyspawn.x == nil
-            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
+            if Config.UniqueCarperGarage and garageid == v.garage_id and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and jobonly == false and not v.job and v.garage_id ~= 'private' and propertyspawn.x == nil
             -- personal job garage
-            or not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or not Config.UniqueCarperGarage and garageid ~= nil and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
             -- public job garage
-            or v.garage_type == 'public' and not Config.UniqueCarperGarage and garageid ~= nil and garage_type == v.type and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
+            or v.garage_type == 'public' and not Config.UniqueCarperGarage and garageid ~= nil and jobonly == PlayerData.job.name and garageid == v.garage_id and not string.find(v.garage_id, "impound") and v.garage_id ~= 'private' and propertyspawn.x == nil
             --
-            or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and garage_type == v.type and propertyspawn.x == nil
-            or propertyspawn.x ~= nil and Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id == garageid
-            or propertyspawn.x ~= nil and not Config.UniqueProperty and garage_type == v.type and jobonly == false and not v.job and v.garage_id ~= 'private' then
+            or string.find(garageid, "impound") and string.find(v.garage_id, "impound") and propertyspawn.x == nil
+            or propertyspawn.x ~= nil and Config.UniqueProperty and jobonly == false and not v.job and v.garage_id == garageid
+            or propertyspawn.x ~= nil and not Config.UniqueProperty and jobonly == false and not v.job and v.garage_id ~= 'private' then
                 if v.stored == 1 then
                     v.stored = true
                 end
@@ -1281,7 +1281,9 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                         impound = v.impound or 0,
                         ingarage = v.ingarage or false
                     }
-                    table.insert(vehtable[v.garage_id], veh)
+                    if GarageType[garage_type](v.model) then
+                        table.insert(vehtable[v.garage_id], veh)
+                    end
                 end
             end
         end
