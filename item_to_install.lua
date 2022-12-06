@@ -5,3 +5,11 @@
 	close = true,
 	description = 'Vehicle Key'
 },
+
+['fakeplate'] = {
+	label = 'Fake Plate',
+	weight = 220,
+	client = {
+		export = 'renzu_garage.Fakeplate',
+	},
+},
