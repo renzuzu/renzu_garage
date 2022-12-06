@@ -243,7 +243,19 @@ AddEventHandler('QBCore:Server:PlayerLoaded', function(data)
 end)
 
 local servervehicles = {}
+
+AddStateBagChangeHandler('VehicleProperties' --[[key filter]], nil --[[bag filter]], function(bagName, key, value, _unused, replicated)
+	Wait(0)
+	local net = tonumber(bagName:gsub('entity:', ''), 10)
+	if not value then return end
+    ServerEntityCreated(NetworkGetEntityFromNetworkId(net)) -- compatibility with ESX onesync server setter vehicle spawn
+end)
+
 AddEventHandler('entityCreated', function(entity)
+    ServerEntityCreated(entity)
+end)
+
+ServerEntityCreated = function(entity)
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then return end
     local entity = entity
     local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
@@ -282,6 +294,7 @@ AddEventHandler('entityCreated', function(entity)
             if new_spawned[1] then
                 if Config.Ox_Inventory then
                     local source = GetPlayerFromIdentifier(new_spawned[1][owner]).source
+                    print('givekey')
                     GiveVehicleKey(plate,source)
                 else
                     local tempvehicles = gvehicles
@@ -346,4 +359,4 @@ AddEventHandler('entityCreated', function(entity)
             --print(plate, 'Already Owned Vehicles Spawned by other identifier... giving keys to network entity owner')
         end
     end
-end)
+end

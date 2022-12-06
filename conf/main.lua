@@ -6,6 +6,7 @@ Config.framework = 'ESX' -- ESX, QBCORE
 Config.Mysql = 'oxmysql' -- "ghmattisql", "mysql-async", "oxmysql"
 Config.VehicleShopCoord = {
     [1] = vec3(-35.65,-1095.9,26.4), --x , y, z
+    [2] = vec3(-1232.23,-349.45,37.32), --x , y, z
 } --x,y,z of the current vehicle shop
 Config.use_RenzuCustoms = false -- Use renzu_customs getter and setter for Vehicle Properties
 Config.ReturnDamage = true -- return visual damage when restoring vehicle from garage
