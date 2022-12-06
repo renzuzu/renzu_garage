@@ -14,13 +14,23 @@ DoesPlayerHaveGarageKey = function(garage,garagekey,source)
     return haskey
 end
 
-GiveVehicleKey = function(plate,source)
-    local name = GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')] and GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')].name or plate
+GlobalState.KeySerials = json.decode(GetResourceKvpString('keyserials') or '[]') or {}
+GiveVehicleKey = function(plate, source, new)
+    local keys = GlobalState.KeySerials
+    local plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
+    if not keys[plate] or new then
+        keys[plate] = 'V:'..math.random(9999,9999999)
+        GlobalState.KeySerials = keys
+        SetResourceKvp('keyserials',json.encode(keys))
+    end
+    local serial = keys[plate]
+    local name = GlobalState.GVehicles[plate] and GlobalState.GVehicles[plate].name or plate
     local metadata = {
         description = plate..' Vehicle Key',
         image = 'keys',
-        plate = string.gsub(plate, '^%s*(.-)%s*$', '%1'),
-        label = name..' Vehicle Key'
+        plate = plate,
+        label = name..' Vehicle Key',
+        serial = serial
     }
     if not DoesPlayerHaveKey(plate,source) then
         exports.ox_inventory:AddItem(source,'keys',1,metadata,false, function(success, reason)
@@ -52,7 +62,7 @@ AddEventHandler('renzu_garage:vehiclekeyhandler', function(plate,add)
     if add and GlobalState.GVehicles[plate] then
         local vehicle = GetVehiclePedIsIn(GetPlayerPed(source))
         local vehicleplate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1'):upper()
-        return vehicleplate == plate and GetIsVehicleEngineRunning(vehicle) and GiveVehicleKey(plate,source) or GlobalState.GVehicles[plate].owner == xPlayer.identifier and GiveVehicleKey(plate,source)
+        return vehicleplate == plate and GetIsVehicleEngineRunning(vehicle) and GiveVehicleKey(plate,source,true) or GlobalState.GVehicles[plate].owner == xPlayer.identifier and GiveVehicleKey(plate,source,true)
     elseif not add and GlobalState.GVehicles[plate] then
         return DoesPlayerHaveKey(plate,source,not add)
     end

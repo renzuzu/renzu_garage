@@ -364,6 +364,7 @@ GetGarageKeys = function(id)
 end
 
 DoesPlayerHaveKey = function(plate)
+    local keys = GlobalState.KeySerials
     local haskey = false
     local data = exports.ox_inventory:Search('slots', 'keys')
     local gago = {}
@@ -371,7 +372,9 @@ DoesPlayerHaveKey = function(plate)
         local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
         for k,v in pairs(data) do
             local metaplate = v.metadata and v.metadata.plate
-            if metaplate and string.gsub(tostring(metaplate), '^%s*(.-)%s*$', '%1') == plate then
+            local serial = v.metadata and v.metadata.serial or 'serialnotfound'
+            metaplate = string.gsub(tostring(metaplate), '^%s*(.-)%s*$', '%1')
+            if metaplate and metaplate == plate and keys[metaplate] == serial then
                 haskey = true
                 break
             end
@@ -616,10 +619,9 @@ RegisterNetEvent('requestvehkey', function()
             local coords = GetEntityCoords(ped)
             local vehicles = {}
             for k,v in pairs(owned_vehicles) do
-                vehicles[k] = {}
-                vehicles[k].plate = v.plate
-                vehicles[k].name = v.name
+                table.insert(vehicles, {plate = v.plate, name = v.name})
             end
+            table.sort(vehicles, function(a, b) return a.name:lower() < b.name:lower() end)
             local p = GetVehicleNumberPlateText(GetVehiclePedIsIn(cache.ped))
             local plate = 'NULL'
             if p then

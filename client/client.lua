@@ -1272,3 +1272,18 @@ RegisterNUICallback("DisposeVehicle",function(data, cb)
         end
     end,data.plate,garageid)
 end)
+
+multi = function()
+    o = exports.renzu_multicharacter.RegisterStates
+end
+
+Citizen.CreateThreadNow(function()
+    if pcall(multi, res or false) then
+        exports.renzu_multicharacter:RegisterStates('invehicle', function()
+            if not lib then return end -- ox_lib
+            lib.onCache('vehicle', function(value)
+                LocalPlayer.state:set('invehicle',value and {net = NetworkGetNetworkIdFromEntity(value) or false},true)
+            end)
+        end,false)
+    end
+end)
