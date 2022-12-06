@@ -148,7 +148,6 @@ CreateThread(function()
                         neargarage = true
                         if GlobalState.HousingGarages[garageid] ~= nil and GlobalState.HousingGarages[garageid] == PlayerData.identifier then
                             if IsPedInAnyVehicle(cache.ped) then
-                                print("in vehicle")
                                 msg = Message[7]..' [E] '..Message[6]
                                 DrawInteraction(garageid,vec,{3,5},msg,'renzu_garage:storeprivatehouse',false,garageid,false)
                             else
@@ -543,7 +542,7 @@ RegisterNetEvent('renzu_garage:return', function(v,vehicle,property,actualShop,v
             end
             Wait(100)
             local vehicle = CreateVehicle(tonumber(vp.model), tonumber(v.spawn_x)*1.0,tonumber(v.spawn_y)*1.0,tonumber(v.spawn_z)*1.0, tonumber(v.heading), 1, 1)
-            while not DoesEntityExist(vehicle) do Wait(1) print(vp.model,'loading model') end
+            while not DoesEntityExist(vehicle) do Wait(1) end
             SetVehicleOwned(vehicle)
             Wait(100)
             SetVehicleProp(vehicle, vp)
@@ -554,9 +553,10 @@ RegisterNetEvent('renzu_garage:return', function(v,vehicle,property,actualShop,v
             end
             TaskWarpPedIntoVehicle(cache.ped, vehicle, -1)
             veh = vehicle
+            local ent = Entity(veh).state
+            vp.plate = ent.plate or vp.plate
             TriggerServerCallback_("renzu_garage:changestate",function(ret,garage_public)
                 if ret and garage_public then
-                    local ent = Entity(veh).state
                     while ent.share == nil do Wait(100) end
                     ent.haskeys = false
                     ent.hotwired = false
@@ -672,9 +672,10 @@ RegisterNetEvent('renzu_garage:ingaragepublic', function(coords, distance, vehic
             TaskWarpPedIntoVehicle(cache.ped, v, -1)
             veh = v
             DoScreenFadeIn(333)
+            local ent = Entity(veh).state
+            vp.plate = ent.plate or vp.plate
             TriggerServerCallback_("renzu_garage:changestate",function(ret,garage_public)
                 if ret and garage_public then
-                    local ent = Entity(veh).state
                     while ent.share == nil do Wait(100) end
                     ent.haskeys = false
                     ent.hotwired = false
@@ -782,14 +783,17 @@ RegisterNetEvent('renzu_garage:ingaragepublic', function(coords, distance, vehic
 end)
 
 RegisterNetEvent('renzu_garage:store', function(i)
-    local vehicleProps = GetVehicleProperties(GetVehiclePedIsIn(cache.ped, 0))
+    local vehicle = GetVehiclePedIsIn(cache.ped, 0)
+    local vehicleProps = GetVehicleProperties(vehicle)
     garageid = i
     if garageid == nil then
     garageid = 'A'
     end
+    local ent = Entity(vehicle).state
+    vehicleProps.plate = ent.plate or vehicleProps.plate
     TriggerServerCallback_("renzu_garage:changestate",function(ret)
         if ret then
-            DeleteEntity(GetVehiclePedIsIn(cache.ped, 0))
+            DeleteEntity(vehicle)
         end
     end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps)
 end)
@@ -929,9 +933,10 @@ RegisterNUICallback(
             while veh == nil do
                 Citizen.Wait(10)
             end
+            local ent = Entity(veh).state
+            props.plate = ent.plate or props.plate
             TriggerServerCallback_("renzu_garage:changestate",function(ret, garage_public)
                 if ret and garage_public then
-                    local ent = Entity(veh).state
                     while ent.share == nil do Wait(100) end
                     ent.haskeys = false
                     ent.hotwired = false
@@ -949,7 +954,6 @@ RegisterNUICallback(
                     ent.share = share
                     ent:set('share', share, true)
                     TriggerServerEvent('statebugupdate','share',share, VehToNet(veh))
-                    print("SHARED VEHICLE")
                 end
             end,props.plate, 0, garageid, props.model, props,false,garage_public)
             LastVehicleFromGarage = nil
@@ -1130,9 +1134,10 @@ RegisterNUICallback(
                 while veh == nil do
                     Citizen.Wait(1)
                 end
+                local ent = Entity(veh).state
+                props.plate = ent.plate or props.plate
                 TriggerServerCallback_("renzu_garage:changestate",function(ret,garage_public)
                     if ret and garage_public then
-                        local ent = Entity(veh).state
                         while ent.share == nil do Wait(100) end
                         ent.haskeys = false
                         ent.hotwired = false

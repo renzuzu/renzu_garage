@@ -141,6 +141,7 @@ end)
 GlobalState.VehiclePersistData = json.decode(GetResourceKvpString('VehiclePersistData') or '[]') or {}
 Citizen.CreateThreadNow(function()
     Wait(1000)
+    local fakeplates = GlobalState.FakePlates
     while GetNumPlayerIndices() == 0 do Wait(1000) end
     local id = GetPlayerFromIndex(GetNumPlayerIndices()-1)
     while not DoesEntityExist(GetPlayerPed(id)) do Wait(111) end
@@ -152,10 +153,15 @@ Citizen.CreateThreadNow(function()
             EnsureEntityStateBag(vehicle)
             while NetworkGetEntityOwner(vehicle) == -1 do Wait(5000) end -- queing
             local state = Entity(vehicle).state
-
+            local plate = string.gsub(v.props.plate, '^%s*(.-)%s*$', '%1')
             state:set('vehicleproperties', v.props, true)
             state:set('unlock',false,true)
             SetVehicleDoorsLocked(vehicle,2)
+            Wait(3000)
+            state:set('plate',v.props.plate,true)
+            if fakeplates[plate] and fakeplates[plate].used then
+                state:set('fakeplate',fakeplates[plate].plate,true)
+            end
         end)
     end
 end)
@@ -175,6 +181,7 @@ end
 
 RegisterServerEvent('statebugupdate') -- this will be removed once syncing of statebug from client is almost instant
 AddEventHandler('statebugupdate', function(name,value,net, props)
+    if not net then return end
     local vehicle = NetworkGetEntityFromNetworkId(net)
     local ent = Entity(vehicle).state
     ent:set(name,value,true)
@@ -187,6 +194,8 @@ AddEventHandler('statebugupdate', function(name,value,net, props)
         SetVehicleDoorsLocked(vehicle,tonumber(val))
     end
     if name == 'unlock' then
+        local ent = Entity(vehicle).state
+        props.plate = ent.plate or props.plate
         SetVehiclePersistent({coord = vec4(GetEntityCoords(vehicle), GetEntityHeading(vehicle)), props = props}, value)
     end
     if name == 'share' then
@@ -210,10 +219,75 @@ AddEventHandler('statebugupdate', function(name,value,net, props)
     end
 end)
 
+--DeleteResourceKvp('FakePlates')
+
+DoesFakePlateExist = function(data,plate)
+    for k,v in pairs(data) do
+        if v.plate == plate then
+            return true
+        end
+    end
+    return false
+end
+
+GlobalState.FakePlates = json.decode(GetResourceKvpString('FakePlates') or '[]') or {}
+lib.callback.register('renzu_garage:Fakeplate', function(source,net,newplate,metadata)
+    local vehicles = GlobalState.GVehicles
+    local newplate = string.gsub(tostring(newplate), '^%s*(.-)%s*$', '%1')
+    local veh = Entity(NetworkGetEntityFromNetworkId(net)).state
+    local oldplate = string.gsub(tostring(veh.plate), '^%s*(.-)%s*$', '%1')
+    local fakeplates = GlobalState.FakePlates
+    local fakeplate = veh.fakeplate
+    if fakeplate and fakeplates[fakeplate] and not fakeplates[fakeplate].used or not fakeplate then
+        if not DoesFakePlateExist(fakeplates,newplate) and not vehicles[newplate] then -- check if fakeplate is not exist yet and if fakeplate is using any actual real plates
+            fakeplates[oldplate] = {plate = newplate, used = true}
+            GlobalState.FakePlates = fakeplates
+            SetResourceKvp('FakePlates', json.encode(fakeplates))
+            veh:set('fakeplate',newplate,true) -- trigger client on plate change
+            exports.ox_inventory:RemoveItem(source, 'fakeplate', 1)
+            return 'success'
+        elseif DoesFakePlateExist(fakeplates,newplate) and metadata.plate == newplate then
+            for k,v in pairs(fakeplates) do
+                if v.plate == newplate then
+                    fakeplates[k] = nil -- remove any existing fakeplates to prevent dupes
+                end
+            end
+            fakeplates[oldplate] = {plate = newplate, used = true}
+            GlobalState.FakePlates = fakeplates
+            SetResourceKvp('FakePlates', json.encode(fakeplates))
+            veh:set('fakeplate',newplate,true) -- trigger client on plate change
+            exports.ox_inventory:RemoveItem(source, 'fakeplate', 1, metadata)
+            return 'success'
+        end
+    else
+        return 'alreadyfakeplate'
+    end
+    return false -- return false if newplate is already being used and being owned
+end)
+
+RegisterCommand('removefakeplate', function(source)
+    local vehicle = GetVehiclePedIsIn(GetPlayerPed(source))
+    local ent = Entity(vehicle).state
+    local oldplate = string.gsub(tostring(ent.plate), '^%s*(.-)%s*$', '%1')
+    local fakeplates = GlobalState.FakePlates
+    if fakeplates[oldplate] and fakeplates[oldplate].used then
+        local metadata = {
+            plate = ent.fakeplate,
+            label = 'Fake Plate - '..ent.fakeplate,
+            description = 'fake plate numbers - usable item',
+        }
+        fakeplates[oldplate] = {plate = ent.fakeplate, used = false}
+        exports.ox_inventory:AddItem(source, 'fakeplate', 1, metadata)
+        GlobalState.FakePlates = fakeplates
+        SetResourceKvp('FakePlates', json.encode(fakeplates))
+        ent:set('oldplate',{ts = os.time(), plate = oldplate},true)
+        ent:set('fakeplate',nil,true)
+    end
+end)
+
 RegisterCommand('exitgarage', function(source)
     local xPlayer = GetPlayerFromId(source)
     if safecoords[xPlayer.identifier] then
-        print(safecoords[xPlayer.identifier])
         SetEntityCoords(GetPlayerPed(source),safecoords[xPlayer.identifier])
         safecoords[xPlayer.identifier] = nil
         SetPlayerRoutingBucket(source,0) -- default world
@@ -244,7 +318,6 @@ AddEventHandler('QBCore:Server:PlayerLoaded', function(data)
     local xPlayer = GetPlayerFromId(src)
     players[src] = xPlayer
     Wait(3000)
-    print(safecoords[xPlayer.identifier],'awww',xPlayer.identifier)
     if safecoords[xPlayer.identifier] then
         data.Functions.SetPlayerData('position', safecoords[xPlayer.identifier])
         SetEntityCoords(GetPlayerPed(src),safecoords[xPlayer.identifier])
@@ -304,7 +377,6 @@ ServerEntityCreated = function(entity)
             if new_spawned[1] then
                 if Config.Ox_Inventory then
                     local source = GetPlayerFromIdentifier(new_spawned[1][owner]).source
-                    print('givekey')
                     GiveVehicleKey(plate,source)
                 else
                     local tempvehicles = gvehicles
@@ -367,6 +439,14 @@ ServerEntityCreated = function(entity)
             globalkeys[plate] = share
             GlobalState.Gshare = globalkeys
             --print(plate, 'Already Owned Vehicles Spawned by other identifier... giving keys to network entity owner')
+        end
+        if gvehicles[plate] then
+            local fakeplates = GlobalState.FakePlates
+            local veh = Entity(entity).state
+            veh:set('plate',plate,true)
+            if fakeplates[plate] and fakeplates[plate].used then
+                veh:set('fakeplate',fakeplates[plate].plate,true)
+            end
         end
     end
 end

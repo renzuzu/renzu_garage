@@ -196,6 +196,8 @@ function Storevehicle(vehicle,impound, impound_data, public)
     Wait(100)
     TaskLeaveVehicle(cache.ped,GetVehiclePedIsIn(cache.ped),1)
     Wait(2000)
+    local ent = Entity(vehicle).state
+    vehicleProps.plate = ent.plate or vehicleProps.plate
     TriggerServerCallback_("renzu_garage:changestate",function(ret)
         local ent = Entity(vehicle).state
         if ret or ent.share and ent.share[PlayerData.identifier] then

@@ -269,9 +269,9 @@ AddEventHandler('renzu_garage:storeprivate', function(id,v,prop, shell)
         Config.Notify( 'success', Message[67], xPlayer)
         vehiclesgarage = {}
         pgarage = {}
-        if Config.Ox_Inventory then
-            DoesPlayerHaveKey(prop.plate,src,true)
-        end
+        -- if Config.Ox_Inventory then
+        --     DoesPlayerHaveKey(prop.plate,src,true)
+        -- end
     else
         Config.Notify( 'error', Message[68], xPlayer)
     end
@@ -320,6 +320,7 @@ AddEventHandler('renzu_garage:gotohousegarage', function(id,var)
     end
     garagehouseid = houseid:gsub('garage_','')
     SetPlayerRoutingBucket(source,tonumber(garagehouseid) or routing)
+    SetRoutingBucketPopulationEnabled(tonumber(garagehouseid) or routing,false)
     if not share and not haveworld then
         current_routing[routing] = source
     end
@@ -370,6 +371,7 @@ AddEventHandler('renzu_garage:gotogarage', function(id,v,share)
         routing = v.route or routing
     end
     SetPlayerRoutingBucket(source,routing)
+    SetRoutingBucketPopulationEnabled(routing,false)
     if not share and not haveworld then
         current_routing[routing] = source
     end
@@ -444,9 +446,9 @@ AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
 		Wait(2000)
 		SetPlayerRoutingBucket(source,default_routing[source])
         TriggerClientEvent('renzu_garage:syncstate',-1,string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1'),source)
-        if Config.Ox_Inventory then
-            GiveVehicleKey(prop.plate,source)
-        end
+        -- if Config.Ox_Inventory then
+        --     GiveVehicleKey(prop.plate,source)
+        -- end
         t = {}
         vehicles = {}
         result = {}

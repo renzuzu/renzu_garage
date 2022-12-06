@@ -13,6 +13,8 @@ function Park()
     end
     if closestparkingmeter ~= 0 then
         local vehicle_prop = GetVehicleProperties(vehicle)
+        local ent = Entity(vehicle).state
+        vehicle_prop.plate = ent.plate or vehicle_prop.plate
         TriggerServerCallback_("renzu_garage:parkingmeter",function(res)
             if res then
                 veh = GetVehiclePedIsIn(cache.ped)
@@ -20,7 +22,6 @@ function Park()
                 Wait(2000)
                 v = GetVehiclePedIsIn(cache.ped,true)
                 FreezeEntityPosition(v,true)
-                SetEntityCollision(v,false)
                 ReqAndDelete(veh)
                 if meter_cars[vehicle_prop.plate] ~= nil then
                     meter_cars[vehicle_prop.plate] = nil
@@ -62,7 +63,6 @@ CreateThread(function()
                     while IsAnyVehicleNearPoint(parkcoord.x,parkcoord.y,parkcoord.z,1.1) do local nearveh = GetClosestVehicle(vector3(parkcoord.x,parkcoord.y,parkcoord.z), 2.000, 0, 70) ReqAndDelete(nearveh) Wait(10) end
                     meter_cars[vehicle.plate] = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 0, 0)
                     while not DoesEntityExist(meter_cars[vehicle.plate]) do Wait(100) end
-                    SetEntityCollision(meter_cars[vehicle.plate],false)
                     FreezeEntityPosition(meter_cars[vehicle.plate], true)
                     SetEntityHeading(meter_cars[vehicle.plate], parkcoord.w)
                     SetVehicleProp(meter_cars[vehicle.plate], vehicle)
@@ -78,7 +78,6 @@ CreateThread(function()
                             Wait(20)
                         end
                         FreezeEntityPosition(meter_cars[vehicle.plate], true)
-                        SetEntityCollision(meter_cars[vehicle.plate],false)
                         return
                     end)
                     SetVehicleDoorsLocked(meter_cars[vehicle.plate],2)
@@ -109,7 +108,6 @@ CreateThread(function()
                             end
                             myveh = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 1, 1)
                             FreezeEntityPosition(myveh, true)
-                            SetEntityCollision(myveh,false)
                             SetVehicleOwned(myveh)
                             SetEntityHeading(myveh, parkcoord.w)
                             --FreezeEntityPosition(myveh, true)
@@ -146,7 +144,6 @@ RegisterNetEvent('renzu_garage:update_parked', function(t,plate,p)
                 ent = v
                 meter_cars[tostring(k, '^%s*(.-)%s*$', '%1'):upper()] = nil
                 ReqAndDelete(ent)
-                print('delete')
             end
         end
     end
@@ -211,7 +208,6 @@ RealPark = function()
                                     Wait(20)
                                 end
                                 FreezeEntityPosition(spawned_cars[park.plate], true)
-                                SetEntityCollision(spawned_cars[park.plate],false)
                                 return
                             end)
                             SetVehicleDoorsLocked(spawned_cars[park.plate],2)
@@ -251,7 +247,6 @@ RealPark = function()
                             end
                         elseif spawned_cars[park.plate] and #(GetEntityCoords(cache.ped) - vehicle_coord) > 5 then
                             SetVehicleDoorsLocked(spawned_cars[park.plate],2)
-                            SetEntityCollision(spawned_cars[park.plate],false)
                         end
                     elseif spawned_cars[park.plate] then
                         NetworkFadeInEntity(spawned_cars[park.plate],1)
@@ -284,6 +279,8 @@ RealPark = function()
                                 if spawned_cars[vehicleProps.plate] ~= nil then
                                     spawned_cars[vehicleProps.plate] = nil
                                 end
+                                local ent = Entity(vehicle).state
+                                vehicleProps.plate = ent.plate or vehicleProps.plate
                                 TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps,parking[k])
                                 ReqAndDelete(car)
                                 Config.Notify( 'success', Message[34])

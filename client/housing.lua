@@ -1,6 +1,9 @@
 RegisterNetEvent('renzu_garage:storeprivatehouse', function(i, shell)
-    local prop = GetVehicleProperties(GetVehiclePedIsIn(cache.ped))
-    ReqAndDelete(GetVehiclePedIsIn(cache.ped))
+    local vehicle = GetVehiclePedIsIn(cache.ped)
+    local prop = GetVehicleProperties(vehicle)
+    ReqAndDelete(vehicle)
+    local ent = Entity(vehicle).state
+    prop.plate = ent.plate or prop.plate
     TriggerServerEvent('renzu_garage:storeprivate',i,{}, prop, shell)
 end)
 

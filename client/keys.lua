@@ -64,9 +64,10 @@ function isVehicleUnlocked()
             local r = GetIsVehicleEngineRunning(v)
             if Config.Ox_Inventory then
                 local ent = Entity(v).state
-                if not DoesPlayerHaveKey(plate) and not ent.hotwired then
+                if not DoesPlayerHaveKey(v,plate) and not ent.hotwired then
                     ent:set('havekeys', false, true)
-                    TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(v))
+                    local networked = NetworkGetEntityIsNetworked(v)
+                    TriggerServerEvent('statebugupdate','havekeys',false, networked and VehToNet(v))
                 end
                 SetPedConfigFlag(cache.ped,429,false)
                 Wait(1)
@@ -104,14 +105,15 @@ function isVehicleUnlocked()
             Wait(0)
         end
     end
+    local networked = NetworkGetEntityIsNetworked(v)
     if GetIsVehicleEngineRunning(veh) and GetEntityPopulationType(veh) ~= 7 then
         local ent = Entity(veh).state
         ent:set('havekeys',true,true)
         ent:set('hotwired',true,true)
         ent:set('unlock',false,true)
-        TriggerServerEvent('statebugupdate','havekeys',true, VehToNet(veh))
-        TriggerServerEvent('statebugupdate','hotwired',true, VehToNet(veh))
-        TriggerServerEvent('statebugupdate','unlock',true, VehToNet(veh))
+        TriggerServerEvent('statebugupdate','havekeys',true, networked and VehToNet(veh))
+        TriggerServerEvent('statebugupdate','hotwired',true, networked and VehToNet(veh))
+        TriggerServerEvent('statebugupdate','unlock',true, networked and VehToNet(veh))
         return
     end
     if not DoesEntityExist(veh) or entering then return end
@@ -125,10 +127,10 @@ function isVehicleUnlocked()
                 plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
                 local ent = Entity(veh).state
                 local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
-                local havekeys = Config.Ox_Inventory and DoesPlayerHaveKey(plate)
+                local havekeys = Config.Ox_Inventory and DoesPlayerHaveKey(veh,plate)
                 if Config.Ox_Inventory and havekeys then
                     ent:set('havekeys', true, true)
-                    TriggerServerEvent('statebugupdate','havekeys',true, VehToNet(veh))
+                    TriggerServerEvent('statebugupdate','havekeys',true, networked and VehToNet(veh))
                     Wait(111)
                 end
                 if not ent.havekeys and not Config.Ox_Inventory then
@@ -136,9 +138,9 @@ function isVehicleUnlocked()
                     if ent.hotwired and ent.havekeys then
                         ent.hotwired = false
                         ent:set('hotwired', false, true)
-                        TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
+                        TriggerServerEvent('statebugupdate','hotwired',false, networked and VehToNet(veh))
                         ent:set('havekeys', false, true)
-                        TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
+                        TriggerServerEvent('statebugupdate','havekeys',false, networked and VehToNet(veh))
                         Wait(200)
                         ent.havekeys = true
                         SetVehicleEngineOn(veh,false,true,false)
@@ -150,7 +152,7 @@ function isVehicleUnlocked()
                     SetVehicleNeedsToBeHotwired(veh,false)
                     if havekeys then
                         ent:set('hotwired', false, true)
-                        TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(veh))
+                        TriggerServerEvent('statebugupdate','hotwired',false, networked and VehToNet(veh))
                     end
                     -- ent:set('havekeys', false, true)
                     -- TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(veh))
@@ -363,18 +365,22 @@ GetGarageKeys = function(id)
     return Citizen.Await(garage)
 end
 
-DoesPlayerHaveKey = function(plate)
+DoesPlayerHaveKey = function(vehicle,plate)
     local keys = GlobalState.KeySerials
+    local fakeplates = GlobalState.FakePlates
     local haskey = false
     local data = exports.ox_inventory:Search('slots', 'keys')
     local gago = {}
+    local veh = Entity(vehicle).state
+    local propplate = string.gsub(tostring(GetVehicleNumberPlateText(vehicle)), '^%s*(.-)%s*$', '%1')
     if data then
-        local plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1')
+        local plate = string.gsub(tostring(veh and veh.plate or propplate), '^%s*(.-)%s*$', '%1')
         for k,v in pairs(data) do
             local metaplate = v.metadata and v.metadata.plate
             local serial = v.metadata and v.metadata.serial or 'serialnotfound'
             metaplate = string.gsub(tostring(metaplate), '^%s*(.-)%s*$', '%1')
-            if metaplate and metaplate == plate and keys[metaplate] == serial then
+            if metaplate and metaplate == plate and keys[metaplate] == serial
+              or metaplate and metaplate == fakeplates[plate] and keys[metaplate] == serial then
                 haskey = true
                 break
             end
@@ -415,7 +421,7 @@ function Keyless()
         vehiclesinarea[plate].plate = plate
         vehiclesinarea[plate].distance = #(mycoords - GetEntityCoords(v, false))
         vehiclesinarea[plate].owner = not ox and owned_vehicles[plate] ~= nil and owned_vehicles[plate][owner] or GlobalState.Gshare and GlobalState.Gshare[plate] 
-        or ox and DoesPlayerHaveKey(plate) and PlayerData.identifier or false
+        or ox and DoesPlayerHaveKey(v,plate) and PlayerData.identifier or false
     end
     local near = -1
     local nearestveh = nil
@@ -425,11 +431,12 @@ function Keyless()
     EnsureEntityStateBag(nearestveh)
     -- check nearest owned vehicle
     local ent = Entity(nearestveh).state
-    if ox and DoesPlayerHaveKey(nearestplate) -- priorities ox
+    if ox and DoesPlayerHaveKey(nearestveh,nearestplate) -- priorities ox
     or owned_vehicles[nearestplate] and owned_vehicles[nearestplate][owner] == PlayerData.identifier and not ox -- player owned
     or not ox and owned_vehicles[nearestplate] and ent.share ~= nil and ent.share[PlayerData.identifier] and ent.share[PlayerData.identifier] -- shared vehicle entity state
     or GlobalState.Gshare and GlobalState.Gshare[nearestplate] and GlobalState.Gshare[nearestplate][PlayerData.identifier] and GlobalState.Gshare[nearestplate][PlayerData.identifier] then -- shared vehicle from global state
         ent.unlock = not ent.unlock
+        local networked = NetworkGetEntityIsNetworked(nearestveh)
         PlaySoundFromEntity(-1, "Remote_Control_Fob", cache.ped, "PI_Menu_Sounds", 1, 0)
         if not IsPedInAnyVehicle(cache.ped, false) then 
             if ent.unlock then 
@@ -448,7 +455,7 @@ function Keyless()
 		Citizen.Wait(100)
 		SetVehicleLights(nearestveh, 0)	
         ent:set('hotwired', false, true)
-        TriggerServerEvent('statebugupdate','hotwired',false, VehToNet(nearestveh))
+        TriggerServerEvent('statebugupdate','hotwired',false, networked and VehToNet(nearestveh))
         --ent:set('unlock', ent.havekeys, true)
         SetVehicleDoorsLocked(nearestveh, 1)
         if not IsPedInAnyVehicle(cache.ped, false) then
@@ -458,7 +465,7 @@ function Keyless()
             --ent.havekeys = true
             ent:set('unlock', true, true)
             SetVehicleDoorsLocked(nearestveh,1)
-            TriggerServerEvent('statebugupdate','unlock',true, VehToNet(nearestveh), GetVehicleProperties(nearestveh))
+            TriggerServerEvent('statebugupdate','unlock',true, networked and VehToNet(nearestveh), GetVehicleProperties(nearestveh))
             --local payload = msgpack_pack(v)
             --SetStateBagValue(es, s, payload, payload:len(), r)
             PlaySoundFromEntity(-1, "Door_Open", nearestveh, "Lowrider_Super_Mod_Garage_Sounds", 0, 0)
@@ -471,8 +478,8 @@ function Keyless()
             ent.havekeys = false
             ent:set('unlock', false, true)
             SetVehicleDoorsLocked(nearestveh,2)
-            TriggerServerEvent('statebugupdate','unlock',false, VehToNet(nearestveh), GetVehicleProperties(nearestveh))
-            TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(nearestveh))
+            TriggerServerEvent('statebugupdate','unlock',false, networked and VehToNet(nearestveh), GetVehicleProperties(nearestveh))
+            TriggerServerEvent('statebugupdate','havekeys',false, networked and VehToNet(nearestveh))
             StartVehicleHorn(nearestveh, 11, "HELDDOWN", false)
             Wait(200)
             StartVehicleHorn(nearestveh, 0, "HELDDOWN", false)
@@ -547,8 +554,9 @@ function HotWireVehicle(veh)
             ent.havekeys = true
             ent:set('havekeys', true, true)
             ent:set('hotwired', true, true)
-            TriggerServerEvent('statebugupdate','havekeys',true, VehToNet(veh))
-            TriggerServerEvent('statebugupdate','hotwired',true, VehToNet(veh))
+            local networked = NetworkGetEntityIsNetworked(veh)
+            TriggerServerEvent('statebugupdate','havekeys',true, networked and VehToNet(veh))
+            TriggerServerEvent('statebugupdate','hotwired',true, networked and VehToNet(veh))
             break
         elseif Config.EnableAlert then
             Config.FailAlert()
@@ -588,7 +596,8 @@ function LockPick()
                 if ret then
                     ent.unlock = not ent.unlock
                     ent:set('unlock', ent.unlock, true)
-                    TriggerServerEvent('statebugupdate','unlock',ent.unlock, VehToNet(veh))
+                    local networked = NetworkGetEntityIsNetworked(veh)
+                    TriggerServerEvent('statebugupdate','unlock',ent.unlock, networked and VehToNet(veh))
                     SetVehicleDoorsLocked(veh, 1)
                     HotWireVehicle(veh)
                 else
@@ -714,7 +723,8 @@ RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
                     local share = ent.share or {}
                     share[vehiclekeysdata.data.playerslist] = PlayerData.identifier
                     ent:set('share', share, true)
-                    TriggerServerEvent('statebugupdate','share',share, VehToNet(vehicle))
+                    local networked = NetworkGetEntityIsNetworked(vehicle)
+                    TriggerServerEvent('statebugupdate','share',share, networked and VehToNet(vehicle))
                     Config.Notify('success', Message[60])
                 else
                     Config.Notify( 'warning', Message[61])
@@ -731,10 +741,11 @@ CheckKeysOnItemRemove = function(item,count)
         for k,v in pairs(GetAllVehicleFromPool()) do
             if GetEntityPopulationType(v) > 4 then
                 local plate = string.gsub(GetVehicleNumberPlateText(v), '^%s*(.-)%s*$', '%1')
-                if owned_vehicles[plate] and not DoesPlayerHaveKey(plate) then
+                if owned_vehicles[plate] and not DoesPlayerHaveKey(v,plate) then
                     local ent = Entity(v).state
                     ent:set('havekeys', false, true)
-                    TriggerServerEvent('statebugupdate','havekeys',false, VehToNet(v))
+                    local networked = NetworkGetEntityIsNetworked(vehicle)
+                    TriggerServerEvent('statebugupdate','havekeys',false, networked and VehToNet(v))
                 end
             end
         end
@@ -743,3 +754,59 @@ end
 
 RegisterNetEvent('esx:removeInventoryItem', CheckKeysOnItemRemove)
 RegisterNetEvent('ox_inventory:itemCount', CheckKeysOnItemRemove)
+
+exports('Fakeplate', function(data)
+    local vehicle = GetNearestVehicleinPool(GetEntityCoords(cache.ped), 5)?.vehicle
+    if not DoesEntityExist(vehicle) then Config.Notify( 'error', 'no vehicles nearby') return end
+    local ent = Entity(vehicle).state
+    if not ent.fakeplate then
+        exports.ox_inventory:useItem(data, function(data)
+            if data then
+                local newplate = nil
+                local exist = data?.metadata and data?.metadata?.plate
+                if not exist then
+                    local input = lib.inputDialog('Fake Plate', {'Plate Text'})
+                    if not input then return end
+                    newplate = tostring(input[1])
+                else
+                    newplate = exist
+                end
+                if newplate and newplate:len() <= 8 then
+                    local plate = string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1')
+                    local success = lib.callback.await('renzu_garage:Fakeplate', false, NetworkGetNetworkIdFromEntity(vehicle), newplate, data?.metadata)
+                    if success == 'success' then
+                        Config.Notify( 'success', 'New Plate Installed')
+                    elseif success == 'alreadyfakeplate' then
+                        Config.Notify( 'error', 'Fake Plate is still Installed, remove it first - /removefakeplate')
+                    else
+                        Config.Notify( 'error', 'New Plate Already Exist')
+                    end
+                end
+                return true
+            end
+        end)
+    else
+        Config.Notify( 'error', 'Fake Plate is still Installed, remove it first - /removefakeplate')
+        return false
+    end
+end)
+
+AddStateBagChangeHandler('fakeplate' --[[key filter]], nil --[[bag filter]], function(bagName, key, value, _unused, replicated)
+	Wait(0)
+	local net = tonumber(bagName:gsub('entity:', ''), 10)
+	if not value then return end
+    local ent = NetworkGetEntityFromNetworkId(net)
+    if NetworkGetEntityOwner(ent) == PlayerId() then
+        SetVehicleNumberPlateText(ent,value)
+    end
+end)
+
+AddStateBagChangeHandler('oldplate' --[[key filter]], nil --[[bag filter]], function(bagName, key, value, _unused, replicated)
+	Wait(0)
+	local net = tonumber(bagName:gsub('entity:', ''), 10)
+	if not value then return end
+    local ent = NetworkGetEntityFromNetworkId(net)
+    if NetworkGetEntityOwner(ent) == PlayerId() then
+        SetVehicleNumberPlateText(ent,value.plate)
+    end
+end)
