@@ -389,6 +389,8 @@ ServerEntityCreated = function(entity)
                     GlobalState.Gshare = globalkeys
                 end
                 --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
+                local veh = Entity(entity).state
+                veh:set('plate',plate,true)
                 return
             end
         elseif gvehicles[plate] and not Config.Ox_Inventory then -- owned vehicles
