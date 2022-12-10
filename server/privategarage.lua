@@ -463,7 +463,7 @@ exports('GetPrivateGaragefromPlate', function(source,plate)
         ['@identifier'] = xPlayer.identifier
     })
     for k,v2 in pairs(result) do
-        local vehicles = json.decode(v?.vehicles or '[]') or {}
+        local vehicles = json.decode(v2?.vehicles or '[]') or {}
         for k,v in pairs(vehicles) do
             if v.vehicle == nil then v.taken = false end
             if v.taken and v.vehicle ~= nil and string.gsub(v.vehicle.plate, '^%s*(.-)%s*$', '%1') == string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1') then
