@@ -7,7 +7,7 @@ RegisterNetEvent('renzu_garage:storeprivatehouse', function(i, shell)
     TriggerServerEvent('renzu_garage:storeprivate',i,{}, prop, shell)
 end)
 
-RegisterNetEvent('renzu_garage:property', function(i, propertycoord, index, spawncoord)
+RegisterNetEvent('renzu_garage:property', function(i, propertycoord, spawncoord)
     local i = i
     DeleteEntity(LastVehicleFromGarage)
     LastVehicleFromGarage = nil
