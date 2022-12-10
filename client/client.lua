@@ -37,9 +37,11 @@ Citizen.CreateThread(function()
             end
         end
     end
-    for k, v in pairs (private_garage) do
-        GarageZone.PrivateAdd(vector3(v.buycoords.x, v.buycoords.y, v.buycoords.z),k,4,nil,k,v)
-        SetBlips(v.buycoords.x, v.buycoords.y, v.buycoords.z, v.Blip.sprite, v.Blip.scale, v.Blip.color, v.name)
+    if Config.Private_Garage then
+        for k, v in pairs (private_garage) do
+            GarageZone.PrivateAdd(vector3(v.buycoords.x, v.buycoords.y, v.buycoords.z),k,4,nil,k,v)
+            SetBlips(v.buycoords.x, v.buycoords.y, v.buycoords.z, v.Blip.sprite, v.Blip.scale, v.Blip.color, v.name)
+        end
     end
     if Config.EnablePropertyCoordGarageCoord and Config.HousingBlips then
         for k,v in pairs(HousingGarages) do
