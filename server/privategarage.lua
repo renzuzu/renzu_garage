@@ -458,7 +458,7 @@ AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
 end)
 
 exports('GetPrivateGaragefromPlate', function(source,plate)
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local xPlayer = GetPlayerFromId(source)
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier', {
         ['@identifier'] = xPlayer.identifier
     })
@@ -475,7 +475,7 @@ exports('GetPrivateGaragefromPlate', function(source,plate)
 end)
 
 exports('RemoveVehicleFromPrivate', function(source,plate,id)
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local xPlayer = GetPlayerFromId(source)
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
         ['@identifier'] = xPlayer.identifier,
         ['@garage'] = id
