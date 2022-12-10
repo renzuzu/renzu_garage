@@ -457,6 +457,50 @@ AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
     safecoords[source] = nil
 end)
 
+exports('GetPrivateGaragefromPlate', function(source,plate)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier', {
+        ['@identifier'] = xPlayer.identifier
+    })
+    for k,v in pairs(result) do
+        local vehicles = json.decode(v?.vehicles or '[]') or {}
+        for k,v in pairs(vehicles) do
+            if v.vehicle == nil then v.taken = false end
+            if v.taken and v.vehicle ~= nil and string.gsub(v.vehicle.plate, '^%s*(.-)%s*$', '%1') == string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1') then
+                return v.garage
+            end
+        end
+    end
+    return false
+end)
+
+exports('RemoveVehicleFromPrivate', function(source,plate,id)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier and garage = @garage', {
+        ['@identifier'] = xPlayer.identifier,
+        ['@garage'] = id
+    })
+    local vehicles = json.decode(result[1].vehicles)
+    for k,v in pairs(vehicles) do
+        if v.vehicle == nil then v.taken = false end
+        if v.taken and v.vehicle ~= nil and string.gsub(v.vehicle.plate, '^%s*(.-)%s*$', '%1') == string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1') then
+            v.taken = false
+            v.vehicle = nil
+            break
+        end
+    end
+    local result = MysqlGarage(Config.Mysql,'execute','UPDATE '..vehicletable..' SET `'..stored..'` = @stored, '..garage__id..' = @garage_id WHERE TRIM(UPPER(plate)) = @plate', {
+        ['@garage_id'] = 'A',
+        ['@plate'] = string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1'),
+        ['@stored'] = 0
+    })
+    local result = MysqlGarage(Config.Mysql,'execute','UPDATE private_garage SET `vehicles` = @vehicles WHERE garage = @garage and identifier = @identifier', {
+        ['@vehicles'] = json.encode(vehicles),
+        ['@garage'] = id,
+        ['@identifier'] = xPlayer.identifier,
+    })
+end)
+
 RegisterServerCallBack_('renzu_garage:isgarageowned', function (source, cb, id, v)
     local source = source
     local xPlayer = GetPlayerFromId(source)
