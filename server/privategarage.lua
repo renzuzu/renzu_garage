@@ -462,12 +462,12 @@ exports('GetPrivateGaragefromPlate', function(source,plate)
     local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM private_garage WHERE identifier = @identifier', {
         ['@identifier'] = xPlayer.identifier
     })
-    for k,v in pairs(result) do
+    for k,v2 in pairs(result) do
         local vehicles = json.decode(v?.vehicles or '[]') or {}
         for k,v in pairs(vehicles) do
             if v.vehicle == nil then v.taken = false end
             if v.taken and v.vehicle ~= nil and string.gsub(v.vehicle.plate, '^%s*(.-)%s*$', '%1') == string.gsub(plate:upper(), '^%s*(.-)%s*$', '%1') then
-                return v.garage
+                return v2.garage
             end
         end
     end
