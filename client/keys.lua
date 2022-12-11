@@ -217,19 +217,29 @@ function isVehicleUnlocked()
                     end
                     SetVehicleNeedsToBeHotwired(veh,true)
                 end
-                if ent.unlock and ent.havekeys and ent.hotwired and GetSeatPedIsTryingToEnter(cache.ped) == -1 then
+                local ent = Entity(veh).state
+                if not ent.share then ent.share = {} end
+                if ent.unlock and ent.havekeys and not ent.hotwired and not GetIsVehicleEngineRunning(veh) and not owned_vehicles[plate] and not ent.share[PlayerData.identifier] and not DoesPlayerHaveKey(veh,plate)
+                or ent.unlock and ent.havekeys and not ent.hotwired and not GetIsVehicleEngineRunning(veh) and not ent.share[PlayerData.identifier] and not DoesPlayerHaveKey(veh,plate) then
                     SetPedConfigFlag(cache.ped,429,true)
                     SetVehicleEngineOn(veh,false,true,false)
                     SetVehicleNeedsToBeHotwired(veh,true)
-                end
-                if ent.unlock and not ent.havekeys and not ent.hotwired then
+                elseif ent.unlock and not ent.havekeys and not ent.hotwired and not owned_vehicles[plate] then
                     SetVehicleEngineOn(veh,false,true,true)
                     SetVehicleNeedsToBeHotwired(veh,false)
-                end
-                if not Config.EnableHotwire then
+                elseif not Config.EnableHotwire and not owned_vehicles[plate] then
                     SetPedConfigFlag(cache.ped,429,true)
                     SetVehicleEngineOn(veh,false,true,false)
                     SetVehicleNeedsToBeHotwired(veh,false)
+                end
+                Wait(5000)
+                if ent.havekeys and not GetIsVehicleEngineRunning(veh) and not IsVehicleNeedsToBeHotwired(veh) then
+                    SetPedConfigFlag(cache.ped,429,false)
+                    SetVehicleNeedsToBeHotwired(veh,false)
+                    SetVehicleEngineOn(veh,true,true,false)
+                    SetVehicleJetEngineOn(veh,true)
+                    Wait(100)
+                    SetPedConfigFlag(cache.ped,429,false)
                 end
                 break
             end
@@ -238,6 +248,10 @@ function isVehicleUnlocked()
         entering = false
     end)
 end
+
+lib.onCache('vehicle', function(value)
+    SetPedConfigFlag(cache.ped,429,false)
+end)
 
 RegisterCommand('entervehicleg', function()
 	isVehicleUnlocked()
@@ -524,7 +538,7 @@ function HotWireVehicle(veh)
     while not ent.havekeys do
         Wait(20)
         SetVehicleEngineOn(veh,false,true,true)
-        TaskEnterVehicle(cache.ped, veh, 10.0, -1, 2.0, 0)
+        TaskEnterVehicle(cache.ped, veh, 10.0, -1, 2.0, 8)
         while not IsPedInAnyVehicle(cache.ped) do Wait(100) SetVehicleDoorsLocked(veh, 1) end
         local o = {
             dict = "anim@amb@clubhouse@tutorial@bkr_tut_ig3@",
@@ -549,6 +563,7 @@ function HotWireVehicle(veh)
             lib.cancelProgress()
         end
         if ret then
+            SetPedConfigFlag(cache.ped,429,false)
             SetVehicleEngineOn(veh,false,true,false)
             SetVehicleNeedsToBeHotwired(veh,true)
             ent.havekeys = true
