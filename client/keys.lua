@@ -106,7 +106,7 @@ function isVehicleUnlocked()
         end
     end
     local networked = NetworkGetEntityIsNetworked(v)
-    if GetIsVehicleEngineRunning(veh) and GetEntityPopulationType(veh) ~= 7 then
+    if GetIsVehicleEngineRunning(veh) and GetEntityPopulationType(veh) ~= 7 and GetPedInVehicleSeat(veh,-1) == 0 then
         local ent = Entity(veh).state
         ent:set('havekeys',true,true)
         ent:set('hotwired',true,true)
