@@ -339,6 +339,10 @@ AddEventHandler('entityCreated', function(entity)
 end)
 
 ServerEntityCreated = function(entity)
+    if Config.LockAllLocalVehicle and DoesEntityExist(entity) and GetEntityPopulationType(entity) <= 5 and GetEntityType(entity) == 2 
+    or Config.LockParkedLocalVehiclesOnly and DoesEntityExist(entity) and GetEntityPopulationType(entity) == 3 and GetEntityType(entity) == 2 then
+        SetVehicleDoorsLocked(entity,2)
+    end
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then return end
     local entity = entity
     local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
@@ -448,6 +452,17 @@ ServerEntityCreated = function(entity)
             veh:set('plate',plate,true)
             if fakeplates[plate] and fakeplates[plate].used then
                 veh:set('fakeplate',fakeplates[plate].plate,true)
+            end
+        end
+        Wait(2000)
+        if Config.GiveKeystoMissionEntity and Config.Ox_Inventory and DoesEntityExist(entity) and GetPedInVehicleSeat(entity,-1) ~= 0 then
+            if IsPedAPlayer(GetPedInVehicleSeat(entity,-1)) then
+                local net = NetworkGetEntityOwner(GetPedInVehicleSeat(entity,-1))
+                local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
+                if not DoesPlayerHaveKey(plate,net) then
+                    GiveVehicleKey(plate,net)
+                    TriggerClientEvent('startvehicle',net)
+                end
             end
         end
     end

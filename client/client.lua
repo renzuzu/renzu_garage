@@ -1294,3 +1294,8 @@ Citizen.CreateThreadNow(function()
         end,false)
     end
 end)
+
+RegisterNetEvent('startvehicle', function()
+    SetPedConfigFlag(cache.ped,429,false)
+    SetVehicleEngineOn(GetVehiclePedIsIn(cache.ped,false) or GetVehiclePedIsIn(cache.ped,true),true,true,true)
+end)
