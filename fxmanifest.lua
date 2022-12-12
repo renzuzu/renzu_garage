@@ -7,7 +7,6 @@ game         'gta5'
 ui_page 'html/index.html'
 
 shared_scripts {
-	'@renzu_shield/init.lua',
 	'@ox_lib/init.lua',	
 	'conf/locale/*.lua',
 	'conf/main.lua',
