@@ -233,7 +233,7 @@ function isVehicleUnlocked()
                     SetVehicleNeedsToBeHotwired(veh,false)
                 end
                 Wait(5000)
-                if ent.havekeys and not GetIsVehicleEngineRunning(veh) and not IsVehicleNeedsToBeHotwired(veh) then
+                if ent.bypasskey and not GetIsVehicleEngineRunning(veh) and not IsVehicleNeedsToBeHotwired(veh) then
                     SetPedConfigFlag(cache.ped,429,false)
                     SetVehicleNeedsToBeHotwired(veh,false)
                     SetVehicleEngineOn(veh,true,true,false)
@@ -251,6 +251,17 @@ end
 
 lib.onCache('vehicle', function(value)
     SetPedConfigFlag(cache.ped,429,false)
+    if value ~= 0 then
+        local ent = Entity(value).state
+        if ent.havekeys and not GetIsVehicleEngineRunning(value) and not IsVehicleNeedsToBeHotwired(value) then
+            SetPedConfigFlag(cache.ped,429,false)
+            SetVehicleNeedsToBeHotwired(value,false)
+            SetVehicleEngineOn(value,true,true,false)
+            SetVehicleJetEngineOn(value,true)
+            Wait(100)
+            SetPedConfigFlag(cache.ped,429,false)
+        end
+    end
 end)
 
 RegisterCommand('entervehicleg', function()

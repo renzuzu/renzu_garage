@@ -353,9 +353,8 @@ ServerEntityCreated = function(entity)
     servervehicles[plate] = NetworkGetNetworkIdFromEntity(entity)
     Wait(1000)
     if Config.GiveKeystoMissionEntity and DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if vehicle is created with player (missions) eg. trucker, deliveries etc.
-        local ped = GetPedInVehicleSeat(entity,-1) ~= 0 and GetPedInVehicleSeat(entity,-1) or GetPedInVehicleSeat(entity,1) -- server native says driver seat is 1 but in my test its -1 like the client
-        local o = NetworkGetEntityOwner(entity)
-        if GetPlayerPed(o) == ped or #(GetEntityCoords(GetPlayerPed(o)) - GetEntityCoords(entity)) < 80 then -- check if driver is the owner of entity or if entity is nearby to owner of entity
+        local nodriver = GetPedInVehicleSeat(entity,-1) == 0 -- server native says driver seat is 1 but in my test its -1 like the client
+        if nodriver then 
             havekeys = true
         end
     end
@@ -379,6 +378,7 @@ ServerEntityCreated = function(entity)
         if not gvehicles[plate] and vehicleshop then -- lets assume its newly purchased from any vehicle shop
             local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
+                plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
                 if Config.Ox_Inventory then
                     local source = GetPlayerFromIdentifier(new_spawned[1][owner]).source
                     GiveVehicleKey(plate,source)
@@ -398,6 +398,7 @@ ServerEntityCreated = function(entity)
                 return
             end
         elseif gvehicles[plate] and not Config.Ox_Inventory then -- owned vehicles
+            plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
             local share = GlobalState.Gshare[plate] or {}
             share[gvehicles[plate][owner]] = gvehicles[plate][owner]
             ent.share = share
@@ -407,6 +408,7 @@ ServerEntityCreated = function(entity)
         end
         local plyid = NetworkGetEntityOwner(entity) -- this is accurate only if vehicle created from client
         local xPlayer = players[plyid] or GetPlayerFromId(plyid)
+        plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
         if plyid and not gvehicles[plate] and DoesEntityExist(entity) then
             for k,v in pairs(jobplates) do
                 if string.find(plate, k) then
@@ -429,13 +431,19 @@ ServerEntityCreated = function(entity)
                 local xPlayer = xPlayer
                 if xPlayer and xPlayer.identifier then
                     local tempvehicles = gvehicles
+                    plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
                     tempvehicles[plate] = {temp = true, plate = plate, name = "Vehicle", [owner] = xPlayer.identifier}
                     GlobalState.GVehicles = tempvehicles
                     share[xPlayer.identifier] = xPlayer.identifier
                     ent.share = share
                     globalkeys[plate] = ent.share
                     GlobalState.Gshare = globalkeys
-                    print(plate,'Newly Mission Vehicles Found..Adding to Key system')
+                    local ent = Entity(entity).state
+                    ent:set('havekeys',true,true)
+                    ent:set('hotwired',true,true)
+                    ent:set('unlock',true,true)
+                    ent:set('bypasskey',true,true)
+                    print(plate,'Newly Mission Vehicles Found..Adding to Key system '..plate..' '..xPlayer.identifier)
                 end
             end
         elseif plyid and xPlayer and gvehicles[plate] and xPlayer.identifier and xPlayer.identifier ~= GlobalState.GVehicles[plate][owner] then
