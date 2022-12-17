@@ -1550,6 +1550,8 @@ function SetVehicleProp(vehicle, mods)
             if props.engineHealth then SetVehicleEngineHealth(vehicle, props.engineHealth + 0.0) end
             if props.tankHealth then SetVehiclePetrolTankHealth(vehicle, props.tankHealth + 0.0) end
             if props.dirtLevel then SetVehicleDirtLevel(vehicle, props.dirtLevel + 0.0) end
+	    if props.customPrimaryColor ~= nil then SetVehicleCustomPrimaryColour(vehicle, props.customPrimaryColor[1], props.customPrimaryColor[2], props.customPrimaryColor[3]) end
+	    if props.customSecondaryColor ~= nil then SetVehicleCustomSecondaryColour(vehicle, props.customSecondaryColor[1], props.customSecondaryColor[2], props.customSecondaryColor[3]) end
             if props.rgb then SetVehicleCustomPrimaryColour(vehicle, props.rgb[1], props.rgb[2], props.rgb[3]) end
             if props.rgb2 then SetVehicleCustomSecondaryColour(vehicle, props.rgb2[1], props.rgb2[2], props.rgb2[3]) end
             if props.color1 then SetVehicleColours(vehicle, props.color1, colorSecondary) end
@@ -1667,6 +1669,16 @@ function GetVehicleProperties(vehicle)
             if DoesEntityExist(vehicle) then
                 local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
                 local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
+		local hasCustomPrimaryColor = GetIsVehiclePrimaryColourCustom(vehicle)
+		local customPrimaryColor = nil
+		if hasCustomPrimaryColor then
+			customPrimaryColor = {GetVehicleCustomPrimaryColour(vehicle)}
+		end
+		local hasCustomSecondaryColor = GetIsVehicleSecondaryColourCustom(vehicle)
+		local customSecondaryColor = nil
+		if hasCustomSecondaryColor then
+			customSecondaryColor = {GetVehicleCustomSecondaryColour(vehicle)}
+		end
                 local extras = {}
                 for extraId=0, 12 do
                     if DoesExtraExist(vehicle, extraId) then
@@ -1695,6 +1707,8 @@ function GetVehicleProperties(vehicle)
                     dirtLevel         = MathRound(GetVehicleDirtLevel(vehicle), 1),
                     color1            = colorPrimary,
                     color2            = colorSecondary,
+		    customPrimaryColor = customPrimaryColor,
+		    customSecondaryColor = customSecondaryColor,
                     rgb				  = table.pack(GetVehicleCustomPrimaryColour(vehicle)),
                     rgb2				  = table.pack(GetVehicleCustomSecondaryColour(vehicle)),
                     pearlescentColor  = pearlescentColor,
