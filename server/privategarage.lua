@@ -419,9 +419,9 @@ AddEventHandler('renzu_garage:exitgarage', function(t,prop,id,choose,share)
         local success = false
         for k,v in pairs(vehicles) do
             if v.vehicle == nil then v.taken = false end
-            if v.taken and v.vehicle ~= nil and v.vehicle.plate == prop.plate then
-                v.taken = false
-                v.vehicle = nil
+            if v.taken and v.vehicle ~= nil and string.gsub(v.vehicle.plate:upper(), '^%s*(.-)%s*$', '%1') == string.gsub(prop.plate:upper(), '^%s*(.-)%s*$', '%1') then
+                vehicles[k].taken = false
+                vehicles[k].vehicle = nil
                 success = true
                 break
             end
