@@ -73,6 +73,7 @@ function OpenImpound(garageid)
 
     local cats = {}
     local totalcats = 0
+
     if 'police' == PlayerData.job.name then
         for k,v2 in pairs(OwnedVehicles) do
             for k2,v in pairs(v2) do
@@ -107,6 +108,7 @@ function OpenImpound(garageid)
             while cat == nil and inGarage do Wait(1000) end
         end
     end
+
     if not inGarage then return end
     for k,v2 in pairs(OwnedVehicles) do
         for k2,v in pairs(v2) do
@@ -128,8 +130,12 @@ function OpenImpound(garageid)
             end
             local plate = string.gsub(tostring(v.plate), '^%s*(.-)%s*$', '%1'):upper()
             if v.garage_id ~= 'private' and not nearbyvehicles[plate] and v.impound and ispolice  -- job list of impounded vehicles
+            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not stored and Impoundforall and v.identifier == PlayerData.identifier -- list impounded vehicles if garage id is impound and if its owned
+
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and garageid == v.garage_id and Impoundforall and v.identifier == PlayerData.identifier -- list impounded vehicles if garage id is impound and if its owned
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not stored and Impoundforall and v.identifier == PlayerData.identifier -- list impounded vehicles if not stored and if its owned
+            or v.garage_id ~= 'private' and not nearbyvehicles[plate] and v.impound and Impoundforall and v.identifier == PlayerData.identifier -- https://github.com/renzuzu/renzu_garage/issues/341
+
             or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
                 if cat ~= nil and totalcats > 0 and v.brand:upper() == cat:upper() or 'police' ~= PlayerData.job.name then
                     c = c + 1
