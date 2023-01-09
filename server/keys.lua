@@ -141,29 +141,29 @@ end)
 GlobalState.VehiclePersistData = json.decode(GetResourceKvpString('VehiclePersistData') or '[]') or {}
 Citizen.CreateThreadNow(function()
     Wait(1000)
-    local fakeplates = GlobalState.FakePlates
-    while GetNumPlayerIndices() == 0 do Wait(1000) end
-    local id = GetPlayerFromIndex(GetNumPlayerIndices()-1)
-    while not DoesEntityExist(GetPlayerPed(id)) do Wait(111) end
-    for k,v in pairs(GlobalState.VehiclePersistData) do
-        Citizen.CreateThreadNow(function()
-            local CreateAutoMobile = function(model, x, y, z, heading) return Citizen.InvokeNative(`CREATE_AUTOMOBILE`, model, x, y, z, heading) end
-            local vehicle = CreateVehicle(v.props.model, v.coord.x,v.coord.y,v.coord.z,v.coord.w, 1, 1)
-            while not DoesEntityExist(vehicle) do Wait(1) end
-            EnsureEntityStateBag(vehicle)
-            while NetworkGetEntityOwner(vehicle) == -1 do Wait(5000) end -- queing
-            local state = Entity(vehicle).state
-            local plate = string.gsub(v.props.plate, '^%s*(.-)%s*$', '%1')
-            state:set('vehicleproperties', v.props, true)
-            state:set('unlock',false,true)
-            SetVehicleDoorsLocked(vehicle,2)
-            Wait(3000)
-            state:set('plate',v.props.plate,true)
-            if fakeplates[plate] and fakeplates[plate].used then
-                state:set('fakeplate',fakeplates[plate].plate,true)
-            end
-        end)
-    end
+    -- local fakeplates = GlobalState.FakePlates
+    -- while GetNumPlayerIndices() == 0 do Wait(1000) end
+    -- local id = GetPlayerFromIndex(GetNumPlayerIndices()-1)
+    -- while not DoesEntityExist(GetPlayerPed(id)) do Wait(111) end
+    -- for k,v in pairs(GlobalState.VehiclePersistData) do
+    --     Citizen.CreateThreadNow(function()
+    --         local CreateAutoMobile = function(model, x, y, z, heading) return Citizen.InvokeNative(`CREATE_AUTOMOBILE`, model, x, y, z, heading) end
+    --         local vehicle = CreateVehicle(v.props.model, v.coord.x,v.coord.y,v.coord.z,v.coord.w, 1, 1)
+    --         while not DoesEntityExist(vehicle) do Wait(1) end
+    --         EnsureEntityStateBag(vehicle)
+    --         while NetworkGetEntityOwner(vehicle) == -1 do Wait(5000) end -- queing
+    --         local state = Entity(vehicle).state
+    --         local plate = string.gsub(v.props.plate, '^%s*(.-)%s*$', '%1')
+    --         state:set('vehicleproperties', v.props, true)
+    --         state:set('unlock',false,true)
+    --         SetVehicleDoorsLocked(vehicle,2)
+    --         Wait(3000)
+    --         state:set('plate',v.props.plate,true)
+    --         if fakeplates[plate] and fakeplates[plate].used then
+    --             state:set('fakeplate',fakeplates[plate].plate,true)
+    --         end
+    --     end)
+    -- end
 end)
 
 local temp_persist = GlobalState.VehiclePersistData
@@ -345,7 +345,8 @@ ServerEntityCreated = function(entity)
     end
     if DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 and GetEntityType(entity) ~= 2 or DoesEntityExist(entity) and GetEntityPopulationType(entity) ~= 7 then return end
     local entity = entity
-    local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
+    local plate = DoesEntityExist(entity) and string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
+    if not plate then return end
     local havekeys = false
     if servervehicles[plate] and DoesEntityExist(NetworkGetEntityFromNetworkId(servervehicles[plate])) and GetEntityType(NetworkGetEntityFromNetworkId(servervehicles[plate])) == 2 and servervehicles[GetVehicleNumberPlateText(NetworkGetEntityFromNetworkId(servervehicles[plate]))] then
         DeleteEntity(NetworkGetEntityFromNetworkId(servervehicles[plate])) -- delete duplicate vehicle with the same plate wandering in the server
@@ -359,7 +360,7 @@ ServerEntityCreated = function(entity)
         end
     end
     Wait(1000)
-    if DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
+    if DoesEntityExist(entity) and GetEntityPopulationType(entity) >= 5 and GetEntityType(entity) == 2 then -- check if entity still exist to avoid entity invalid
         if plate and temp_persist and temp_persist[plate] then return end
         local ent = Entity(entity).state
         ent.unlock = true
@@ -370,13 +371,16 @@ ServerEntityCreated = function(entity)
         --GlobalState.Gshare = globalkeys
         vehicleshop = false
         local gvehicles = GlobalState.GVehicles
+        Wait(2000)
         for k,v in pairs(Config.VehicleShopCoord) do -- weird logic but its optimized compare to old one
             if #(GetEntityCoords(entity) - v) < 100 then
                 vehicleshop = true
             end
         end
+        local plate = DoesEntityExist(entity) and string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
+
         if not gvehicles[plate] and vehicleshop then -- lets assume its newly purchased from any vehicle shop
-            local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(plate) = @plate', {['@plate'] = plate}) or {}
+            local new_spawned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE plate = @plate', {['@plate'] = plate}) or {}
             if new_spawned[1] then
                 plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
                 if Config.Ox_Inventory then
@@ -395,6 +399,12 @@ ServerEntityCreated = function(entity)
                 --print(plate,'Newly Owned Vehicles Found..Adding to Key system')
                 local veh = Entity(entity).state
                 veh:set('plate',plate,true)
+                local tempvehicles = GlobalState['vehicles'..new_spawned[1][owner]]
+                tempvehicles[plate] = {}
+				tempvehicles[plate][owner] = new_spawned[1][owner]
+				tempvehicles[plate].plate = plate
+				tempvehicles[plate].name = 'NULL'
+                GlobalState['vehicles'..new_spawned[1][owner]] = tempvehicles
                 return
             end
         elseif gvehicles[plate] and not Config.Ox_Inventory then -- owned vehicles
@@ -475,3 +485,11 @@ ServerEntityCreated = function(entity)
         end
     end
 end
+
+RegisterNetEvent('renzu_garage:SetVehicleOwner', function(plate)
+    local source = source
+    if not DoesPlayerHaveKey(plate,source) then
+        GiveVehicleKey(plate,source)
+        TriggerClientEvent('startvehicle',source)
+    end
+end)
