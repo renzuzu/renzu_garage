@@ -89,10 +89,9 @@ window.addEventListener('message', function(event) {
         const dateObject = new Date(milliseconds)
         const humanDateFormat = dateObject.toLocaleString()
         isimpounder = event.data.job
-        if (Date.now() < duration_left && !event.data.job) {
+        if (Date.now() < duration_left && !event.data.job && impound_data.duration && impound_data.duration !== '-1' & impound_data.duration !== -1) {
             const impound_epoch = duration_left
             impound_left = duration_left
-            //impound_left = impound_left.replace(",", "")
         }
         getEl("dateissue").innerHTML = humanDateFormat;
         for(var [key,value] of Object.entries(data.info)){
@@ -773,7 +772,7 @@ function ShowConfirm2(i){
         getEl("finediv").style.display = 'none';
     }
     $('.modal').css("display","flex");
-    if (impound_left !== '0') {
+    if (impound_left !== '0' || impound_left !== '-1' || impound_left !== -1) {
         
         $('#closemenu').append(`
         <div class="background-circle"></div>
