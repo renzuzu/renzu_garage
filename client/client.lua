@@ -512,12 +512,10 @@ RegisterNetEvent('renzu_garage:getchopper', function(job, available)
     fetchdone = true
 end)
 
-RegisterNUICallback(
-    "choosecat",
-    function(data, cb)
+RegisterNUICallback("choosecat",function(data, cb)
         cat = data.cat or 'all'
-    end
-)
+	if cb then cb('ok') end
+end)
 
 RegisterNetEvent('renzu_garage:return', function(v,vehicle,property,actualShop,vp,gid)
     local vp = vp
@@ -800,24 +798,22 @@ RegisterNetEvent('renzu_garage:store', function(i)
     end,vehicleProps.plate, 1, garageid, vehicleProps.model, vehicleProps)
 end)
 
-RegisterNUICallback(
-    "gotogarage",
-    function(data, cb)
-        if propertyspawn.x ~= nil then return end
-        DeleteEntity(LastVehicleFromGarage)
-        LastVehicleFromGarage = nil
-        DoScreenFadeOut(0)
-        local job = garagejob
-        CloseNui()
-        if string.find(garageid, "impound") and not ispolice then
-            DoScreenFadeIn(0)
-            SetEntityCoords(cache.ped, impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
-            Config.Notify('error', Message[44])
-            return
-        end
-        GotoGarage(data.garageid or garageid,false,false,job)
-    end
-)
+RegisterNUICallback("gotogarage",function(data, cb)
+	if propertyspawn.x ~= nil then return end
+	DeleteEntity(LastVehicleFromGarage)
+	LastVehicleFromGarage = nil
+	DoScreenFadeOut(0)
+	local job = garagejob
+	CloseNui()
+	if string.find(garageid, "impound") and not ispolice then
+	    DoScreenFadeIn(0)
+	    SetEntityCoords(cache.ped, impoundcoord[tid].garage_x,impoundcoord[tid].garage_y,impoundcoord[tid].garage_z, false, false, false, true)
+	    Config.Notify('error', Message[44])
+	    return
+	end
+	GotoGarage(data.garageid or garageid,false,false,job)
+	if cb then cb('ok') end
+end)
 
 RegisterNUICallback("ownerinfo",function(data, cb)
     TriggerServerCallback_("renzu_garage:getowner",function(a,data)
@@ -832,6 +828,7 @@ RegisterNUICallback("ownerinfo",function(data, cb)
         )
         end
     end,data.identifier, data.plate, garageid)
+	if cb then cb('ok') end
 end)
 
 RegisterNUICallback("SpawnVehicle",function(data, cb)
@@ -844,6 +841,7 @@ RegisterNUICallback("SpawnVehicle",function(data, cb)
         end
         SpawnVehicleLocal(data.modelcar, props)
     end
+	if cb then cb('ok') end
 end)
 
 RegisterNUICallback("SpawnChopper",function(data, cb)
@@ -856,14 +854,13 @@ RegisterNUICallback("SpawnChopper",function(data, cb)
         end
         SpawnChopperLocal(data.modelcar, props)
     end
+	if cb then cb('ok') end
 end)
 
 function TID(val)
     tid = val
 end
-RegisterNUICallback(
-    "GetVehicleFromGarage",
-    function(data, cb)
+RegisterNUICallback("GetVehicleFromGarage",function(data, cb)
         local ped = cache.ped
         local props = nil
         if props == nil then
@@ -1025,13 +1022,11 @@ RegisterNUICallback(
             }) 
         end
     end, props.plate,garageid,ispolice,patrolcars[props.plate] or false)
-    end
-)
+	if cb then cb('ok') end
+end)
 
 
-RegisterNUICallback(
-    "flychopper",
-    function(data, cb)
+RegisterNUICallback("flychopper",function(data, cb)
         local ped = cache.ped
         local veh = nil
         inGarage = false
@@ -1073,11 +1068,10 @@ RegisterNUICallback(
         plus = 0
         drawtext = false
         indist = false
+	if cb then cb('ok') end
 end)
 
-RegisterNUICallback(
-    "ReturnVehicle",
-    function(data, cb)
+RegisterNUICallback("ReturnVehicle",function(data, cb)
         DeleteEntity(LastVehicleFromGarage)
         local ped = cache.ped
         local props = nil
@@ -1191,6 +1185,7 @@ RegisterNUICallback(
                 })
             end
         end)
+	if cb then cb('ok') end
 end)
 
 
@@ -1219,6 +1214,7 @@ RegisterNUICallback("Close",function(data, cb)
     end
     DoScreenFadeIn(1000)
     DeleteGarage()
+	if cb then cb('ok') end
 end)
 
 AddEventHandler("onResourceStop",function(resourceName)
@@ -1240,6 +1236,7 @@ RegisterNUICallback("RenameVehicle",function(data, cb)
     else
         cb(false)
 	end
+	if cb then cb('ok') end
 end)
 
 RegisterNUICallback("DisposeVehicle",function(data, cb)
@@ -1278,6 +1275,7 @@ RegisterNUICallback("DisposeVehicle",function(data, cb)
             }) 
         end
     end,data.plate,garageid)
+	if cb then cb('ok') end
 end)
 
 multi = function()
