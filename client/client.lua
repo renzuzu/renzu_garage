@@ -32,8 +32,8 @@ Citizen.CreateThread(function()
     if Config.EnableImpound then
         for k, v in pairs (impoundcoord) do
             if PlayerData.job ~= nil and JobImpounder[PlayerData.job.name] ~= nil or Impoundforall then
-                GarageZone.Add(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,4,nil,k)
-                SetBlips(v.garage_x, v.garage_y, v.garage_z, v.Blip.sprite, v.Blip.scale, v.Blip.color, v.garage)
+                GarageZone.Add(vector3(v.garage_x, v.garage_y, v.garage_z),v.name,4,nil,k)
+                SetBlips(v.garage_x, v.garage_y, v.garage_z, v.Blip.sprite, v.Blip.scale, v.Blip.color, v.name)
             end
         end
     end
