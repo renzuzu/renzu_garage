@@ -15,13 +15,15 @@ DoesPlayerHaveGarageKey = function(garage,garagekey,source)
 end
 
 GlobalState.KeySerials = json.decode(GetResourceKvpString('keyserials') or '[]') or {}
-GiveVehicleKey = function(plate, source, new)
+GiveVehicleKey = function(plate, source, new, temporary)
     local keys = GlobalState.KeySerials
     local plate = string.gsub(plate, '^%s*(.-)%s*$', '%1')
     if not keys[plate] or new then
         keys[plate] = 'V:'..math.random(9999,9999999)
         GlobalState.KeySerials = keys
-        SetResourceKvp('keyserials',json.encode(keys))
+        if not temporary then
+            SetResourceKvp('keyserials',json.encode(keys))
+        end
     end
     local serial = keys[plate]
     local name = GlobalState.GVehicles[plate] and GlobalState.GVehicles[plate].name or plate
@@ -478,7 +480,7 @@ ServerEntityCreated = function(entity)
                 local net = NetworkGetEntityOwner(GetPedInVehicleSeat(entity,-1))
                 local plate = string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
                 if not DoesPlayerHaveKey(plate,net) then
-                    GiveVehicleKey(plate,net)
+                    GiveVehicleKey(plate,net,false,true)
                     TriggerClientEvent('startvehicle',net)
                 end
             end
@@ -486,10 +488,10 @@ ServerEntityCreated = function(entity)
     end
 end
 
-RegisterNetEvent('renzu_garage:SetVehicleOwner', function(plate)
+RegisterNetEvent('renzu_garage:SetVehicleOwner', function(plate,temp)
     local source = source
     if not DoesPlayerHaveKey(plate,source) then
-        GiveVehicleKey(plate,source)
+        GiveVehicleKey(plate,source,false,temp)
         TriggerClientEvent('startvehicle',source)
     end
 end)
