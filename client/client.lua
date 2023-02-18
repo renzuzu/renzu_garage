@@ -56,7 +56,7 @@ Citizen.CreateThread(function()
             local vec = vector3(v.garage_x,v.garage_y,v.garage_z)
             local name = v.garage..' Parking Spot'
             GarageZone.RealParkAdd(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,v.Dist,nil,k)
-            SetBlips(v.garage.x,v.garage.y,v.garage.z, 524, 0.6, 25, name, 5)
+            SetBlips(v.garage_x,v.garage_y,v.garage_z, 524, 0.6, 25, name, 5)
         end
     end
     if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
