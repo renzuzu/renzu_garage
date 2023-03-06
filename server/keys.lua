@@ -35,8 +35,7 @@ GiveVehicleKey = function(plate, source, new, temporary)
         serial = serial
     }
     if not DoesPlayerHaveKey(plate,source) then
-        exports.ox_inventory:AddItem(source,'keys',1,metadata,false, function(success, reason)
-        end)
+        exports.ox_inventory:AddItem(source,'keys',1,metadata,false)
     end
 end
 

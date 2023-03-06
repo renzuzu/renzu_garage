@@ -219,10 +219,10 @@ CreateThread(function()
     end
 end)
 
-RegisterNetEvent('opengarage', function()
+RegisterNetEvent('opengarage', function(id,lastvehicle)
     local sleep = 2000
     local ped = cache.ped
-    local vehiclenow = GetVehiclePedIsIn(cache.ped, false)
+    local vehiclenow = GetVehiclePedIsIn(cache.ped, lastvehicle)
     jobgarage = false
     garagejob = nil
     for k,v in pairs(garagecoord) do
