@@ -51,6 +51,8 @@ local garageped = nil
 local targetid = nil
 AddTarget = function(data)
 	function onEnter(self)
+		tid = data.id
+		TID(data.id)
 		local model = `a_m_m_skater_01`
 		lib.requestModel(model)
 		garageped = CreatePed(4,model,self.coords.x,self.coords.y,self.coords.z,0.0,false,true)
