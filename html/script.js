@@ -772,7 +772,7 @@ function ShowConfirm2(i){
         getEl("finediv").style.display = 'none';
     }
     $('.modal').css("display","flex");
-    if (impound_left !== '0' || impound_left !== '-1' || impound_left !== -1) {
+    if (impound_left !== '0' & impound_left !== '-1' & impound_left !== -1) {
         
         $('#closemenu').append(`
         <div class="background-circle"></div>
