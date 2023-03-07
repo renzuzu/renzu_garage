@@ -127,7 +127,7 @@ GarageZone.CheckZone = function(garage,f)
 end
 GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
 	if not Config.Oxlib then return end
-	if GetResourceState('ox_target') then
+	if GetResourceState('ox_target') == 'started' then
 		return AddTarget{id = id, coord = coord, label = data.name, event = 'renzu_garage:opengaragemenu', args = data}
 	end
 	local garage = data.name
@@ -182,7 +182,7 @@ end
 
 GarageZone.AddZone = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
-	if GetResourceState('ox_target') then
+	if GetResourceState('ox_target') == 'started' then
 		return AddTarget{id = id, coord = coord, label = 'Request Vehicle Keys', event = 'requestvehkey'}
 	end
     function onEnter(self)
@@ -210,7 +210,7 @@ end
 
 GarageZone.Add = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
-	if GetResourceState('ox_target') then
+	if GetResourceState('ox_target') == 'started' then
 		return AddTarget{id = id, coord = coord, label = Message[2]..' '..garage, event = 'opengarage'}
 	end
     local garage = garage
