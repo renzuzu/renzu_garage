@@ -52,8 +52,6 @@ local targetid = nil
 local textactive = false
 AddTarget = function(data)
 	function onEnter(self)
-		tid = data.id
-		TID(data.id)
 		local model = `a_m_m_skater_01`
 		lib.requestModel(model)
 		local ped = CreatePed(4,model,self.coords.x,self.coords.y,self.coords.z,0.0,false,true)
@@ -102,6 +100,10 @@ AddTarget = function(data)
 		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, self.distance < 5 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, false, true, 2, nil, nil, false)
 		if storing then
 			OxlibTextUi('[E] Store Vehicle',true)
+		end
+		if self.distance < 5 then
+			tid = data.id
+			TID(data.id)
 		end
 		while cache.vehicle and self.distance < 5 do 
 			Wait(1) 
