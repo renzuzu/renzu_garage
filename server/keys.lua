@@ -326,8 +326,6 @@ AddEventHandler('QBCore:Server:PlayerLoaded', function(data)
     end
 end)
 
-local servervehicles = {}
-
 AddStateBagChangeHandler('VehicleProperties' --[[key filter]], nil --[[bag filter]], function(bagName, key, value, _unused, replicated)
 	Wait(0)
 	local net = tonumber(bagName:gsub('entity:', ''), 10)
@@ -349,10 +347,6 @@ ServerEntityCreated = function(entity)
     local plate = DoesEntityExist(entity) and string.gsub(GetVehicleNumberPlateText(entity), '^%s*(.-)%s*$', '%1')
     if not plate then return end
     local havekeys = false
-    if servervehicles[plate] and DoesEntityExist(NetworkGetEntityFromNetworkId(servervehicles[plate])) and GetEntityType(NetworkGetEntityFromNetworkId(servervehicles[plate])) == 2 and servervehicles[GetVehicleNumberPlateText(NetworkGetEntityFromNetworkId(servervehicles[plate]))] then
-        DeleteEntity(NetworkGetEntityFromNetworkId(servervehicles[plate])) -- delete duplicate vehicle with the same plate wandering in the server
-    end
-    servervehicles[plate] = NetworkGetNetworkIdFromEntity(entity)
     Wait(1000)
     if Config.GiveKeystoMissionEntity and DoesEntityExist(entity) and GetEntityPopulationType(entity) == 7 and GetEntityType(entity) == 2 then -- check if vehicle is created with player (missions) eg. trucker, deliveries etc.
         local nodriver = GetPedInVehicleSeat(entity,-1) == 0 -- server native says driver seat is 1 but in my test its -1 like the client
