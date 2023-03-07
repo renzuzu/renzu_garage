@@ -79,16 +79,7 @@ AddTarget = function(data)
 				label = 'Store Last Vehicle',
 			})
 		end
-		targetid = exports.ox_target:addBoxZone({
-			coords = vec3(data.coord.x,data.coord.y,data.coord.z),
-			size = vec3(2, 2, 2),
-			rotation = 45,
-			useZ = true,
-			distance = 2.7,
-	
-			debug = drawZones,
-			options = options
-		})
+		targetid = exports.ox_target:addLocalEntity(garageped, options)
 	end
 	
 	function onExit(self)
@@ -99,7 +90,8 @@ AddTarget = function(data)
 	end
 	
 	function inside(self)
-		DrawMarker(1, self.coords.x, self.coords.y, self.coords.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 200, 255, 255, 50, false, true, 2, nil, nil, false)
+		local coord = GetEntityCoords(garageped)
+		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 200, 255, 255, 50, false, true, 2, nil, nil, false)
 	end
 	lib.zones.box({
 		coords = vec3(data.coord.x,data.coord.y,data.coord.z),

@@ -309,6 +309,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
             for k,v in pairs(vehiclesdb) do
                 if GetEntityModel(vehicle) == GetHashKey(v.model) then
                     name = v.name
+                    break
                 end
             end
             if name == 'not found' then
@@ -342,6 +343,7 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
             while dist < 3 and not IsPedInAnyVehicle(cache.ped) and ingarage do
                 coords = GetEntityCoords(cache.ped)
                 vehcoords = GetEntityCoords(vehicle)
+                FreezeEntityPosition(vehicle,true)
                 dist = #(coords-vehcoords)
                 Wait(100)
             end
@@ -391,9 +393,10 @@ function VehiclesinGarage(coords, distance, property, propertycoord, gid)
                     lib.showContext('usevehicle')
                     while IsPedInAnyVehicle(cache.ped) and ingarage do
                         coords = GetEntityCoords(cache.ped)
+                        FreezeEntityPosition(vehicle,true)
                         vehcoords = GetEntityCoords(vehicle)
                         dist = #(coords-vehcoords)
-                        Wait(500)
+                        Wait(111)
                     end
                 else
                     local table = {
