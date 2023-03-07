@@ -47,18 +47,22 @@ SetBlips = function(x,y,z,sprite,scale,color,name,display)
 	EndTextCommandSetBlipName(blip)
 end
 
-local garageped = nil
+local garageped = {}
 local targetid = nil
+local textactive = false
 AddTarget = function(data)
 	function onEnter(self)
 		tid = data.id
 		TID(data.id)
 		local model = `a_m_m_skater_01`
 		lib.requestModel(model)
-		garageped = CreatePed(4,model,self.coords.x,self.coords.y,self.coords.z,0.0,false,true)
-		while not DoesEntityExist(garageped) do Wait(0) end
-		SetPedConfigFlag(garageped,17,true)
-		TaskTurnPedToFaceEntity(garageped,cache.ped,-1)
+		local ped = CreatePed(4,model,self.coords.x,self.coords.y,self.coords.z,0.0,false,true)
+		while not DoesEntityExist(ped) do Wait(0) end
+		SetPedConfigFlag(ped,17,true)
+		TaskTurnPedToFaceEntity(ped,cache.ped,-1)
+		Wait(1000)
+		TaskStandGuard(ped,self.coords,GetEntityHeading(ped),'WORLD_HUMAN_GUARD_STAND')
+		garageped[data.id] = ped
 		local options = {
 			{
 				name = data.id,
@@ -79,23 +83,40 @@ AddTarget = function(data)
 				label = 'Store Last Vehicle',
 			})
 		end
-		targetid = exports.ox_target:addLocalEntity(garageped, options)
+		targetid = exports.ox_target:addLocalEntity(ped, options)
 	end
 	
 	function onExit(self)
-		DeleteEntity(garageped)
+		DeleteEntity(garageped[data.id])
 		if targetid then
 			exports.ox_target:removeZone(targetid)
 		end
+		lib.hideTextUI()
+		Wait(1000)
+		textactive = false
 	end
 	
 	function inside(self)
-		local coord = GetEntityCoords(garageped)
-		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 200, 255, 255, 50, false, true, 2, nil, nil, false)
+		local coord = GetEntityCoords(garageped[data.id])
+		local storing = cache.vehicle and self.distance < 5
+		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, self.distance < 5 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, false, true, 2, nil, nil, false)
+		if storing then
+			OxlibTextUi('[E] Store Vehicle',true)
+		end
+		while cache.vehicle and self.distance < 5 do 
+			Wait(1) 
+			DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 0, 255, 51, 50, false, true, 2, nil, nil, false)
+			if IsControlJustPressed(0,38) then
+				TriggerEvent('opengarage', data.id, true)
+				lib.hideTextUI()
+			end
+		end
+		if textactive then lib.hideTextUI() Wait(100) end
+		textactive = false
 	end
 	lib.zones.box({
 		coords = vec3(data.coord.x,data.coord.y,data.coord.z),
-		size = vec3(9, 9, 9),
+		size = vec3(55, 55, 55),
 		rotation = 45,
 		debug = false,
 		inside = inside,
@@ -255,7 +276,8 @@ RecreateGarageInfo = function()
 	end
 end
 
-OxlibTextUi = function(msg)
+OxlibTextUi = function(msg,block)
+	if textactive and block then return end
 	lib.showTextUI(msg, {
 		position = "left-center",
 		icon = 'car',
@@ -265,6 +287,7 @@ OxlibTextUi = function(msg)
 			color = 'white'
 		}
 	})
+	textactive = true
 end
 
 function Playerloaded()
