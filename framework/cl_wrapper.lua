@@ -52,7 +52,7 @@ local targetid = nil
 local textactive = false
 AddTarget = function(data)
 	function onEnter(self)
-		if DoesEntityExist(garageped[data.id]) then DeleteEntity(garageped[data.id]) end
+		if DoesEntityExist(garageped[data.garage]) then DeleteEntity(garageped[data.garage]) end
 		local model = `a_m_m_skater_01`
 		lib.requestModel(model)
 		local ped = CreatePed(4,model,self.coords.x,self.coords.y,self.coords.z,0.0,false,true)
@@ -61,10 +61,10 @@ AddTarget = function(data)
 		TaskTurnPedToFaceEntity(ped,cache.ped,-1)
 		Wait(1000)
 		TaskStandGuard(ped,self.coords,GetEntityHeading(ped),'WORLD_HUMAN_GUARD_STAND')
-		garageped[data.id] = ped
+		garageped[data.garage] = ped
 		local options = {
 			{
-				name = data.id,
+				name = data.garage,
 				onSelect = function()
 					TriggerEvent(data.event,data.id,data.args or false)
 				end,
@@ -86,7 +86,7 @@ AddTarget = function(data)
 	end
 	
 	function onExit(self)
-		DeleteEntity(garageped[data.id])
+		DeleteEntity(garageped[data.garage])
 		if targetid then
 			exports.ox_target:removeZone(targetid)
 		end
@@ -96,7 +96,7 @@ AddTarget = function(data)
 	end
 	
 	function inside(self)
-		local coord = GetEntityCoords(garageped[data.id])
+		local coord = GetEntityCoords(garageped[data.garage])
 		local storing = cache.vehicle and self.distance < 5
 		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, self.distance < 5 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, false, true, 2, nil, nil, false)
 		if storing then
@@ -144,7 +144,7 @@ end
 GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
 	if not Config.Oxlib then return end
 	if GetResourceState('ox_target') == 'started' then
-		return AddTarget{id = id, coord = coord, label = data.name, event = 'renzu_garage:opengaragemenu', args = data}
+		return AddTarget{id = id, coord = coord, label = data.name, event = 'renzu_garage:opengaragemenu', args = data, garage = garage}
 	end
 	local garage = data.name
 	function onEnter(self)
@@ -199,7 +199,7 @@ end
 GarageZone.AddZone = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
 	if GetResourceState('ox_target') == 'started' then
-		return AddTarget{id = id, coord = coord, label = 'Request Vehicle Keys', event = 'requestvehkey'}
+		return AddTarget{id = id, coord = coord, label = 'Request Vehicle Keys', event = 'requestvehkey', garage = garage}
 	end
     function onEnter(self)
 		CreateThread(function() -- create thread to suport multi zones
@@ -227,7 +227,7 @@ end
 GarageZone.Add = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
 	if GetResourceState('ox_target') == 'started' then
-		return AddTarget{id = id, coord = coord, label = Message[2]..' '..garage, event = 'opengarage'}
+		return AddTarget{id = id, coord = coord, label = Message[2]..' '..garage, event = 'opengarage', garage = garage}
 	end
     local garage = garage
     local coord = coord
