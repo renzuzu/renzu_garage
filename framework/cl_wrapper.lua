@@ -52,6 +52,7 @@ local targetid = nil
 local textactive = false
 AddTarget = function(data)
 	function onEnter(self)
+		if DoesEntityExist(garageped[data.id]) then DeleteEntity(garageped[data.id]) end
 		local model = `a_m_m_skater_01`
 		lib.requestModel(model)
 		local ped = CreatePed(4,model,self.coords.x,self.coords.y,self.coords.z,0.0,false,true)
