@@ -144,7 +144,7 @@ end
 GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
 	if not Config.Oxlib then return end
 	if GetResourceState('ox_target') == 'started' then
-		return AddTarget{id = id..'_private', coord = coord, label = data.name, event = 'renzu_garage:opengaragemenu', args = data}
+		return AddTarget{id = id, coord = coord, label = data.name, event = 'renzu_garage:opengaragemenu', args = data}
 	end
 	local garage = data.name
 	function onEnter(self)
@@ -199,7 +199,7 @@ end
 GarageZone.AddZone = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
 	if GetResourceState('ox_target') == 'started' then
-		return AddTarget{id = id..'requestvehkey', coord = coord, label = 'Request Vehicle Keys', event = 'requestvehkey'}
+		return AddTarget{id = id, coord = coord, label = 'Request Vehicle Keys', event = 'requestvehkey'}
 	end
     function onEnter(self)
 		CreateThread(function() -- create thread to suport multi zones
@@ -227,7 +227,7 @@ end
 GarageZone.Add = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
 	if GetResourceState('ox_target') == 'started' then
-		return AddTarget{id = garage, coord = coord, label = Message[2]..' '..garage, event = 'opengarage'}
+		return AddTarget{id = id, coord = coord, label = Message[2]..' '..garage, event = 'opengarage'}
 	end
     local garage = garage
     local coord = coord
