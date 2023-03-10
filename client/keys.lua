@@ -697,7 +697,7 @@ end)
 
 RegisterCommand(Config.VehicleKeysCommand, function(source, args, rawCommand)
     TriggerServerCallback_("renzu_garage:getgaragekeys",function(sharedkeys,players)
-        if Config.GarageKeys and PlayerData.job ~= nil and not Config.Ox_Inventory then
+        if Config.GarageKeys and PlayerData.job ~= nil then
             local owned_vehicles = GlobalState['vehicles'..PlayerData.identifier] or {}
             local ped = cache.ped
             local coords = GetEntityCoords(ped)
