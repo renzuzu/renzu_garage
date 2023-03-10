@@ -97,16 +97,16 @@ AddTarget = function(data)
 	
 	function inside(self)
 		local coord = GetEntityCoords(garageped[data.garage])
-		local storing = cache.vehicle and self.distance < 10
-		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, self.distance < 10 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, false, true, 2, nil, nil, false)
+		local storing = cache.vehicle and self.distance < 7
+		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, self.distance < 7 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, false, true, 2, nil, nil, false)
 		if storing then
 			OxlibTextUi('[E] Store Vehicle',true)
 		end
-		if self.distance < 10 then
+		if self.distance < 7 then
 			tid = data.id
 			TID(data.id)
 		end
-		while cache.vehicle and self.distance < 10 do 
+		while cache.vehicle and self.distance < 7 do 
 			Wait(1) 
 			DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 0, 255, 51, 50, false, true, 2, nil, nil, false)
 			if IsControlJustPressed(0,38) then
