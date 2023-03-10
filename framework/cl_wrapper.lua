@@ -97,16 +97,16 @@ AddTarget = function(data)
 	
 	function inside(self)
 		local coord = GetEntityCoords(garageped[data.garage])
-		local storing = cache.vehicle and self.distance < 5
-		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, self.distance < 5 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, false, true, 2, nil, nil, false)
+		local storing = cache.vehicle and self.distance < 10
+		DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, self.distance < 10 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, false, true, 2, nil, nil, false)
 		if storing then
 			OxlibTextUi('[E] Store Vehicle',true)
 		end
-		if self.distance < 5 then
+		if self.distance < 10 then
 			tid = data.id
 			TID(data.id)
 		end
-		while cache.vehicle and self.distance < 5 do 
+		while cache.vehicle and self.distance < 10 do 
 			Wait(1) 
 			DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 0, 255, 51, 50, false, true, 2, nil, nil, false)
 			if IsControlJustPressed(0,38) then
@@ -274,6 +274,11 @@ RecreateGarageInfo = function()
 			end
 			if v.job ~= nil and v.job == PlayerData.job.name or v.job == nil and GarageZone.Spheres[v.garage] then
 				GarageZone.Add(vector3(v.garage_x, v.garage_y, v.garage_z),v.garage,4,v.job ~= nil and v.job == PlayerData.job.name and v.job or nil,tid)
+			end
+		end
+		if Config.EnableHeliGarage and PlayerData.job ~= nil and helispawn[PlayerData.job.name] ~= nil then
+			for k,v in pairs(helispawn[PlayerData.job.name]) do
+				GarageZone.Add(vector3(v.coords.x,v.coords.y,v.coords.z),v.garage,5,PlayerData.job.name,v.garage)
 			end
 		end
 	end
