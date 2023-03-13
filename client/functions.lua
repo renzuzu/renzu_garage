@@ -891,7 +891,6 @@ function GotoGarage(garageid, property, propertycoord, job)
 end
 
 function CreateGarageShell()
-    print('creating')
     local ped = cache.ped
     garage_coords = GetEntityCoords(ped)+vector3(0,0,20)
     local count = 0
@@ -1004,7 +1003,6 @@ function GetVehicleClassname(vehicle)
 end
 
 function CreateGarageShell()
-    print('creating')
     local ped = cache.ped
     garage_coords = GetEntityCoords(ped)+vector3(0,0,20)
     local count = 0
@@ -1157,7 +1155,7 @@ end
 GarageType = {
     car = function(model)
         local class = GetVehicleClassnamemodel(model)
-        return class ~= 'Boats' and class ~= 'Helicopters' and class ~= 'Planes'
+        return class ~= 'Boats' and class ~= 'Helicopters' and class ~= 'Planes' and IsModelInCdimage(model)
     end,
     boat = function(model)
         local class = GetVehicleClassnamemodel(model)
@@ -1296,7 +1294,6 @@ function OpenGarage(garageid,garage_type,jobonly,default)
     lastcat = cat
     cat = nil
     if cars > 0 then
-        print("INSIDE")
         SendNUIMessage(
             {
                 garage_id = garageid,
