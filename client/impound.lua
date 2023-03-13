@@ -143,7 +143,7 @@ function OpenImpound(garageid,type)
                     if vehtable[v.impound] == nil then
                         vehtable[v.impound] = {}
                     end
-                    if GarageType[type](v.model)  then
+                    if GarageType[type](v.model) and v.garage_id == garageid or GarageType[type](v.model) and string.find(v.garage_id,'impound') ~= 1 then
                         if tostring(v.enginehealth) == "nan" or v.enginehealth == 'nan' or v.enginehealth == (tonumber('nan')) then
                             v.enginehealth = 1000.0
                         end
