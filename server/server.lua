@@ -504,3 +504,32 @@ RegisterServerCallBack_('renzu_garage:disposevehicle', function (source, cb, pla
         end
     end
 end)
+
+RegisterCommand('givecar', function(source,args) -- @plate, @PLAYERID, @modelname, 
+    local vehicles = GlobalState.GVehicles
+    local plate = args[1]
+    local xPlayer = GetPlayerFromId(tonumber(args[2]))
+    if GetPlayerFromId(source).getGroup() ~= 'admin' then return end
+    if plate and args[2] and xPlayer and not vehicles[plate] then
+        local vehicles = GlobalState.GVehicles
+        local props = {}
+        props.model = joaat(args[3])
+        props.plate = plate
+        local plate = string.gsub(props.plate, '^%s*(.-)%s*$', '%1')
+        local result = MysqlGarage(Config.Mysql,'fetchAll','INSERT INTO '..vehicletable..' ('..owner..', plate, '..vehiclemod..', `'..stored..'`) VALUES (@owner, @plate, @vehicle, @stored)', {
+            ['@owner'] = xPlayer.identifier,
+            ['@plate'] = plate,
+            ['@vehicle'] = json.encode(props),
+            ['@stored'] = 1
+        })
+        local tempvehicles = GlobalState['vehicles'..xPlayer.identifier]
+        tempvehicles[plate] = {}
+        tempvehicles[plate][owner] = newtransfer[1][owner]
+        tempvehicles[plate].plate = plate
+        tempvehicles[plate].name = 'NULL'
+        GlobalState['vehicles'..xPlayer.identifier] = tempvehicles
+    else
+        print('plate is not available or missing fields')
+        xPlayer.showNotification('plate is not available or missing fields', 1, 0)
+    end
+end)
