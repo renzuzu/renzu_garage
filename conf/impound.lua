@@ -54,6 +54,37 @@ impoundcoord = {
         spawn_z = 4.0571403503418,
         heading = 211.5486907959
     },
+    {
+        garage = "boat_impound", --vecpucci
+        name = 'Boat Impound',
+        job = "police",
+        Type = "boat",
+        Dist = 5,
+        Blip = {color = 6, sprite = 68, scale = 0.75},
+        garage_x = -806.455, -- -806.455, -1496.521, 1.595, 175.062
+        garage_y = -1496.521,
+        garage_z = 1.595,
+        spawn_x = -813.954, -- -813.954, -1496.984, -0.119, 91.979
+        spawn_y = -1496.98,
+        spawn_z = -0.119,
+        heading = 91.979
+    },
+
+    {
+        garage = "air_impound", --vecpucci
+        name = 'Plane Impound',
+        job = "police",
+        Type = "air",
+        Dist = 5,
+        Blip = {color = 6, sprite = 68, scale = 0.75},
+        garage_x = -956.168, -- -956.168, -2919.616, 13.96, 159.489
+        garage_y = -2919.616,
+        garage_z = 13.96,
+        spawn_x = -976.526, -- -976.526, -2964.213, 14.547, 154.357
+        spawn_y = -2964.213,
+        spawn_z = 14.547,
+        heading = 154.357
+    },
 }
 impound_duration = { -- in hours
     [1] = 0,

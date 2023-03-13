@@ -301,7 +301,7 @@ RegisterNetEvent('opengarage', function(id,lastvehicle)
                     while not fetchdone do
                         Wait(0)
                     end
-                    OpenImpound(v.garage)
+                    OpenImpound(v.garage,v.Type)
                     break
                 end
             end

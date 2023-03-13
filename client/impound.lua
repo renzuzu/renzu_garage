@@ -35,7 +35,7 @@ RegisterCommand('impound', function(source, args, rawCommand)
     end
 end, false)
 
-function OpenImpound(garageid)
+function OpenImpound(garageid,type)
     local garageid = garageid
     inGarage = true
     local ped = cache.ped
@@ -77,6 +77,7 @@ function OpenImpound(garageid)
     if 'police' == PlayerData.job.name then
         for k,v2 in pairs(OwnedVehicles) do
             for k2,v in pairs(v2) do
+                print(v.type)
                 if string.find(v.type, "car") then v.type = 'car' end
                 if v.garage_id ~= 'private' and not nearbyvehicles[plate] and v.impound and ispolice 
                     or v.garage_id ~= 'private' and not nearbyvehicles[plate] and not v.stored and ispolice then
@@ -142,7 +143,7 @@ function OpenImpound(garageid)
                     if vehtable[v.impound] == nil then
                         vehtable[v.impound] = {}
                     end
-                    if v.type ~= 'air' and v.type ~= 'boat' then
+                    if GarageType[type](v.model)  then
                         if tostring(v.enginehealth) == "nan" or v.enginehealth == 'nan' or v.enginehealth == (tonumber('nan')) then
                             v.enginehealth = 1000.0
                         end
