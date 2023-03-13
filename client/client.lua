@@ -241,7 +241,7 @@ RegisterNetEvent('opengarage', function(id,lastvehicle)
                 if dist <= req_dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and not string.find(v.garage, "impound") then
                     garageid = v.garage
                     Storevehicle(vehiclenow,false,false,v.garage_type == 'public' or false)
-                    break
+                    return
                 end
             elseif not DoesEntityExist(vehiclenow) then
                 if dist <= v.Dist and not jobgarage and not string.find(v.garage, "impound") or dist <= 7.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage and not string.find(v.garage, "impound") then
@@ -267,7 +267,7 @@ RegisterNetEvent('opengarage', function(id,lastvehicle)
                     end
                     propertygarage = false
                     OpenGarage(v.garage,v.Type,garagejob or false,v.default_vehicle or {})
-                    break
+                    return
                 end
             end
             if dist > 11 or ingarage then
@@ -290,7 +290,7 @@ RegisterNetEvent('opengarage', function(id,lastvehicle)
                 if dist <= v.Dist and not jobgarage or dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
                     garageid = v.garage
                     Storevehicle(vehiclenow)
-                    break
+                    return
                 end
             elseif not DoesEntityExist(vehiclenow) then
                 if dist <= v.Dist and Impoundforall or not Impoundforall and dist <= 3.0 and PlayerData.job ~= nil and PlayerData.job.name == v.job and jobgarage then
@@ -302,7 +302,7 @@ RegisterNetEvent('opengarage', function(id,lastvehicle)
                         Wait(0)
                     end
                     OpenImpound(v.garage,v.Type)
-                    break
+                    return
                 end
             end
             if dist > 11 or ingarage then
@@ -320,14 +320,14 @@ RegisterNetEvent('opengarage', function(id,lastvehicle)
             if DoesEntityExist(vehiclenow) then
                 if dist <= 7.0 then
                     helidel(vehiclenow)
-                    break
+                    return
                 end
             elseif not DoesEntityExist(vehiclenow) then
                 if dist <= 10.0 then
                     TriggerEvent("renzu_garage:getchopper",PlayerData.job.name,heli[PlayerData.job.name])
                     Citizen.Wait(1111)
                     OpenHeli(PlayerData.job.name)
-                    break
+                    return
                 end
             end
             if dist > 11 or ingarage then
