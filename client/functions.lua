@@ -1207,7 +1207,8 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                 if v.stored == 0 then
                     v.stored = false
                 end
-                if v.stored and ImpoundedLostVehicle and GarageType[garage_type](v.model) or not ImpoundedLostVehicle and GarageType[garage_type](v.model) then
+                local model = v.model2 or joaat(v.model)
+                if v.stored and ImpoundedLostVehicle and GarageType[garage_type](model) or not ImpoundedLostVehicle and GarageType[garage_type](model) then
                     if cats[v.brand] == nil then
                         cats[v.brand] = 0
                         totalcats = totalcats + 1
@@ -1284,7 +1285,8 @@ function OpenGarage(garageid,garage_type,jobonly,default)
                         impound = v.impound or 0,
                         ingarage = v.ingarage or false
                     }
-                    if GarageType[garage_type](v.model) then
+                    local model = v.model2 or joaat(v.model)
+                    if GarageType[garage_type](model) then
                         table.insert(vehtable[v.garage_id], veh)
                     end
                 end
