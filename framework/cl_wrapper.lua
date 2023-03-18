@@ -66,6 +66,8 @@ AddTarget = function(data)
 			{
 				name = data.garage,
 				onSelect = function()
+					tid = data.id
+					TID(data.id)
 					TriggerEvent(data.event,data.id,data.args or false)
 				end,
 				icon = 'fas fa-warehouse',
@@ -76,6 +78,8 @@ AddTarget = function(data)
 			table.insert(options,{
 				name = 'storevehicle',
 				onSelect = function()
+					tid = data.id
+					TID(data.id)
 					TriggerEvent(data.event,data.id,true)
 				end,
 				icon = 'fas fa-parking',
@@ -102,14 +106,12 @@ AddTarget = function(data)
 		if storing then
 			OxlibTextUi('[E] Store Vehicle',true)
 		end
-		if self.distance < 7 then
-			tid = data.id
-			TID(data.id)
-		end
 		while cache.vehicle and self.distance < 7 do 
 			Wait(1) 
 			DrawMarker(1, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 1.0, 1.0, 1.0, 0, 255, 51, 50, false, true, 2, nil, nil, false)
 			if IsControlJustPressed(0,38) then
+				tid = data.id
+				TID(data.id)
 				TriggerEvent('opengarage', data.id, true)
 				lib.hideTextUI()
 			end
