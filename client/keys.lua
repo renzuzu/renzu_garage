@@ -76,7 +76,6 @@ function isVehicleUnlocked()
                 Wait(1000)
                 SetVehicleEngineOn(v,false,true,true)
             end
-            TaskLeaveVehicle(p,v,0)
             Wait(1000)
             if r and not Config.Ox_Inventory then
                 SetVehicleEngineOn(v,true,true,false)
