@@ -111,7 +111,8 @@ CreateThread(function()
                                 model = hash,
                                 coord = vec3(parkcoord.x,parkcoord.y,parkcoord.z),
                                 heading = parkcoord.w,
-                                type = vehicle
+                                type = GetVehicleType(hash),
+                                prop = vehicle
                             })
                             myveh = NetworkGetEntityFromNetworkId(netid)
                             FreezeEntityPosition(myveh, true)
