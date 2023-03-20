@@ -870,6 +870,13 @@ RegisterNUICallback("GetVehicleFromGarage",function(data, cb)
                 end
             end
         end
+        if props == nil then CloseNui()
+            lib.notify({
+                description = 'Vehicle is unavailable',
+                type = 'error'
+            }) 
+            return 
+        end
         local veh = nil
         SetPedConfigFlag(cache.ped,429,false)
     TriggerServerCallback_("renzu_garage:isvehicleingarage",function(stored,impound,garage,fee,sharedvehicle)
