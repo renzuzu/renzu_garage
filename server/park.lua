@@ -6,6 +6,12 @@ RegisterServerCallBack_('renzu_garage:parkingmeter', function (source, cb, coord
     local coord = coord
     local coord2 = coord2
     local plate = string.gsub(tostring(prop.plate), '^%s*(.-)%s*$', '%1'):upper()
+    local owned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
+        ['@plate'] = plate
+    })
+    if not owned[1] then
+        return Config.Notify('error', 'You dont owned the vehicle', xPlayer)
+    end
     if xPlayer.getMoney() >= Config.MeterPayment then
         local canpark = true
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT coord FROM parking_meter', {})
@@ -70,8 +76,7 @@ AddEventHandler('renzu_garage:GetParkedVehicles', function()
     TriggerClientEvent('renzu_garage:update_parked',source,parkedvehicles, false, parkmeter)
 end)
 
-RegisterServerEvent('renzu_garage:park')
-AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props,data)
+lib.callback.register('renzu_garage:park', function(src, plate,state,coord,model,props,data)
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -79,6 +84,13 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props,data
     end
     local source = source
     local xPlayer = GetPlayerFromId(source)
+    local owned = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
+        ['@plate'] = plate
+    })
+    if not owned[1] then
+        Config.Notify('error', 'You dont owned the vehicle', xPlayer)
+        return false
+    end
     if xPlayer and xPlayer.getMoney() >= data.fee then
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE '..owner..' = @owner and TRIM(UPPER(plate)) = @plate LIMIT 1', {
             ['@owner'] = globalkeys[plate] and globalkeys[plate][xPlayer.identifier] and globalkeys[plate][xPlayer.identifier] ~= true and globalkeys[plate][xPlayer.identifier] or GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')] and GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')].owner or xPlayer.identifier,
@@ -112,6 +124,7 @@ AddEventHandler('renzu_garage:park', function(plate,state,coord,model,props,data
         end
     else
         Config.Notify('warning','Not Enough Money to pay parking fee', xPlayer)
+        return false
     end
 end)
 

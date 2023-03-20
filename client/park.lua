@@ -281,9 +281,11 @@ RealPark = function()
                                 end
                                 local ent = Entity(vehicle).state
                                 vehicleProps.plate = ent.plate or vehicleProps.plate
-                                TriggerServerEvent("renzu_garage:park", vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps,parking[k])
-                                ReqAndDelete(car)
-                                Config.Notify( 'success', Message[34])
+                                local success = lib.callback.await("renzu_garage:park", false, vehicleProps.plate, 1, coord, vehicleProps.model, vehicleProps,parking[k])
+                                if success then
+                                    ReqAndDelete(car)
+                                    Config.Notify( 'success', Message[34])
+                                end
                                 neargarage = false
                             end
                             Wait(0)
