@@ -106,13 +106,16 @@ CreateThread(function()
                                     Citizen.Wait(1)
                                 end
                             end
-                            myveh = CreateVehicle(hash, parkcoord.x,parkcoord.y,parkcoord.z, 42.0, 1, 1)
+                            lib.requestModel(hash)
+                            local netid = lib.callback.await('renzu_garage:CreateVehicle',false,{
+                                model = hash,
+                                coord = vec3(parkcoord.x,parkcoord.y,parkcoord.z),
+                                heading = parkcoord.w,
+                                type = vehicle
+                            })
+                            myveh = NetworkGetEntityFromNetworkId(netid)
                             FreezeEntityPosition(myveh, true)
-                            SetVehicleOwned(myveh)
                             SetEntityHeading(myveh, parkcoord.w)
-                            --FreezeEntityPosition(myveh, true)
-                            -- SetEntityCollision(spawned_cars[park.plate],false)
-                            SetVehicleProp(myveh, vehicle)
                             NetworkFadeInEntity(myveh,1)
                             TaskWarpPedIntoVehicle(cache.ped, myveh, -1)
                             Config.Notify( 'info', Message[35])

@@ -5,6 +5,20 @@ end
 if Config.framework == 'QBCORE' then
     StopResource('qb-vehiclekeys') -- conflict
 end
+
+lib.callback.register('renzu_garage:CreateVehicle', function(src,data)
+    local vehicle = CreateVehicleServerSetter(data.model, data.type, data.coord, data.heading)
+    while not DoesEntityExist(vehicle) do Wait(0) end
+
+    while NetworkGetEntityOwner(vehicle) == -1 do Wait(10) end
+    Wait(500) -- wait for entity to have a correct net id. better than having shity logic in client
+    local netid = NetworkGetNetworkIdFromEntity(vehicle)
+    Entity(vehicle).state:set('VehicleProperties', {NetId = netid}, true) -- trigger my other resource
+    TriggerClientEvent('renzu_garage:SetVehicleProperties',NetworkGetEntityOwner(vehicle),netid,data.prop)
+    Wait(500) -- make sure properties are set
+    return netid
+end)
+
 RegisterServerEvent('renzu_garage:GetVehiclesTable')
 AddEventHandler('renzu_garage:GetVehiclesTable', function(garageid,public,garagekey)
     local src = source 

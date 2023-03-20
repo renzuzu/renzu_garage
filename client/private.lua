@@ -800,9 +800,25 @@ RegisterNetEvent('renzu_garage:choose', function(t,garage)
     end
     local vehicle
     if housingcustom then
-        vehicle = CreateVehicle(t.model,housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z,housingcustom.housing.w,true,true)
+        lib.requestModel(t.model)
+        local netid = lib.callback.await('renzu_garage:CreateVehicle',false,{
+            model = t.model,
+            coord = vec3(housingcustom.housing.x,housingcustom.housing.y,housingcustom.housing.z),
+            heading = housingcustom.housing.w,
+            type = GetVehicleType(t.model),
+            prop = t
+        })
+        vehicle = NetworkGetEntityFromNetworkId(netid)
     else
-        vehicle = CreateVehicle(t.model,garage.buycoords.x,garage.buycoords.y,garage.buycoords.z,garage.buycoords.w,true,true)
+        lib.requestModel(t.model)
+        local netid = lib.callback.await('renzu_garage:CreateVehicle',false,{
+            model = t.model,
+            coord = vec3(garage.buycoords.x,garage.buycoords.y,garage.buycoords.z),
+            heading = garage.buycoords.w,
+            type = GetVehicleType(t.model),
+            prop = t
+        })
+        vehicle = NetworkGetEntityFromNetworkId(netid)
     end
     SetVehicleOwned(vehicle)
     SetVehicleProp(vehicle, t)
