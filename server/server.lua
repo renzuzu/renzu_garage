@@ -18,6 +18,7 @@ lib.callback.register('renzu_garage:CreateVehicle', function(src,data)
         SetPedIntoVehicle(GetPlayerPed(src),vehicle,-1) -- make sure player is in seat
         Wait(10)
     end -- wait for entity ownership
+    Wait(500)
     local netid = NetworkGetNetworkIdFromEntity(vehicle)
     Entity(vehicle).state:set('VehicleProperties', {NetId = netid}, true) -- trigger my other resource
     --print(NetworkGetEntityOwner(vehicle),'NetworkGetEntityOwner(vehicle)') -- this print shows the current player in vehicle already owned the vehicle
