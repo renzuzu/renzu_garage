@@ -191,6 +191,8 @@ DoesPlayerHaveKey = function(plate,source,remove)
 end
 
 RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,state,garage_id,model,props,impound_cdata, public)
+    local plate = plate
+    local props = props
     if not Config.PlateSpace then
         plate = string.gsub(tostring(plate), '^%s*(.-)%s*$', '%1'):upper()
     else
@@ -205,11 +207,11 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
     or GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')] and GlobalState.GVehicles[string.gsub(plate, '^%s*(.-)%s*$', '%1')].owner
     or xPlayer.identifier
     if public then
-        local r = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
+        local Public = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM '..vehicletable..' WHERE TRIM(UPPER(plate)) = @plate LIMIT 1', {
             ['@plate'] = plate
         })
-        if r and r[1] then
-            identifier = r[1][owner]
+        if Public and Public[1] then
+            identifier = Public[1][owner]
         else
             Config.Notify('info',Message[2], 'Vehicle is not owned', xPlayer)
             cb(false,public)
@@ -234,7 +236,7 @@ RegisterServerCallBack_('renzu_garage:changestate', function (source, cb, plate,
             end
             if result[1][vehiclemod] ~= nil then
                 local veh = json.decode(result[1][vehiclemod])
-                if veh.model == model or true then
+                if veh.model == model then
                     local var = {
                         ['@vehicle'] = json.encode(props),
                         ['@garage_id'] = garage_id,
