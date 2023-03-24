@@ -1862,39 +1862,35 @@ end
 function DrawInteraction_(i,v,reqdist,msg,event,server,var,disablemarker)
     local i = i
     if not markers[i] and i ~= nil and not inGarage then
-        local ped = cache.ped
-        local inveh = IsPedInAnyVehicle(ped)
-        --Citizen.CreateThread(function()
-            markers[i] = true
-            --local reqdist = reqdist[2]
-            local coord = v
-            local dist = #(GetEntityCoords(ped) - coord)
-            while dist < reqdist[1] and not cancel do
-                if inveh ~= IsPedInAnyVehicle(ped) then
-                    break
-                end
-                drawsleep = 1
-                dist = #(GetEntityCoords(ped) - coord)
-                --if dist < reqdist[1] then ShowFloatingHelpNotification(msg, coord, disablemarker , i) end
-                if dist < reqdist[1] and IsControlJustReleased(1, 51) then
-                    lib.hideTextUI()
-                    --ShowFloatingHelpNotification(msg, coord, disablemarker , i)
-                    if not server then
-                        TriggerEvent(event,i,var)
-                    elseif server then
-                        TriggerServerEvent(event,i,var)
-                    end
-                    Wait(1000)
-                    break
-                end
-                Wait(drawsleep)
+    local ped = cache.ped
+    local inveh = IsPedInAnyVehicle(ped)
+        markers[i] = true
+        local coord = v
+        local dist = #(GetEntityCoords(ped) - coord)
+        while dist < reqdist[1] and not cancel do
+            DrawMarker(36, coord.x, coord.y, coord.z-0.4, 0.0, 0.0, 0.0, 180.0, 180.0, -180.0, 1.0, 1.0, 1.0, dist < 7 and vec3(0, 0, 225) or vec3(200, 255, 255), 50, true, true, 2, nil, nil, false)
+            if inveh ~= IsPedInAnyVehicle(ped) then
+                break
             end
-            ClearAllHelpMessages()
-            markers[i] = false
-            while inGarage do Wait(1) end
-            cancel = false
-            return true
-        --end)
+            drawsleep = 1
+            dist = #(GetEntityCoords(ped) - coord)
+            if dist < reqdist[1] and IsControlJustReleased(1, 51) then
+                lib.hideTextUI()
+                if not server then
+                    TriggerEvent(event,i,var)
+                elseif server then
+                    TriggerServerEvent(event,i,var)
+                end
+                Wait(1000)
+                break
+            end
+            Wait(drawsleep)
+        end
+        ClearAllHelpMessages()
+        markers[i] = false
+        while inGarage do Wait(1) end
+        cancel = false
+        return true
     end
 end
 
