@@ -153,7 +153,7 @@ GarageZone.CheckZone = function(garage,f)
 end
 GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
 	if not Config.Oxlib then return end
-	if Config.target and GetResourceState('ox_target') == 'started' or GetResourceState('qb-target') == 'started' then
+	if Config.target and GetResourceState('ox_target') == 'started' or Config.target and GetResourceState('qb-target') == 'started' then
 		return AddTarget{id = id, coord = coord, label = data.name, event = 'renzu_garage:opengaragemenu', args = data, garage = garage}
 	end
 	local garage = data.name
