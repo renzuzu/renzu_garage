@@ -86,7 +86,7 @@ AddTarget = function(data)
 				label = 'Store Last Vehicle',
 			})
 		end
-		if GetResourceState('ox_target') ~= 'started' and GetResourceState('qb-target') == 'started' then -- needed to be like this instead of relying ox_target compatibility with qb-target. since ox does not support AddTargetEntity to local entity during convert.
+		if Config.target and GetResourceState('ox_target') ~= 'started' and GetResourceState('qb-target') == 'started' then -- needed to be like this instead of relying ox_target compatibility with qb-target. since ox does not support AddTargetEntity to local entity during convert.
 			for k,v in pairs(options) do if v.onSelect then v.action = v.onSelect end end
 			targetid = exports['qb-target']:AddTargetEntity(ped, {
 				options = options,
@@ -153,7 +153,7 @@ GarageZone.CheckZone = function(garage,f)
 end
 GarageZone.PrivateAdd = function(coord,garage,dist,job,id,data)
 	if not Config.Oxlib then return end
-	if GetResourceState('ox_target') == 'started' or GetResourceState('qb-target') == 'started' then
+	if Config.target and GetResourceState('ox_target') == 'started' or GetResourceState('qb-target') == 'started' then
 		return AddTarget{id = id, coord = coord, label = data.name, event = 'renzu_garage:opengaragemenu', args = data, garage = garage}
 	end
 	local garage = data.name
@@ -208,7 +208,7 @@ end
 
 GarageZone.AddZone = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
-	if GetResourceState('ox_target') == 'started' or GetResourceState('qb-target') == 'started' then
+	if Config.target and GetResourceState('ox_target') == 'started' or GetResourceState('qb-target') == 'started' then
 		return AddTarget{id = id, coord = coord, label = 'Request Vehicle Keys', event = 'requestvehkey', garage = garage}
 	end
     function onEnter(self)
@@ -236,7 +236,7 @@ end
 
 GarageZone.Add = function(coord,garage,dist,job,id)
 	if not Config.Oxlib then return end
-	if GetResourceState('ox_target') == 'started' or GetResourceState('qb-target') == 'started' then
+	if Config.target and GetResourceState('ox_target') == 'started' or GetResourceState('qb-target') == 'started' then
 		return AddTarget{id = id, coord = coord, label = Message[2]..' '..garage, event = 'opengarage', garage = garage}
 	end
     local garage = garage
