@@ -10,17 +10,24 @@ lib.callback.register('renzu_garage:CreateVehicle', function(src,data)
     local src = src
     local routing = GetPlayerRoutingBucket(src)
     local vehicle = CreateVehicleServerSetter(data.model, data.type, data.coord, data.heading)
+
     SetEntityRoutingBucket(vehicle,routing)
+    
     while NetworkGetEntityOwner(vehicle) == -1 do Wait(0) end
+
+    SetVehicleNumberPlateText(vehicle,data?.prop.plate)
     SetPedIntoVehicle(GetPlayerPed(src),vehicle,-1) -- set player into vehicle. automatically asked the server to request ownership
     --print(NetworkGetEntityOwner(vehicle),'NetworkGetEntityOwner(vehicle)') -- this print shows other player as first entity owner.
+
     while NetworkGetEntityOwner(vehicle) ~= src do 
         SetPedIntoVehicle(GetPlayerPed(src),vehicle,-1) -- make sure player is in seat
         Wait(10)
     end -- wait for entity ownership
-    Wait(500)
+
+    Wait(1000)
     local netid = NetworkGetNetworkIdFromEntity(vehicle)
     Entity(vehicle).state:set('VehicleProperties', {NetId = netid}, true) -- trigger my other resource
+
     --print(NetworkGetEntityOwner(vehicle),'NetworkGetEntityOwner(vehicle)') -- this print shows the current player in vehicle already owned the vehicle
     TriggerClientEvent('renzu_garage:SetVehicleProperties',NetworkGetEntityOwner(vehicle),netid,data.prop)
     return netid
