@@ -1310,3 +1310,12 @@ RegisterNetEvent('startvehicle', function()
     SetPedConfigFlag(cache.ped,429,false)
     SetVehicleEngineOn(GetVehiclePedIsIn(cache.ped,false) or GetVehiclePedIsIn(cache.ped,true),true,true,true)
 end)
+
+AddStateBagChangeHandler('deformation' --[[key filter]], nil --[[bag filter]], function(bagName, key, value, _unused, replicated)
+	Wait(0)
+	local entity = GetEntityFromStateBagName(bagName)
+	if not value or entity == 0 then return end
+	local ent = Entity(entity).state
+	local plate = GetVehicleNumberPlateText(entity)
+	SetVehicleDeformation(entity,value)
+end)
