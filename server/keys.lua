@@ -194,11 +194,11 @@ AddEventHandler('statebugupdate', function(name,value,net, props)
         end
         SetVehicleDoorsLocked(vehicle,tonumber(val))
     end
-    if name == 'unlock' then
-        local ent = Entity(vehicle).state
-        props.plate = ent.plate or props.plate
-        SetVehiclePersistent({coord = vec4(GetEntityCoords(vehicle), GetEntityHeading(vehicle)), props = props}, value)
-    end
+    -- if name == 'unlock' then
+    --     local ent = Entity(vehicle).state
+    --     --props.plate = ent.plate or props.plate
+    --     --SetVehiclePersistent({coord = vec4(GetEntityCoords(vehicle), GetEntityHeading(vehicle)), props = props}, value)
+    -- end
     if name == 'share' then
         local plate = string.gsub(GetVehicleNumberPlateText(vehicle), '^%s*(.-)%s*$', '%1')
         local result = MysqlGarage(Config.Mysql,'fetchAll','SELECT * FROM vehiclekeys WHERE `plate` = @plate', {
