@@ -34,7 +34,9 @@ lib.callback.register('renzu_garage:CreateVehicle', function(src,data)
 
     local netid = NetworkGetNetworkIdFromEntity(vehicle)
 
-    Entity(vehicle).state:set('VehicleProperties', {NetId = netid}, true) -- trigger my other resource
+    if ServerVehicle then
+	    TriggerEvent('entityCreated', vehicle)
+    end
 
     TriggerClientEvent('renzu_garage:SetVehicleProperties',NetworkGetEntityOwner(vehicle),netid,data.prop)
 
