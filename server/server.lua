@@ -6,30 +6,44 @@ if Config.framework == 'QBCORE' then
     StopResource('qb-vehiclekeys') -- conflict
 end
 
+local ServerVehicle = CreateVehicleServerSetter
 lib.callback.register('renzu_garage:CreateVehicle', function(src,data)
     local src = src
     local routing = GetPlayerRoutingBucket(src)
-    local vehicle = CreateVehicleServerSetter(data.model, data.type, data.coord, data.heading)
 
-    SetEntityRoutingBucket(vehicle,routing)
-    
+    local randomroute = math.random(100,999)
+
+    SetPlayerRoutingBucket(src,randomroute)
+
+    local vehicle = ServerVehicle and ServerVehicle(data.model, data.type, data.coord, data.heading) or CreateVehicle(data.model,data.coord.x,data.coord.y,data.coord.z,data.heading, true, true)
+
+    while not ServerVehicle and not DoesEntityExist(vehicle) do Wait(0) end
+    -- isolate vehicle and player to get ownership instantly
+    SetEntityRoutingBucket(vehicle,randomroute)
+
     while NetworkGetEntityOwner(vehicle) == -1 do Wait(0) end
 
     SetVehicleNumberPlateText(vehicle,data?.prop.plate)
+
     SetPedIntoVehicle(GetPlayerPed(src),vehicle,-1) -- set player into vehicle. automatically asked the server to request ownership
-    --print(NetworkGetEntityOwner(vehicle),'NetworkGetEntityOwner(vehicle)') -- this print shows other player as first entity owner.
 
     while NetworkGetEntityOwner(vehicle) ~= src do 
         SetPedIntoVehicle(GetPlayerPed(src),vehicle,-1) -- make sure player is in seat
         Wait(10)
     end -- wait for entity ownership
 
-    Wait(1000)
     local netid = NetworkGetNetworkIdFromEntity(vehicle)
+
     Entity(vehicle).state:set('VehicleProperties', {NetId = netid}, true) -- trigger my other resource
 
-    --print(NetworkGetEntityOwner(vehicle),'NetworkGetEntityOwner(vehicle)') -- this print shows the current player in vehicle already owned the vehicle
     TriggerClientEvent('renzu_garage:SetVehicleProperties',NetworkGetEntityOwner(vehicle),netid,data.prop)
+
+    SetTimeout(1000,function()
+        SetPlayerRoutingBucket(src,routing)
+        SetEntityRoutingBucket(vehicle,routing)
+        SetPedIntoVehicle(GetPlayerPed(src),vehicle,-1)
+    end)
+
     return netid
 end)
 
